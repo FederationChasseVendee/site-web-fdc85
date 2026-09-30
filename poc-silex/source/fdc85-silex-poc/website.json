@@ -1,0 +1,42 @@
+{
+  "assets": [
+    {
+      "type": "image",
+      "src": "/assets/logo-fdc85.png",
+      "unitDim": "px",
+      "height": 111,
+      "width": 400,
+      "name": "logo-fdc85.png"
+    },
+    {
+      "type": "image",
+      "src": "/assets/hero-faune.jpg",
+      "unitDim": "px",
+      "height": 760,
+      "width": 1600,
+      "name": "hero-faune.jpg"
+    }
+  ],
+  "fonts": [],
+  "pages": [
+    {
+      "id": "page-accueil-fdc85-poc",
+      "isFile": true,
+      "name": "index"
+    },
+    {
+      "id": "page-contact-fdc85-poc",
+      "isFile": true,
+      "name": "contact"
+    }
+  ],
+  "pagesFolder": "pages",
+  "publication": {},
+  "settings": {
+    "description": "Prototype visuel Silex autonome pour la Fédération Départementale des Chasseurs de la Vendée.",
+    "lang": "fr",
+    "title": "FDC 85 — POC Silex"
+  },
+  "styles": [],
+  "symbols": []
+}
