@@ -1,0 +1,223 @@
+<section class="weather-section" aria-labelledby="weather-title">
+  <div class="container weather-inner">
+    <div class="weather-intro">
+      <h2 id="weather-title">La météo en Vendée</h2>
+      <p>Conditions à La Roche-sur-Yon, à titre indicatif pour le département.</p>
+    </div>
+    <div class="weather-widget" data-weather-widget>
+      <div class="weather-current">
+        <span class="weather-symbol" data-weather-icon aria-hidden="true">☀</span>
+        <div>
+          <p class="weather-temperature" data-weather-temperature>—</p>
+          <p class="weather-condition" data-weather-condition>Chargement de la météo…</p>
+        </div>
+      </div>
+      <div class="weather-details" data-weather-details hidden>
+        <p>Min. / max. <strong data-weather-range></strong></p>
+        <p>Vent <strong data-weather-wind></strong></p>
+      </div>
+      <div class="weather-footer">
+        <p class="weather-update" data-weather-update role="status" aria-live="polite"></p>
+        <button class="weather-retry" type="button" data-weather-retry hidden>Réessayer</button>
+        <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer" aria-label="Données météo : Open-Meteo (nouvel onglet)">Données : Open-Meteo ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const widget = document.querySelector<HTMLElement>("[data-weather-widget]");
+  if (widget) {
+    const temperature = widget.querySelector<HTMLElement>("[data-weather-temperature]")!;
+    const condition = widget.querySelector<HTMLElement>("[data-weather-condition]")!;
+    const icon = widget.querySelector<HTMLElement>("[data-weather-icon]")!;
+    const details = widget.querySelector<HTMLElement>("[data-weather-details]")!;
+    const range = widget.querySelector<HTMLElement>("[data-weather-range]")!;
+    const wind = widget.querySelector<HTMLElement>("[data-weather-wind]")!;
+    const update = widget.querySelector<HTMLElement>("[data-weather-update]")!;
+    const retry = widget.querySelector<HTMLButtonElement>("[data-weather-retry]")!;
+
+    function describeWeather(code: number): [string, string] {
+      if (code === 0) return ["Ciel dégagé", "☀"];
+      if (code <= 3) return ["Ciel nuageux", "⛅"];
+      if (code <= 48) return ["Brouillard", "≋"];
+      if (code <= 67 || (code >= 80 && code <= 82)) return ["Pluie", "☂"];
+      if (code <= 77 || (code >= 85 && code <= 86)) return ["Neige", "❄"];
+      if (code >= 95) return ["Orages", "⚡"];
+      return ["Conditions variables", "☁"];
+    }
+
+    async function loadWeather() {
+      retry.hidden = true;
+      details.hidden = true;
+      temperature.textContent = "—";
+      condition.textContent = "Chargement de la météo…";
+      update.textContent = "Actualisation de la météo…";
+      try {
+        const url = new URL("https://api.open-meteo.com/v1/forecast");
+        url.search = new URLSearchParams({
+          latitude: "46.6705",
+          longitude: "-1.4264",
+          current: "temperature_2m,weather_code,wind_speed_10m",
+          daily: "temperature_2m_max,temperature_2m_min",
+          forecast_days: "1",
+          timezone: "Europe/Paris",
+        }).toString();
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Open-Meteo: ${response.status}`);
+        const data: unknown = await response.json();
+        if (!data || typeof data !== "object" || !("current" in data) || !("daily" in data)) {
+          throw new Error("Réponse météo invalide");
+        }
+        const { current, daily } = data as {
+          current: { temperature_2m?: unknown; weather_code?: unknown; wind_speed_10m?: unknown; time?: unknown };
+          daily: { temperature_2m_max?: unknown; temperature_2m_min?: unknown };
+        };
+        if (!current || !daily ||
+          typeof current.temperature_2m !== "number" || !Number.isFinite(current.temperature_2m) ||
+          typeof current.weather_code !== "number" || !Number.isInteger(current.weather_code) ||
+          typeof current.wind_speed_10m !== "number" || !Number.isFinite(current.wind_speed_10m) ||
+          typeof current.time !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(current.time) ||
+          !Array.isArray(daily.temperature_2m_max) || !Array.isArray(daily.temperature_2m_min) ||
+          typeof daily.temperature_2m_max[0] !== "number" || !Number.isFinite(daily.temperature_2m_max[0]) ||
+          typeof daily.temperature_2m_min[0] !== "number" || !Number.isFinite(daily.temperature_2m_min[0])) {
+          throw new Error("Données météo incomplètes");
+        }
+        const [label, symbol] = describeWeather(current.weather_code);
+        temperature.textContent = `${Math.round(current.temperature_2m)} °C`;
+        condition.textContent = label;
+        icon.textContent = symbol;
+        range.textContent = `${Math.round(daily.temperature_2m_min[0])}° / ${Math.round(daily.temperature_2m_max[0])}°`;
+        wind.textContent = `${Math.round(current.wind_speed_10m)} km/h`;
+        details.hidden = false;
+        update.textContent = `Données du ${current.time.slice(8, 10)}/${current.time.slice(5, 7)} à ${current.time.slice(11, 16)} (heure locale)`;
+      } catch (error) {
+        console.error("Impossible de charger la météo :", error);
+        icon.textContent = "☁";
+        condition.textContent = "Météo momentanément indisponible";
+        update.textContent = "Vérifiez votre connexion et réessayez.";
+        retry.hidden = false;
+      }
+    }
+
+    retry.addEventListener("click", loadWeather);
+    void loadWeather();
+  }
+</script>
+
+<style>
+  .weather-section {
+    padding-block: 1.5rem;
+    background: var(--forest-950);
+    color: var(--white);
+  }
+
+  .weather-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .weather-intro h2 {
+    margin: 0 0 .25rem;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.6rem, 3vw, 2.25rem);
+    font-weight: 500;
+    line-height: 1.15;
+  }
+
+  .weather-intro p,
+  .weather-condition,
+  .weather-details p,
+  .weather-footer p {
+    margin: 0;
+  }
+
+  .weather-intro p,
+  .weather-footer {
+    color: #e0eae3;
+    font-size: .9rem;
+  }
+
+  .weather-widget {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: .35rem 1.5rem;
+    align-items: center;
+  }
+
+  .weather-current {
+    display: flex;
+    gap: .8rem;
+    align-items: center;
+  }
+
+  .weather-symbol {
+    min-width: 3rem;
+    color: var(--sand);
+    font-size: 3rem;
+    line-height: 1;
+    text-align: center;
+  }
+
+  .weather-temperature {
+    margin: 0;
+    font-size: 2.4rem;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+
+  .weather-details {
+    padding-left: 1.5rem;
+    border-left: 1px solid rgb(255 255 255 / 35%);
+    font-size: .95rem;
+  }
+
+  .weather-details strong {
+    display: block;
+    color: var(--white);
+  }
+
+  .weather-footer {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .3rem 1rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .weather-footer a {
+    color: inherit;
+  }
+
+  .weather-retry {
+    min-height: 2.75rem;
+    padding: .35rem .8rem;
+    border: 1px solid var(--sand);
+    border-radius: .4rem;
+    background: transparent;
+    color: var(--white);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+  }
+
+  @media (max-width: 48rem) {
+    .weather-inner {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+  }
+
+  @media (max-width: 22rem) {
+    .weather-widget {
+      grid-template-columns: 1fr;
+    }
+    .weather-details {
+      padding: 0;
+      border: 0;
+    }
+  }
+</style>
