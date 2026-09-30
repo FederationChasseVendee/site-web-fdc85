@@ -1,0 +1,109 @@
+<div class="hunter-crossing" aria-hidden="true">
+  <svg class="hunter" viewBox="0 0 120 146" width="120" height="146" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="63" cy="140" rx="38" ry="4" fill="#102e27" opacity=".35" />
+    <g class="hunter-back-leg">
+      <path d="M63 104 74 127 80 132" fill="none" stroke="#354a35" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M75 128q8-3 15 4v5H73z" fill="#392f25" stroke="#211e1a" stroke-width="2" />
+    </g>
+    <g class="hunter-front-leg">
+      <path d="M52 103 43 126 37 132" fill="none" stroke="#405740" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M42 128q-11-2-17 5v4h23z" fill="#473728" stroke="#211e1a" stroke-width="2" />
+    </g>
+    <path d="M71 62q24 0 25 24v18H74z" fill="#796444" stroke="#342f24" stroke-width="2" />
+    <path d="M42 63q15-12 31 0l12 43q-20 10-46 0z" fill="#344f37" stroke="#203929" stroke-width="2" />
+    <path d="M50 64 44 96q16 7 34 1L70 65z" fill="#cf743a" stroke="#873f28" stroke-width="2" />
+    <path d="m58 64 5 30M41 98q19 8 40 0" fill="none" stroke="#eed0a0" stroke-width="2" />
+    <rect x="56" y="98" width="8" height="5" rx="1" fill="#e4b95f" />
+    <path d="M68 65q14 15 17 33" fill="none" stroke="#c4a274" stroke-width="4" />
+    <g class="hunter-back-arm">
+      <path d="M73 68q13 7 10 23l-6 5" fill="none" stroke="#344f37" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+      <circle cx="77" cy="96" r="5" fill="#d6a47c" />
+    </g>
+    <g class="hunter-front-arm">
+      <path d="M45 69q-11 12-7 26l-5 5" fill="none" stroke="#344f37" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" />
+      <circle cx="33" cy="100" r="5" fill="#d6a47c" />
+    </g>
+    <path d="M48 54h19v15q-10 8-20-1z" fill="#d6a47c" />
+    <path d="M47 34q-12 5-11 18 1 13 14 15 16 1 20-16l-6-15z" fill="#e3b48c" stroke="#9c6d50" stroke-width="2" />
+    <path d="M38 50q-7 5-2 9l5 1M48 58q5 4 11 0" fill="none" stroke="#9c6d50" stroke-width="2" stroke-linecap="round" />
+    <circle cx="43" cy="47" r="1.6" fill="#28342a" />
+    <path d="M22 36q6-6 16-6l3-18q10-6 24 0l6 18q15 1 22 6-19 10-38 10-21 0-33-10z" fill="#e4b95f" stroke="#846b39" stroke-width="2.5" stroke-linejoin="round" />
+    <path d="M40 29q15 5 31 1M45 16l4 13m5-15 4 16m5-14 3 13" fill="none" stroke="#b48b44" stroke-width="2" />
+    <path d="M38 31q15 6 34 1" fill="none" stroke="#506148" stroke-width="4" />
+  </svg>
+</div>
+
+<style>
+  .hunter-crossing {
+    position: absolute;
+    z-index: 2;
+    bottom: 0;
+    left: 0;
+    width: 120px;
+    height: 146px;
+    pointer-events: none;
+    animation: hunter-cross 8s linear both;
+  }
+
+  .hunter {
+    display: block;
+    transform-origin: 50% 100%;
+    animation: hunter-bob .44s ease-in-out infinite alternate;
+  }
+
+  .hunter-front-leg,
+  .hunter-back-leg {
+    transform-box: fill-box;
+    transform-origin: 50% 0;
+  }
+
+  .hunter-front-leg {
+    animation: hunter-step .44s ease-in-out infinite alternate;
+  }
+
+  .hunter-back-leg {
+    animation: hunter-step .44s ease-in-out infinite alternate-reverse;
+  }
+
+  .hunter-front-arm,
+  .hunter-back-arm {
+    transform-box: fill-box;
+    transform-origin: 50% 0;
+  }
+
+  .hunter-front-arm {
+    animation: hunter-step .44s ease-in-out infinite alternate-reverse;
+  }
+
+  .hunter-back-arm {
+    animation: hunter-step .44s ease-in-out infinite alternate;
+  }
+
+  @keyframes hunter-cross {
+    from { transform: translateX(100vw); }
+    to { transform: translateX(-120px); }
+  }
+
+  @keyframes hunter-bob {
+    to { transform: translateY(-3px); }
+  }
+
+  @keyframes hunter-step {
+    from { transform: rotate(-14deg); }
+    to { transform: rotate(14deg); }
+  }
+
+  @media (max-width: 48rem) {
+    .hunter-crossing,
+    .hunter {
+      width: 80px;
+      height: 98px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hunter-crossing {
+      display: none;
+    }
+  }
+</style>
