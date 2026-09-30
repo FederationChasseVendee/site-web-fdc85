@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import SmartLink from "../components/SmartLink.astro";
 import WeatherWidget from "../components/WeatherWidget.astro";
+import HunterEntrance from "../components/HunterEntrance.astro";
 import home from "../content/home.json";
 import { normalizeSlug } from "../lib/content";
 import { formatFrenchDate, isArchivedArticle } from "../lib/news";
@@ -32,6 +33,7 @@ const latestNews = currentArticles
         <SmartLink class="button button-light" href="contact/">Contact</SmartLink>
       </div>
     </div>
+    <HunterEntrance />
   </section>
 
   <WeatherWidget />
