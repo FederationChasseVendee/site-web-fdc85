@@ -90,6 +90,11 @@ Pour un index, choisir clairement sa **Collection à afficher**, sa présentatio
 
 Le menu principal est limité aux six rubriques conservées dans `src/content/site.json`. Le logo fournit le retour à l’accueil. **Valider mon permis** et **Contact** restent séparés comme actions prioritaires.
 
+La météo de l’accueil affiche les conditions et les températures du jour à La Roche-sur-Yon,
+comme indication locale pour la Vendée. Le navigateur interroge l’API publique Open-Meteo à
+l’ouverture de la page ; si elle est inaccessible, le widget affiche une erreur et permet de
+réessayer. Aucune clé API n’est nécessaire.
+
 Le socle vise WCAG 2.2 AA : landmarks, titre unique, lien d’évitement, fils d’Ariane, focus visible, navigation clavier, cibles d’au moins 44 px, menu mobile à état explicite, alternatives d’images, annonce des nouveaux onglets, mise en page responsive et respect de `prefers-reduced-motion`. Les tests statiques ne remplacent pas un audit manuel avec clavier, lecteur d’écran et zoom à 200 %.
 
 ## Actualités, archives et référencement
