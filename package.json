@@ -5,14 +5,20 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro check && astro build && npm run check:generated",
-    "check:generated": "node scripts/check-generated-site.mjs",
+    "build": "astro sync --force && astro check && astro build && npm run check:generated",
+    "check:generated": "node scripts/check-generated-site.mjs && node scripts/check-preview.mjs",
     "test:analytics": "node scripts/test-umami.mjs",
+    "test:preview": "node --test scripts/test-preview.mjs",
     "preview": "astro preview"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
+    "@astrojs/markdown-satteri": "^0.4.1",
     "astro": "^7.3.3",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0"
   }
 }

@@ -1,0 +1,179 @@
+---
+import { getPreviewManifest } from "../../lib/preview-manifest";
+import { PRODUCTION_BRANCH, REPOSITORY, sitePath } from "../../lib/preview.mjs";
+import "../../styles/admin.css";
+
+const manifest = await getPreviewManifest(import.meta.env.BASE_URL);
+const { build, contents, collections } = manifest;
+const home = contents.find((item) => item.id === "home")!;
+const isProduction = build.environment === "production";
+const reviewUrl = !build.branch || build.branch === PRODUCTION_BRANCH ? `https://github.com/${REPOSITORY}/pulls`
+  : `https://github.com/${REPOSITORY}/compare/${PRODUCTION_BRANCH}...${encodeURIComponent(build.branch)}`;
+const canonical = new URL(sitePath(manifest.base, "admin/"), Astro.site);
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="description" content="Espace de travail pour relire les contenus enregistrés du site de la FDC 85 avant publication." />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href={sitePath(manifest.base, "favicon.png")} />
+    <title>Espace de prévisualisation — FDC 85</title>
+  </head>
+  <body class="admin-workspace">
+    <a class="skip-link" href="#contenu">Aller au contenu</a>
+    <header class="workspace-header">
+      <a class="workspace-brand" href={sitePath(manifest.base, "admin/")} aria-label="FDC 85 — Espace de prévisualisation">
+        <span class="brand-mark" aria-hidden="true">85</span>
+        <span><strong>FDC 85</strong><span>Espace de prévisualisation</span></span>
+      </a>
+      <nav aria-label="Fil d’Ariane">
+        <a href={manifest.productionUrl} target="_blank" rel="noopener noreferrer">Voir le site public <span class="sr-only">(nouvel onglet)</span> ↗</a>
+      </nav>
+    </header>
+    <main id="contenu">
+      <section class="workspace-intro" aria-labelledby="workspace-title">
+        <div>
+          <p class="eyebrow">Modifier ailleurs. Relire ici.</p>
+          <h1 id="workspace-title">Votre site, avant publication.</h1>
+          <p>Retrouvez un contenu, ouvrez son éditeur, puis revenez voir le résultat enregistré sur les vraies pages du site.</p>
+        </div>
+        <div class="version-card">
+          <span class:list={["state-pill", isProduction ? "public" : "draft"]}>
+            {isProduction ? "Version publique" : build.environment === "local" ? "Aperçu local" : "Version de travail · non publiée"}
+          </span>
+          <p id="freshness" role="status" aria-live="polite">Vérification de la fraîcheur…</p>
+          <p class="small">Version construite le <time datetime={build.builtAt}>{new Date(build.builtAt).toLocaleString("fr-FR", { timeZone: "Europe/Paris" })}</time>.</p>
+          <button id="refresh-version" type="button">Vérifier les enregistrements</button>
+          <a id="fresh-version" hidden target="_blank" rel="noopener noreferrer">Ouvrir la version récente <span class="sr-only">(nouvel onglet)</span> ↗</a>
+        </div>
+      </section>
+
+      <aside class:list={["notice", isProduction && "warning"]} aria-label="Comment fonctionne cet espace">
+        {isProduction
+          ? <p><strong>Vous consultez la version publique.</strong> Enregistrer dans son éditeur met à jour le site public après construction. Pour préparer des changements sans les publier, ouvrez un espace de travail ci-dessous.</p>
+          : <p><strong>Enregistrer n’est pas publier sur le site public.</strong> Pages CMS enregistre dans cet espace de travail. Le résultat apparaît après la construction Cloudflare, pas pendant la saisie. Cet aperçu reste figé jusqu’à l’ouverture de la nouvelle version.</p>}
+      </aside>
+
+      <details class="workspace-switcher">
+        <summary>Ouvrir un autre espace de travail ou consulter les informations de version</summary>
+        <div class="switcher-content">
+          <form id="branch-form">
+            <label for="branch">Nom de l’espace de travail <span class="small">(branche choisie dans Pages CMS)</span></label>
+            <div class="input-action">
+              <input id="branch" name="branch" required autocomplete="off" value={build.branch} />
+              <button type="submit">Rechercher la version prête</button>
+            </div>
+            <p id="branch-status" role="status">Seuls les déploiements confirmés par Cloudflare et dont la version correspond seront proposés.</p>
+            <a id="branch-open" hidden target="_blank" rel="noopener noreferrer">Ouvrir cet espace <span class="sr-only">(nouvel onglet)</span> ↗</a>
+          </form>
+          <dl class="version-details">
+            <div><dt>Espace</dt><dd>{build.branch || "Non fourni par l’hébergeur"}</dd></div>
+            <div><dt>Identifiant enregistré</dt><dd><code>{build.commit || "Non fourni"}</code></dd></div>
+            <div><dt>Hébergement</dt><dd>{build.environment === "local" ? "Local : aucun déploiement confirmé" : "Cloudflare Pages"}</dd></div>
+          </dl>
+        </div>
+      </details>
+
+      <div class="workspace-grid">
+        <aside class="catalogue" aria-labelledby="catalogue-title">
+          <div class="catalogue-head">
+            <h2 id="catalogue-title">Vos contenus</h2>
+            <label for="content-search">Rechercher un contenu</label>
+            <input id="content-search" type="search" placeholder="Un titre, une page…" autocomplete="off" />
+            <label for="collection-filter">Type de contenu</label>
+            <select id="collection-filter">
+              <option value="">Tous les contenus</option>
+              {collections.map((item) => <option value={item.name}>{item.label}</option>)}
+            </select>
+            <p id="result-count" role="status">{contents.length} contenus</p>
+          </div>
+          <ul id="content-list" class="content-list" aria-label="Contenus disponibles">
+            {contents.map((item) => (
+              <li data-collection={item.collection} data-search={`${item.title} ${item.label} ${item.file}`}>
+                <button type="button" data-content={item.id} aria-pressed={item.id === "home"}>
+                  <span>{item.title}</span><small>{item.label}</small>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <p id="no-results" hidden>Aucun contenu trouvé. Essayez un titre plus court ou un autre type.</p>
+          <div class="catalogue-footer">
+            <a id="collection-editor" href={home.editorUrl ?? undefined} target="_blank" rel="noopener noreferrer">
+              Gérer ce type dans Pages CMS <span class="sr-only">(nouvel onglet)</span> ↗
+            </a>
+          </div>
+        </aside>
+
+        <section class="preview-panel" aria-labelledby="selected-title">
+          <div class="selection-header">
+            <div><p id="selected-kind" class="eyebrow">{home.label}</p><h2 id="selected-title">{home.title}</h2></div>
+            <a id="edit-content" class="primary-link" href={home.editorUrl ?? undefined} target="_blank" rel="noopener noreferrer">
+              Modifier dans Pages CMS <span class="sr-only">(nouvel onglet)</span> ↗
+            </a>
+          </div>
+          <p id="selected-note" class="small" hidden></p>
+          <div class="preview-toolbar">
+            <div class="page-choice">
+              <label for="page-route">Page à relire</label>
+              <select id="page-route"><option value={home.pages[0].path}>Accueil</option></select>
+            </div>
+            <fieldset class="device-choice">
+              <legend>Taille d’affichage</legend>
+              <label><input type="radio" name="device" value="desktop" checked /> Ordinateur · 1 200 px</label>
+              <label><input type="radio" name="device" value="mobile" /> Téléphone · 390 px</label>
+            </fieldset>
+            <label class="compare-choice"><input id="compare" type="checkbox" /> Comparer avec le site public</label>
+          </div>
+          <p id="comparison-status" class="comparison-status" role="status">La comparaison porte sur les versions enregistrées, pas sur les champs non sauvegardés.</p>
+          <div id="preview-panes" class="preview-panes" data-device="desktop">
+            <section class="preview-pane" aria-labelledby="working-label">
+              <div class="pane-header">
+                <h3 id="working-label">{isProduction ? "Version de cet espace · publique" : "Version de cet espace"}</h3>
+                <a id="working-fullscreen" href={home.pages[0].path} target="_blank" rel="noopener noreferrer">Pleine page <span class="sr-only">(nouvel onglet)</span> ↗</a>
+              </div>
+              <p id="working-state" class="frame-state" role="status">Chargement de la page enregistrée…</p>
+              <div class="frame-viewport">
+                <iframe id="working-frame" title="Page enregistrée dans cet espace" src={home.pages[0].path} sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms"></iframe>
+              </div>
+            </section>
+            <section id="production-pane" class="preview-pane" aria-labelledby="production-label" hidden>
+              <div class="pane-header">
+                <h3 id="production-label">Site public · actuellement en ligne</h3>
+                <a id="production-fullscreen" href={manifest.productionUrl} target="_blank" rel="noopener noreferrer">Pleine page <span class="sr-only">(nouvel onglet)</span> ↗</a>
+              </div>
+              <p id="production-state" class="frame-state" role="status">La comparaison n’est pas activée.</p>
+              <div class="frame-viewport">
+                <iframe id="production-frame" title="Même page sur le site public" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms"></iframe>
+              </div>
+            </section>
+          </div>
+          <p class="small frame-hint">Les cadres affichent le site réel, avec sa navigation, à la taille choisie puis réduits pour tenir dans l’espace disponible. La comparaison repart de la page choisie. Pour lire à taille réelle ou si l’hébergeur bloque le cadre, utilisez « Pleine page ».</p>
+        </section>
+      </div>
+
+      <section class="next-step" aria-labelledby="review-title">
+        <div>
+          <h2 id="review-title">Prêt pour une relecture ?</h2>
+          <p>Partagez l’adresse de cet espace avec votre équipe. La publication demande une validation dans GitHub ; cet espace ne publie rien et ne fusionne aucune modification.</p>
+        </div>
+        <a href={reviewUrl} target="_blank" rel="noopener noreferrer">
+          {build.branch === PRODUCTION_BRANCH || !build.branch ? "Consulter les demandes de validation" : "Consulter les changements et demander une validation"}
+          <span class="sr-only">(nouvel onglet)</span> ↗
+        </a>
+      </section>
+      <footer class="workspace-footer">
+        <p><strong>Un aperçu public, pas un coffre-fort.</strong> Cet espace et les versions de travail sont accessibles sans connexion. « Non publiée » signifie absente du site public principal, pas confidentielle. Ne saisissez aucune donnée sensible sans protection d’accès configurée par l’administrateur.</p>
+        <p>La connexion et les droits d’édition restent gérés par Pages CMS et GitHub. Aucun jeton ni mot de passe n’est demandé ici. La vérification publique peut être indisponible pour un dépôt privé ou si GitHub limite les requêtes. Aucun suivi d’audience n’est chargé par cet espace.</p>
+      </footer>
+      <noscript><p class="notice warning">JavaScript est nécessaire pour rechercher, changer de page et vérifier les déploiements. Les liens vers Pages CMS, le site public et la page d’accueil restent utilisables.</p></noscript>
+    </main>
+    <script id="preview-manifest" type="application/json" set:html={JSON.stringify(manifest).replace(/</g, "\\u003c")}></script>
+    <script>
+      import "../../lib/admin";
+    </script>
+  </body>
+</html>
