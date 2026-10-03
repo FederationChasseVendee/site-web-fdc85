@@ -1,9 +1,11 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { extname, join, relative } from "node:path";
+import { siteConfig } from "./site-config.mjs";
 
-const configuredBase = process.env.ASTRO_BASE_PATH?.replace(/^\/+|\/+$/g, "");
-const base = configuredBase ? `/${configuredBase}/` : "/site-web/";
-const siteUrl = process.env.ASTRO_SITE ?? "https://federationchassevendee.github.io";
+const deployment = siteConfig();
+const configuredBase = deployment.base.replace(/^\/+|\/+$/g, "");
+const base = configuredBase ? `/${configuredBase}/` : "/";
+const siteUrl = deployment.site;
 const siteRoot = new URL(base, `${siteUrl.replace(/\/+$/, "")}/`).href;
 const absoluteRoot = siteRoot.endsWith("/") ? siteRoot : `${siteRoot}/`;
 const basePath = new URL(base, `${siteUrl.replace(/\/+$/, "")}/`).pathname;
