@@ -134,8 +134,19 @@ Un essai réel dans Chrome headless, avec un profil isolé sans session utilisat
 a affiché **Sign in to Pages CMS** dans l’iframe et préservé l’URL de retour vers
 le fichier de la branche. La navigation de contenu, le repli, les deux largeurs,
 la comparaison, le focus et l’absence de débordement mobile ont été exercés dans
-ce navigateur. Aucun compte n’a été connecté et aucun enregistrement CMS n’a été
-effectué pendant cette vérification.
+ce navigateur. Ce premier essai n’a connecté aucun compte.
+
+Un deuxième essai **authentifié**, après connexion manuelle de l’utilisateur à
+GitHub et Pages CMS, a comparé le même fichier de branche dans le contexte Chrome
+partagé : **l’onglet propre affiche le véritable éditeur Accueil (34 champs), mais
+l’iframe reste sur l’écran de connexion (un champ email)**. La réponse CMS propre
+ne portait ni X-Frame-Options, ni CSP, ni COEP. Le partage de session en contexte
+tiers est donc le blocage observé ; le mécanisme exact des cookies n’a pas été
+inspecté et aucune garantie de fonctionnement iframe ne peut être donnée. Aucun
+enregistrement, aucune publication ni export de session n’a été effectué.
+**Recommandation pour ce navigateur : éditer dans l’onglet CMS et garder l’atelier
+pour vérifier le site compilé.** Cette variante reste un essai d’intégration, pas
+une authentification iframe déclarée fonctionnelle.
 
 Le sandbox CMS autorise scripts, origine réelle, formulaires, popups et
 téléchargements : nécessaires à l’application, ses médias et ses liens. Les
