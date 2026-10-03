@@ -98,4 +98,6 @@ test("Generated manifest covers all collections, source files, impacted data ind
   assert.doesNotMatch(readFileSync("dist/sitemap.xml", "utf8"), /\/admin\//);
   assert.doesNotMatch(cmsConfig, /open-preview/);
   assert.equal(existsSync(".github/workflows/pages-cms-preview.yml"), false);
+  assert.doesNotMatch(readFileSync("public/_redirects", "utf8"), /^\/admin(?:\/|\s)/m);
+  assert.doesNotMatch(readFileSync("dist/_redirects", "utf8"), /^\/admin(?:\/|\s)/m);
 });

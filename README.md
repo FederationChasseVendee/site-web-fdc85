@@ -85,6 +85,9 @@ médiathèque `public/assets`, collections de données et index filtrés, réfé
 documentaires, redirections, actualités et pagination. Les listes sont celles du
 build, pas un inventaire GitHub en temps réel ; après une création ou un renommage,
 ouvrir l’atelier du nouveau déploiement.
+Les anciennes règles Cloudflare de `public/_redirects` qui envoyaient `/admin` et
+`/admin/` vers le CMS ont été retirées pour servir cette page ; la redirection
+historique `/site-web/*` vers les routes racine reste conservée.
 
 L’éditeur et l’aperçu sont indépendants : le sélecteur de contenu ouvre le fichier
 CMS exact et une page concernée ; le sélecteur de page permet de parcourir tout le
