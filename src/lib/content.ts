@@ -9,7 +9,7 @@ export type TemplateEntry =
   | { template: "index"; entry: CollectionEntry<"indexes"> }
   | { template: "redirect"; entry: CollectionEntry<"redirects"> };
 
-const reservedSlugs = new Set(["404", "index"]);
+const reservedSlugs = new Set(["404", "index", "admin"]);
 
 export function normalizeSlug(id: string): string {
   return id
