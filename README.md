@@ -18,7 +18,16 @@ npm run build
 npm run preview
 ```
 
-L’URL de production est `https://federationchassevendee.github.io/site-web/`. Astro génère donc tous les liens et médias sous le préfixe `/site-web/`.
+Cloudflare utilise `https://fdc85.maury.app/` avec `ASTRO_BASE_PATH=/`.
+Sans variables d’environnement, le développement conserve la base historique `/site-web/`.
+L’espace de prévisualisation suit lui aussi cette base : `/admin/` sur Cloudflare,
+`/site-web/admin/` avec les valeurs par défaut.
+Quand `CF_PAGES=1`, les valeurs par défaut sont le domaine de production et la base `/`,
+y compris pour les prévisualisations qui n’héritent pas des variables de production
+du tableau de bord. Les variables `ASTRO_SITE` et `ASTRO_BASE_PATH` explicites restent prioritaires.
+La construction réinitialise le cache de contenu pour refléter un changement de base ;
+les liens Markdown et les trois redirections HTML historiques sous `/site-web/` sont
+adaptés à la base configurée, sans modifier les contenus enregistrés.
 
 ## Migration WordPress
 
@@ -62,10 +71,10 @@ Les schémas typés et leurs valeurs par défaut sont définis dans `src/content
 
 ## Modifier le site avec Pages CMS
 
-1. Ouvrir [Pages CMS](https://app.pagescms.org/) et choisir le dépôt `FederationChasseVendee/site-web`.
+1. Ouvrir [Pages CMS](https://app.pagescms.org/) et choisir le dépôt `FederationChasseVendee/site-web-fdc85`.
 2. Choisir la branche de travail appropriée.
 3. Ouvrir la collection correspondant au besoin : **Pages standard**, **Pages carrefour**, **Articles**, **Fiches espèces**, **Formations**, **Index et listes**, ou une collection de ressources.
-4. Modifier les champs en français, enregistrer puis publier. Aucun Git ni HTML n’est demandé.
+4. Modifier les champs en français puis enregistrer. Sur une branche de travail, cela ne publie pas sur le site public ; sur `main`, cela déclenche sa mise à jour après construction.
 
 Les collections autorisent explicitement création, renommage et suppression. **Accueil** et **Paramètres du site** sont protégés contre ces trois opérations. Les images et documents chargés dans la médiathèque sont enregistrés dans `public/assets/`.
 
@@ -110,10 +119,13 @@ une canonique vers leur destination et `noindex, follow`.
 
 ## Mesure d’audience Umami Cloud
 
-L’intégration utilise exclusivement le script officiel `https://cloud.umami.is/script.js`, avec `defer`,
+L’intégration utilise exclusivement le script officiel `https://cloud.umami.is/script.js`, chargé avec `defer`,
 le `data-website-id` public fourni par Umami et `data-do-not-track="true"` pour respecter la préférence
-Do Not Track du navigateur. Le script est injecté une seule fois par le layout global : il couvre toutes
-les pages Astro, dont toutes les pages indexables, les redirections gérées par Astro et la page 404. Trois
+Do Not Track du navigateur. Le chargeur du layout global injecte le script une seule fois pour une page
+ouverte directement, jamais à l’intérieur d’un cadre de comparaison. Il couvre les pages publiques Astro,
+dont les pages indexables, les redirections gérées par Astro et la page 404. L’espace `/admin/` ne contient
+aucun chargeur, et les builds de prévisualisation Cloudflare désactivent le suivi sur toutes les pages.
+Trois
 redirections historiques à slug emoji sont des fichiers HTML statiques `noindex` à rafraîchissement
 immédiat ; elles sont volontairement exclues du suivi.
 
@@ -123,7 +135,7 @@ Pour l’activer :
 2. Dans les réglages de ce site Umami, copier son **Website ID**. Cet identifiant est public : ne jamais saisir ici de clé API, jeton ou secret.
 3. Ouvrir Pages CMS, puis **Paramètres du site > Analytics — Umami Cloud**.
 4. Coller le Website ID, puis activer **Activer la mesure d’audience Umami**.
-5. Publier la modification. Pages CMS crée un commit ; attendre la fin du nouveau build GitHub Actions et du déploiement GitHub Pages.
+5. Enregistrer la modification et faire valider sa publication. Pages CMS crée un enregistrement ; attendre la fin de la construction et du déploiement Cloudflare Pages de `main`.
 6. Ouvrir le site publié, vérifier dans l’onglet Réseau du navigateur une requête vers `cloud.umami.is`, puis confirmer la visite dans le tableau de bord Umami.
 
 L’activation sans Website ID valide fait échouer le build avec un message actionnable, afin d’éviter une
@@ -143,10 +155,63 @@ répertoire de sortie `dist`, version Node.js `22`, et variables de build
 `fdc85.maury.app` doit être ajouté au projet Pages et pointer par CNAME vers
 `fdc85.pages.dev` dans la zone DNS `maury.app`.
 
-Cloudflare Pages publie aussi chaque branche de travail sur un alias de preview. Pour
-l’obtenir depuis Pages CMS, sélectionner la branche concernée puis lancer l’action
-**Ouvrir la preview Cloudflare**. Le lien apparaît dans le résumé du run
-**PagesCMS Cloudflare preview** dans l’onglet Actions de GitHub. Si une pull request
-est ouverte pour cette branche, le workflow crée ou met également à jour un
-commentaire contenant ce lien. La preview devient accessible une fois le déploiement
-Cloudflare Pages de la branche terminé.
+### Espace de prévisualisation autonome (variante A)
+
+Ouvrir `/admin/` sur le déploiement voulu. Cet espace ne remplace pas Pages CMS et ne
+l’intègre pas dans un cadre : **Modifier dans Pages CMS** ouvre l’éditeur hébergé dans
+un nouvel onglet, sur la même branche et le fichier exact. Les cadres contiennent les
+vraies pages compilées par Astro. Les champs non enregistrés dans Pages CMS ne sont
+pas visibles. Après enregistrement, utiliser **Vérifier les enregistrements** puis
+**Ouvrir la version récente** lorsque sa construction est terminée.
+Les anciennes redirections Cloudflare de `/admin` vers Pages CMS ont été retirées ;
+le préfixe de migration `/site-web/*` reste redirigé vers la racine. Le nouvel espace
+et son manifeste reçoivent aussi un en-tête Cloudflare `X-Robots-Tag`.
+
+L’espace propose recherche par titre/type, aperçu ordinateur ou téléphone, comparaison
+avec le site public actuel et liens en pleine page. Les collections, libellés et chemins
+source proviennent de `.pages.yml` et des collections Astro ; les ressources partagées
+renvoient aux index qui les affichent, avec leurs règles de catégorie. Les articles
+proposent aussi l’accueil et les listes d’actualités. Les réglages du site sont communs
+à toutes les pages ; les documents peuvent être liés dans d’autres pages que les index
+proposés. Aucune route individuelle de ressource ni maquette approximative n’est inventée.
+
+Les liens suivent les routes de l’application hébergée Pages CMS :
+`/{owner}/{repo}/{branch}/file/{name}` ou
+`/{owner}/{repo}/{branch}/collection/{name}/edit/{path}`. Chaque paramètre est encodé
+séparément, notamment **le chemin complet du fichier en un seul segment**, sous-dossiers
+compris. Contrat vérifié dans les sources amont
+[éditeur de collection](https://github.com/pages-cms/pages-cms/blob/main/app/%28main%29/%5Bowner%5D/%5Brepo%5D/%5Bbranch%5D/collection/%5Bname%5D/edit/%5Bpath%5D/page.tsx)
+et [éditeur de fichier](https://github.com/pages-cms/pages-cms/blob/main/app/%28main%29/%5Bowner%5D/%5Brepo%5D/%5Bbranch%5D/file/%5Bname%5D/page.tsx).
+
+`/admin/preview.json` contient l’identité de construction (`CF_PAGES_BRANCH`,
+`CF_PAGES_COMMIT_SHA`, date, environnement, adresse immutable si fournie par
+`CF_PAGES_URL`) et le catalogue généré. Localement, l’identité provient de Git et
+est explicitement marquée locale : elle ne certifie pas les changements non enregistrés.
+`PREVIEW_BUILD=true` permet de vérifier localement l’exclusion du suivi et de l’indexation.
+Les identifiants absents ne sont jamais remplacés par une valeur inventée.
+
+La recherche d’un autre espace interroge, sans jeton, les enregistrements et les
+**check-runs** publics GitHub. Elle extrait l’adresse immutable de la sortie du contrôle
+**Cloudflare Pages** réussi, puis vérifie que son manifeste répond et correspond
+à l’enregistrement demandé. Un alias de branche calculé n’est jamais annoncé comme
+prêt. Les constructions en attente, échecs, adresses manquantes, anciennes versions,
+erreurs réseau/CORS et limites de requêtes sont signalés. Pour un dépôt privé, les
+vérifications publiques ne fonctionnent pas : consulter les contrôles GitHub avec son
+compte et ouvrir le déploiement depuis Cloudflare. Ne jamais ajouter de jeton dans le
+navigateur. La comparaison d’identifiants prouve un écart de version, pas nécessairement
+un changement visible sur la page sélectionnée.
+
+**Sécurité et publication :** « non publiée » signifie hors du domaine de production,
+pas confidentielle. Le dépôt est public et les déploiements de prévisualisation le sont
+aussi par défaut. `noindex`, `robots.txt` et l’absence d’analytics ne sont pas une
+authentification. Avant tout contenu confidentiel, configurer une protection Cloudflare
+Access adaptée ; le dépôt public ne doit en aucun cas contenir ces données. Aucune
+ressource ni configuration de production n’est créée automatiquement par cet espace.
+L’édition reste authentifiée chez Pages CMS/GitHub. Le lien de relecture ouvre la
+comparaison GitHub pour demander une validation ; aucun bouton ne simule une
+publication, ne lance de workflow Pages CMS ni ne fusionne une pull request.
+
+Validation ciblée : `npm run test:preview`, `npm run test:analytics`, puis
+`npm run build`. Le validateur contrôle également que chaque aperçu référence
+une page réellement générée, que chaque collection CMS est couverte et que
+`/admin/` est absent du sitemap et du suivi.
