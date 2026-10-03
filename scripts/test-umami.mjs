@@ -66,6 +66,12 @@ try {
   for (const file of generatedHtml) {
     const html = readFileSync(file, "utf8");
     const outputPath = relative("dist", file);
+    if (outputPath.replaceAll("\\", "/") === "admin/index.html") {
+      assert(!html.includes(scriptUrl) && !html.includes("data-website-id")
+        && html.includes('<meta name="robots" content="noindex, nofollow">'),
+      "L’atelier navigateur doit rester noindex et sans Umami, même quand le site public est suivi.");
+      continue;
+    }
     if (existsSync(join("public", outputPath))) {
       assert(
         !html.includes(scriptUrl)
