@@ -1,0 +1,30 @@
+---
+import Editor from "../../components/editor/Editor";
+import "../../styles/editor.css";
+const base = import.meta.env.BASE_URL;
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="description" content="Éditeur compagnon : brouillons locaux avec aperçu, sans publication automatique." />
+    <link rel="canonical" href={new URL(`${base}editeur/`, Astro.site)} />
+    <title>Éditeur avec aperçu — FDC 85</title>
+  </head>
+  <body>
+    <a class="editor-skip" href="#contenu">Aller au contenu</a>
+    <header class="editor-header">
+      <h1>Éditeur avec aperçu intégré</h1>
+      <p><strong>Mode brouillon local — aucune sauvegarde dans GitHub ou Pages CMS.</strong> Modifiez, vérifiez l’aperçu et exportez votre fichier. L’export ne publie pas et le lien vers Pages CMS ne transfère pas vos modifications.</p>
+    </header>
+    <main id="contenu">
+      <Editor base={base} client:only="preact">
+        <p slot="fallback">Chargement de l’éditeur… JavaScript est nécessaire pour modifier les brouillons.</p>
+      </Editor>
+      <noscript>Cet éditeur nécessite JavaScript. Utilisez Pages CMS pour modifier et publier le contenu après authentification.</noscript>
+    </main>
+  </body>
+</html>

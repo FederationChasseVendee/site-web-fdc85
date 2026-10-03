@@ -66,6 +66,11 @@ try {
   for (const file of generatedHtml) {
     const html = readFileSync(file, "utf8");
     const outputPath = relative("dist", file);
+    if (outputPath.replaceAll("\\", "/").startsWith("editeur/")) {
+      assert(!html.includes(scriptUrl) && html.includes('content="noindex, nofollow"'),
+        `L’éditeur et son cadre doivent rester sans analytics : ${outputPath}`);
+      continue;
+    }
     if (existsSync(join("public", outputPath))) {
       assert(
         !html.includes(scriptUrl)

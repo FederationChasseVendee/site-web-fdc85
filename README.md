@@ -18,7 +18,10 @@ npm run build
 npm run preview
 ```
 
-L’URL de production est `https://federationchassevendee.github.io/site-web/`. Astro génère donc tous les liens et médias sous le préfixe `/site-web/`.
+L’URL de production Cloudflare est `https://fdc85.maury.app/`. Les builds Cloudflare utilisent
+automatiquement la racine `/`, même sans variables de preview. Hors Cloudflare, le préfixe
+`/site-web/` et le domaine GitHub Pages sont conservés comme repli ; `ASTRO_SITE` et
+`ASTRO_BASE_PATH` restent prioritaires lorsqu’ils sont définis.
 
 ## Migration WordPress
 
@@ -58,14 +61,17 @@ L’architecture reste volontairement limitée. Il n’y a pas de constructeur d
 
 L’Index générique affiche les actualités, espèces, formations, documents, questions fréquentes, termes du glossaire ou entrées d’annuaire. Ces quatre dernières sources sont de simples collections de données dans `src/content/documents/`, `faqs/`, `glossary/` et `directories/` : elles ne créent pas de nouveaux templates.
 
-Les schémas typés et leurs valeurs par défaut sont définis dans `src/content.config.ts`. La route statique `src/pages/[...slug].astro` associe chaque collection à son template. Deux contenus ne peuvent pas produire la même URL.
+Les schémas typés et leurs valeurs par défaut sont définis dans `src/lib/content-schemas.ts`,
+puis utilisés par `src/content.config.ts` et par l’éditeur compagnon. La route statique
+`src/pages/[...slug].astro` associe chaque collection au rendu partagé
+`src/components/rendering/SiteContent.tsx`. Deux contenus ne peuvent pas produire la même URL.
 
 ## Modifier le site avec Pages CMS
 
-1. Ouvrir [Pages CMS](https://app.pagescms.org/) et choisir le dépôt `FederationChasseVendee/site-web`.
+1. Ouvrir [Pages CMS](https://app.pagescms.org/) et choisir le dépôt `FederationChasseVendee/site-web-fdc85`.
 2. Choisir la branche de travail appropriée.
 3. Ouvrir la collection correspondant au besoin : **Pages standard**, **Pages carrefour**, **Articles**, **Fiches espèces**, **Formations**, **Index et listes**, ou une collection de ressources.
-4. Modifier les champs en français, enregistrer puis publier. Aucun Git ni HTML n’est demandé.
+4. Modifier les champs en français puis enregistrer. Pages CMS crée le commit ; attendre le déploiement Cloudflare. Aucun Git ni HTML n’est demandé.
 
 Les collections autorisent explicitement création, renommage et suppression. **Accueil** et **Paramètres du site** sont protégés contre ces trois opérations. Les images et documents chargés dans la médiathèque sont enregistrés dans `public/assets/`.
 
@@ -85,6 +91,23 @@ Les sous-dossiers servent à créer le fil d’Ariane. La page parente doit exis
 Pour une page carrefour, saisir des cartes dans l’ordre souhaité. Lorsque la rubrique doit simplement reprendre tous les articles, espèces, formations ou index enfants, choisir **Ajouter automatiquement les contenus** plutôt que dupliquer les liens.
 
 Pour un index, choisir clairement sa **Collection à afficher**, sa présentation en liste ou en cartes et, si nécessaire, une catégorie. FAQ, glossaire et annuaire sont toujours affichés directement : aucun accordéon ou contenu indispensable masqué.
+
+### Éditeur compagnon avec aperçu avant enregistrement
+
+Ouvrir **`/editeur/` sur le déploiement de la branche** (ou `/site-web/editeur/` avec le
+repli local). Cet éditeur français place les champs de `.pages.yml` à côté du rendu réel :
+accueil, pages standard, articles, carrefours, espèces, formations et index. Les ressources
+s’affichent dans leurs index ; les paramètres du site sont exportables sans aperçu.
+
+**Il fonctionne en mode brouillon local, pas comme une extension du Pages CMS hébergé.**
+Les modifications sont prévisualisées sans attendre de commit, conservées sur cet appareil
+et exportables en Markdown avec frontmatter YAML ou en JSON. L’export ne publie rien.
+Ouvrir Pages CMS ne lui transfère pas le brouillon : reporter les champs dans son interface,
+ou faire appliquer le fichier exporté à son chemin d’origine par un mainteneur.
+
+L’ancienne action **Ouvrir la preview Cloudflare** et son workflow sont supprimés, sans
+action de remplacement. L’éditeur et son cadre sont `noindex`, exclus du sitemap et sans
+analytics. [Fonctionnement, limites, architecture et prérequis de publication](docs/editeur-apercu.md).
 
 ## Navigation et accessibilité
 
@@ -143,10 +166,9 @@ répertoire de sortie `dist`, version Node.js `22`, et variables de build
 `fdc85.maury.app` doit être ajouté au projet Pages et pointer par CNAME vers
 `fdc85.pages.dev` dans la zone DNS `maury.app`.
 
-Cloudflare Pages publie aussi chaque branche de travail sur un alias de preview. Pour
-l’obtenir depuis Pages CMS, sélectionner la branche concernée puis lancer l’action
-**Ouvrir la preview Cloudflare**. Le lien apparaît dans le résumé du run
-**PagesCMS Cloudflare preview** dans l’onglet Actions de GitHub. Si une pull request
-est ouverte pour cette branche, le workflow crée ou met également à jour un
-commentaire contenant ce lien. La preview devient accessible une fois le déploiement
-Cloudflare Pages de la branche terminé.
+Cloudflare Pages publie aussi chaque branche de travail en preview. Le lien exact est fourni
+par le contrôle **Cloudflare Pages** du commit ou de la pull request ; utiliser ce lien,
+sans reconstruire l’alias à partir du nom de branche. Ajouter `/editeur/` à l’URL de la
+preview pour essayer l’éditeur intégré. La version de contenu et le commit de ce build
+sont affichés dans l’éditeur : ils ne prouvent pas qu’un brouillon local a été enregistré
+dans GitHub, ni qu’une modification plus récente y a déjà été déployée.

@@ -1,11 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import ArticlePage from "../templates/ArticlePage.astro";
-import CrossroadsPage from "../templates/CrossroadsPage.astro";
-import IndexPage from "../templates/IndexPage.astro";
-import SpeciesPage from "../templates/SpeciesPage.astro";
-import StandardPage from "../templates/StandardPage.astro";
-import TrainingPage from "../templates/TrainingPage.astro";
+import SiteContent from "../components/rendering/SiteContent";
+import { getRenderContext } from "../lib/editor/catalog.server";
 import RedirectPage from "../templates/RedirectPage.astro";
 import { descriptionForEntry, getTemplateEntries, titleForEntry, type TemplateEntry } from "../lib/content";
 
@@ -29,6 +25,9 @@ const redirectTo = item.template === "redirect"
   : undefined;
 const articleImage = item.template === "article" ? item.entry.data.image?.src : undefined;
 const publishedTime = item.template === "article" ? item.entry.data.date : undefined;
+const context = getRenderContext();
+const renderEntry = context.entries.find((entry) => entry.collection === item.entry.collection && entry.slug === slug);
+if (!renderEntry) throw new Error(`Contenu de rendu manquant : ${item.entry.collection}/${slug}`);
 ---
 
 <BaseLayout
@@ -39,11 +38,6 @@ const publishedTime = item.template === "article" ? item.entry.data.date : undef
   contentType={item.template === "article" ? "article" : "website"}
   {publishedTime}
 >
-  {item.template === "standard" && <StandardPage entry={item.entry} {slug} />}
-  {item.template === "crossroads" && <CrossroadsPage entry={item.entry} {slug} />}
-  {item.template === "article" && <ArticlePage entry={item.entry} {slug} />}
-  {item.template === "species" && <SpeciesPage entry={item.entry} {slug} />}
-  {item.template === "training" && <TrainingPage entry={item.entry} {slug} />}
-  {item.template === "index" && <IndexPage entry={item.entry} {slug} />}
+  {item.template !== "redirect" && <SiteContent entry={renderEntry} context={context} />}
   {item.template === "redirect" && <RedirectPage entry={item.entry} {slug} />}
 </BaseLayout>
