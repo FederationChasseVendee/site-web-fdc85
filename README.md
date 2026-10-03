@@ -18,7 +18,11 @@ npm run build
 npm run preview
 ```
 
-L’URL de production est `https://federationchassevendee.github.io/site-web/`. Astro génère donc tous les liens et médias sous le préfixe `/site-web/`.
+La production Cloudflare est `https://fdc85.maury.app/`, avec
+`ASTRO_SITE=https://fdc85.maury.app` et `ASTRO_BASE_PATH=/`. Sans variables,
+le build conserve le repli historique `https://federationchassevendee.github.io/site-web/`.
+Le build adapte les liens Markdown importés depuis l’ancien préfixe et les trois
+redirections HTML Unicode à la base choisie, sans réécrire les contenus source.
 
 ## Migration WordPress
 
@@ -62,14 +66,96 @@ Les schémas typés et leurs valeurs par défaut sont définis dans `src/content
 
 ## Modifier le site avec Pages CMS
 
-1. Ouvrir [Pages CMS](https://app.pagescms.org/) et choisir le dépôt `FederationChasseVendee/site-web`.
+1. Ouvrir [Pages CMS](https://app.pagescms.org/) et choisir le dépôt `FederationChasseVendee/site-web-fdc85`.
 2. Choisir la branche de travail appropriée.
 3. Ouvrir la collection correspondant au besoin : **Pages standard**, **Pages carrefour**, **Articles**, **Fiches espèces**, **Formations**, **Index et listes**, ou une collection de ressources.
-4. Modifier les champs en français, enregistrer puis publier. Aucun Git ni HTML n’est demandé.
+4. Modifier les champs en français puis enregistrer sur la branche de travail. Pages CMS crée un commit : attendre le build Cloudflare, relire la preview puis faire valider la pull request. Il n’existe pas de publication distincte dans cette interface ; enregistrer sur `main` déclenche le déploiement de production.
 
 Les collections autorisent explicitement création, renommage et suppression. **Accueil** et **Paramètres du site** sont protégés contre ces trois opérations. Les images et documents chargés dans la médiathèque sont enregistrés dans `public/assets/`.
 
 Les redirections d’anciennes adresses sont visibles mais protégées contre la création, le renommage et la suppression : elles font partie de la structure SEO du site.
+
+### Atelier `/admin/` — variante C, véritable CMS en iframe
+
+Ouvrir `/admin/` sur le déploiement de la branche (ou `/site-web/admin/` avec le
+repli local). L’atelier embarque **app.pagescms.org**, sans éditeur local ni proxy
+d’authentification. Il associe les contenus aux routes réellement produites par
+Astro : sous-dossiers et chemins de fichiers originaux, accueil, paramètres,
+médiathèque `public/assets`, collections de données et index filtrés, références
+documentaires, redirections, actualités et pagination. Les listes sont celles du
+build, pas un inventaire GitHub en temps réel ; après une création ou un renommage,
+ouvrir l’atelier du nouveau déploiement.
+
+L’éditeur et l’aperçu sont indépendants : le sélecteur de contenu ouvre le fichier
+CMS exact et une page concernée ; le sélecteur de page permet de parcourir tout le
+site sans changer le fichier en cours d’édition. L’aperçu montre le **HTML compilé**,
+jamais un brouillon non enregistré. Ordinateur (1280 px), mobile (390 px),
+comparaison à la production, focus et plein écran sont disponibles. Les routes
+`admin` sont exclues de la prévisualisation pour éviter une récursion.
+
+La branche, le commit et le déploiement proviennent de `CF_PAGES_BRANCH`,
+`CF_PAGES_COMMIT_SHA` et `CF_PAGES_URL` au build, ou du checkout Git local.
+**Chercher le dernier build** consulte les API publiques GitHub, sélectionne le
+contrôle **Cloudflare Pages** réussi du dernier commit, puis vérifie son
+`admin/manifest.json` avant d’afficher son URL immuable. Il ne devine aucun alias de
+branche, ne confond pas un alias actualisable avec un déploiement précis et ne
+revient pas silencieusement à un ancien build. Une limite d’API ou un build encore
+en cours est affiché explicitement. Sur `main`, le cadre CMS n’est pas ouvert
+automatiquement : créer une branche et utiliser sa preview avant de modifier.
+
+**Connexion et limites de l’iframe.** Connectez-vous dans « Ouvrir le CMS (nouvel
+onglet) », puis rechargez le cadre. Si le navigateur refuse les cookies tiers ou
+si Pages CMS change sa politique d’intégration, continuez à éditer dans cet onglet.
+Le lien reste toujours accessible, même pendant un chargement ou après une erreur.
+Après 12 secondes sans événement de chargement, l’atelier propose ce repli ; un
+événement `load` ne prouve **ni authentification, ni accès au dépôt, ni succès de
+l’éditeur**. La politique same-origin empêche de consulter ces états.
+
+Les routes ont été vérifiées dans le
+[code public Pages CMS](https://github.com/pages-cms/pages-cms/tree/6f4e860a35d934406580287e7042e5e111e207a1) :
+`/{owner}/{repo}/{branch}/file/{name}`,
+`/collection/{name}/edit/{path}` (chemin complet du dépôt encodé comme un segment)
+et `/media/default` pour la configuration média unique. L’authentification redirige
+vers `/sign-in?redirect=…` et la connexion GitHub utilise une navigation dans le
+cadre courant. Les réponses HTTP réelles des routes home, fichier, collection et
+sign-in contrôlées le 3 octobre 2026 ne portaient ni X-Frame-Options ni CSP
+frame-ancestors. **GitHub `/login` renvoie X-Frame-Options: deny et
+frame-ancestors 'none'** : sa connexion ne peut donc pas fonctionner dans le cadre.
+Ces observations ne garantissent pas la session authentifiée ni le partage des
+cookies dans tous les navigateurs.
+Un essai réel dans Chrome headless, avec un profil isolé sans session utilisateur,
+a affiché **Sign in to Pages CMS** dans l’iframe et préservé l’URL de retour vers
+le fichier de la branche. La navigation de contenu, le repli, les deux largeurs,
+la comparaison, le focus et l’absence de débordement mobile ont été exercés dans
+ce navigateur. Aucun compte n’a été connecté et aucun enregistrement CMS n’a été
+effectué pendant cette vérification.
+
+Le sandbox CMS autorise scripts, origine réelle, formulaires, popups et
+téléchargements : nécessaires à l’application, ses médias et ses liens. Les
+popups peuvent quitter le sandbox pour permettre une ouverture normale du CMS,
+mais la navigation du document parent n’est pas autorisée. Le seul droit
+supplémentaire est l’écriture au presse-papiers. Aucun contournement de cookies,
+de CSP ou d’authentification, aucune clé PAT et aucun stockage de jeton.
+
+L’atelier est `noindex, nofollow`, exclu du sitemap et sans Umami. Le layout public
+empêche Umami dans les iframes, sur les previews `*.pages.dev` et lorsque
+`?admin-preview=1` est présent ; les liens internes de ce mode conservent ce
+paramètre. Une ancienne version de production ne possède pas nécessairement cette
+protection avant fusion. Les previews Cloudflare et l’atelier sont **publics** :
+`noindex`, y compris l’en-tête Cloudflare, n’est pas une protection d’accès.
+
+Validation ciblée après le build :
+
+```bash
+npm run test:admin
+npm run test:analytics
+```
+
+Les tests couvrent les URLs CMS, branches et chemins imbriqués, base racine et
+historique, exclusion admin, messages d’état honnêtes, repli permanent,
+validation commit/déploiement, inventaire compilé, impacts des données et
+exclusion du suivi. La connexion authentifiée et l’enregistrement CMS nécessitent
+un compte autorisé dans un navigateur et ne sont pas prouvés par ces tests.
 
 Pour une image informative, renseigner une description utile. Pour une image purement décorative, activer **Image uniquement décorative** et laisser sa description vide. Le build refuse une image qui n’est ni décrite ni déclarée décorative.
 
@@ -102,9 +188,9 @@ Le socle vise WCAG 2.2 AA : landmarks, titre unique, lien d’évitement, fils d
 Les actualités en cours sont triées par date décroissante et paginées par 12. Les alertes actives disposent
 d’un bloc distinct sur l’accueil ; les actions prioritaires restent affichées avant toute actualité. Les
 contenus anciens ou temporaires expirés sont conservés dans les
-[archives](/site-web/actualites/archives/) avec un avertissement explicite.
+[archives](https://fdc85.maury.app/actualites/archives/) avec un avertissement explicite.
 
-Le build génère `sitemap.xml`, `robots.txt` et un flux Atom `feed.xml` sous `/site-web/`. Chaque article
+Le build génère `sitemap.xml`, `robots.txt` et un flux Atom `feed.xml` sous la base configurée. Chaque article
 possède une URL canonique, des métadonnées OpenGraph et `NewsArticle`. Les pages de redirection utilisent
 une canonique vers leur destination et `noindex, follow`.
 
@@ -112,8 +198,9 @@ une canonique vers leur destination et `noindex, follow`.
 
 L’intégration utilise exclusivement le script officiel `https://cloud.umami.is/script.js`, avec `defer`,
 le `data-website-id` public fourni par Umami et `data-do-not-track="true"` pour respecter la préférence
-Do Not Track du navigateur. Le script est injecté une seule fois par le layout global : il couvre toutes
-les pages Astro, dont toutes les pages indexables, les redirections gérées par Astro et la page 404. Trois
+Do Not Track du navigateur. Le script est injecté au plus une fois par le layout global,
+hors contexte admin/iframe/preview : il couvre les pages publiques Astro, dont les
+redirections gérées par Astro et la page 404. Trois
 redirections historiques à slug emoji sont des fichiers HTML statiques `noindex` à rafraîchissement
 immédiat ; elles sont volontairement exclues du suivi.
 
@@ -123,7 +210,7 @@ Pour l’activer :
 2. Dans les réglages de ce site Umami, copier son **Website ID**. Cet identifiant est public : ne jamais saisir ici de clé API, jeton ou secret.
 3. Ouvrir Pages CMS, puis **Paramètres du site > Analytics — Umami Cloud**.
 4. Coller le Website ID, puis activer **Activer la mesure d’audience Umami**.
-5. Publier la modification. Pages CMS crée un commit ; attendre la fin du nouveau build GitHub Actions et du déploiement GitHub Pages.
+5. Enregistrer sur une branche de travail, valider le build et la preview Cloudflare puis faire approuver la fusion. Pages CMS crée un commit ; Cloudflare publie `main` après fusion.
 6. Ouvrir le site publié, vérifier dans l’onglet Réseau du navigateur une requête vers `cloud.umami.is`, puis confirmer la visite dans le tableau de bord Umami.
 
 L’activation sans Website ID valide fait échouer le build avec un message actionnable, afin d’éviter une
@@ -143,10 +230,9 @@ répertoire de sortie `dist`, version Node.js `22`, et variables de build
 `fdc85.maury.app` doit être ajouté au projet Pages et pointer par CNAME vers
 `fdc85.pages.dev` dans la zone DNS `maury.app`.
 
-Cloudflare Pages publie aussi chaque branche de travail sur un alias de preview. Pour
-l’obtenir depuis Pages CMS, sélectionner la branche concernée puis lancer l’action
-**Ouvrir la preview Cloudflare**. Le lien apparaît dans le résumé du run
-**PagesCMS Cloudflare preview** dans l’onglet Actions de GitHub. Si une pull request
-est ouverte pour cette branche, le workflow crée ou met également à jour un
-commentaire contenant ce lien. La preview devient accessible une fois le déploiement
-Cloudflare Pages de la branche terminé.
+Cloudflare Pages publie aussi chaque branche de travail sur un alias de preview et
+chaque build réussi sur une URL immuable. Le contrôle **Cloudflare Pages** du commit
+GitHub fournit le vrai lien de déploiement. Ouvrir `/admin/` sur cette adresse pour
+modifier la branche et vérifier le résultat. L’ancienne action Pages CMS
+**Ouvrir la preview Cloudflare** et son workflow ont été retirés : aucun workflow
+d’action CMS supplémentaire ni jeton Cloudflare n’est nécessaire.

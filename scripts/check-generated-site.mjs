@@ -1,8 +1,8 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { extname, join, relative } from "node:path";
 
-const configuredBase = process.env.ASTRO_BASE_PATH?.replace(/^\/+|\/+$/g, "");
-const base = configuredBase ? `/${configuredBase}/` : "/site-web/";
+const configuredBase = (process.env.ASTRO_BASE_PATH ?? "/site-web").replace(/^\/+|\/+$/g, "");
+const base = configuredBase ? `/${configuredBase}/` : "/";
 const siteUrl = process.env.ASTRO_SITE ?? "https://federationchassevendee.github.io";
 const siteRoot = new URL(base, `${siteUrl.replace(/\/+$/, "")}/`).href;
 const absoluteRoot = siteRoot.endsWith("/") ? siteRoot : `${siteRoot}/`;
@@ -195,6 +195,12 @@ if (!homeHtml.includes(`href="${base}" aria-label="${site.shortName} — Accueil
 for (const htmlFile of routeFiles) {
   if (htmlFile.endsWith(join(distDirectory, "index.html"))) continue;
   const html = readFileSync(htmlFile, "utf8");
+  if (htmlFile === join(distDirectory, "admin", "index.html")) {
+    if (!html.includes('name="robots" content="noindex, nofollow"')) {
+      throw new Error("L’administration doit rester non indexable.");
+    }
+    continue;
+  }
   if (!html.includes('aria-label="Fil d’Ariane"')) {
     throw new Error(`Fil d’Ariane absent dans ${relative(distDirectory, htmlFile)}`);
   }

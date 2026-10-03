@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { extname, join, relative } from "node:path";
 import { spawnSync } from "node:child_process";
+import { runInNewContext } from "node:vm";
 
 const sitePath = "src/content/site.json";
 const originalSiteSource = readFileSync(sitePath, "utf8");
@@ -66,6 +67,10 @@ try {
   for (const file of generatedHtml) {
     const html = readFileSync(file, "utf8");
     const outputPath = relative("dist", file);
+    if (outputPath === join("admin", "index.html")) {
+      assert(!html.includes(scriptUrl), "L’administration ne doit jamais inclure Umami.");
+      continue;
+    }
     if (existsSync(join("public", outputPath))) {
       assert(
         !html.includes(scriptUrl)
@@ -75,16 +80,60 @@ try {
       );
       continue;
     }
-    const scripts = [...html.matchAll(/<script\b[^>]*data-website-id="[^"]+"[^>]*><\/script>/g)];
+    const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)]
+      .filter((match) => match[1].includes("const adminPreview") && match[1].includes("umami.scriptUrl"));
     assert(
       scripts.length === 1,
       `${outputPath} doit contenir exactement un script Umami (trouvé : ${scripts.length}).`,
     );
-    const script = scripts[0][0];
-    assert(script.includes(" defer"), `Attribut defer absent dans ${outputPath}.`);
-    assert(script.includes(`src="${scriptUrl}"`), `URL Umami incorrecte dans ${outputPath}.`);
-    assert(script.includes(`data-website-id="${websiteId}"`), `Website ID incorrect dans ${outputPath}.`);
-    assert(script.includes('data-do-not-track="true"'), `Respect DNT absent dans ${outputPath}.`);
+    const script = scripts[0][1];
+    for (const scenario of [
+      { host: new URL(process.env.ASTRO_SITE || "https://federationchassevendee.github.io").hostname, search: "", embedded: false, expected: 1 },
+      { host: "a1b2c3d4.fdc85.pages.dev", search: "", embedded: false, expected: 0 },
+      { host: "fdc85.maury.app", search: "?admin-preview=1", embedded: false, expected: 0 },
+      { host: "fdc85.maury.app", search: "", embedded: true, expected: 0 },
+    ]) {
+      const injected = [];
+      const top = {};
+      runInNewContext(script, {
+        URLSearchParams,
+        location: { hostname: scenario.host, search: scenario.search },
+        window: { self: scenario.embedded ? {} : top, top },
+        document: {
+          createElement: () => ({ dataset: {} }),
+          head: { append: (element) => injected.push(element) },
+        },
+      });
+      assert(injected.length === scenario.expected, `Suivi incorrect dans ${outputPath} : ${JSON.stringify(scenario)}`);
+      if (injected.length) {
+        const element = injected[0];
+        assert(element.defer && element.src === scriptUrl, `Script Umami incorrect dans ${outputPath}.`);
+        assert(element.dataset.websiteId === websiteId, `Website ID incorrect dans ${outputPath}.`);
+        assert(element.dataset.doNotTrack === "true", `Respect DNT absent dans ${outputPath}.`);
+      }
+    }
+    const navigationGuard = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g)]
+      .find((match) => match[1].includes("const mark ="))?.[1];
+    assert(navigationGuard, `Protection navigation admin-preview absente dans ${outputPath}.`);
+    const anchors = [
+      { href: "https://fdc85.maury.app/contact/", getAttribute: () => "/contact/" },
+      { href: "https://external.test/", getAttribute: () => "https://external.test/" },
+      { href: "https://fdc85.maury.app/#contenu", getAttribute: () => "#contenu" },
+    ];
+    const refresh = { content: "0; url=/contact/" };
+    runInNewContext(navigationGuard, {
+      URL, URLSearchParams,
+      location: { href: "https://fdc85.maury.app/?admin-preview=1", origin: "https://fdc85.maury.app", search: "?admin-preview=1" },
+      document: {
+        querySelector: () => refresh,
+        querySelectorAll: () => anchors,
+        addEventListener: (_name, callback) => callback(),
+      },
+    });
+    assert(anchors[0].href.endsWith("?admin-preview=1"), `Paramètre perdu à la navigation dans ${outputPath}.`);
+    assert(anchors[1].href === "https://external.test/", "Un lien externe ne doit pas être modifié.");
+    assert(anchors[2].href.endsWith("#contenu"), "Une ancre de page ne doit pas être modifiée.");
+    assert(refresh.content.endsWith("?admin-preview=1"), "Une redirection doit conserver l’exclusion du suivi.");
   }
 
   writeAnalytics({ enabled: true, websiteId: "" });
@@ -97,7 +146,7 @@ try {
   );
 
   console.log(
-    `Umami vérifié sur ${generatedHtml.length} sorties HTML : absent si désactivé, unique et conforme sur les pages Astro si activé, erreur explicite si invalide.`,
+    `Umami vérifié sur ${generatedHtml.length} sorties HTML : absent sur admin, iframes et previews ; unique sur le site public ; erreur explicite si invalide.`,
   );
 } finally {
   writeFileSync(sitePath, originalSiteSource, "utf8");
