@@ -1,129 +1,16 @@
 ---
-import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
-import SmartLink from "../components/SmartLink.astro";
 import WeatherWidget from "../components/WeatherWidget.astro";
-import home from "../content/home.json";
-import { normalizeSlug } from "../lib/content";
-import { formatFrenchDate, isArchivedArticle } from "../lib/news";
-import { resolveUrl } from "../lib/urls";
+import SiteContent from "../components/rendering/SiteContent";
+import { getRenderContext } from "../lib/editor/catalog.server";
 
-const currentArticles = (await getCollection("articles"))
-  .filter((article) => !isArchivedArticle(article))
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-const activeAlerts = currentArticles
-  .filter((article) => article.data.category === "Alertes")
-  .slice(0, 3);
-const latestNews = currentArticles
-  .filter((article) => article.data.category !== "Alertes")
-  .slice(0, 3);
+const context = getRenderContext();
+const home = context.entries.find((entry) => entry.collection === "home");
+if (!home || home.collection !== "home") throw new Error("Contenu d’accueil manquant.");
 ---
 
-<BaseLayout title={home.seo.title} description={home.seo.description}>
-  <section class="home-hero">
-    <img src={resolveUrl(home.hero.image, import.meta.env.BASE_URL)} alt={home.hero.imageAlt} width="1600" height="760" fetchpriority="high" />
-    <div class="home-hero-shade" aria-hidden="true"></div>
-    <div class="container home-hero-content">
-      <p class="eyebrow eyebrow-light">{home.hero.eyebrow}</p>
-      <h1>{home.hero.title}</h1>
-      <p>{home.hero.text}</p>
-      <div class="button-row">
-        <SmartLink class="button button-primary" href="chasser-en-vendee/validation-du-permis/">Valider mon permis</SmartLink>
-        <SmartLink class="button button-light" href="contact/">Contact</SmartLink>
-      </div>
-    </div>
-  </section>
-
-  <WeatherWidget />
-
-  <section class="section task-section" aria-labelledby="task-title">
-    <div class="container">
-      <div class="section-heading">
-        <h2 id="task-title">{home.tasks.title}</h2>
-        <p>{home.tasks.intro}</p>
-      </div>
-      <div class="task-grid">
-        {home.tasks.items.map((item) => (
-          <article class="task-card">
-            <h3><SmartLink href={item.url}>{item.title}</SmartLink></h3>
-            <p>{item.text}</p>
-          </article>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  {activeAlerts.length > 0 && (
-    <section class="section alerts-section" aria-labelledby="alerts-title">
-      <div class="container">
-        <div class="section-heading">
-          <p class="eyebrow">À vérifier en priorité</p>
-          <h2 id="alerts-title">Alertes en cours</h2>
-        </div>
-        <div class="card-grid">
-          {activeAlerts.map((article) => (
-            <article class="index-item alert-card">
-              <p class="news-date">
-                Publié le <time datetime={article.data.date.toISOString()}>{formatFrenchDate(article.data.date)}</time>
-              </p>
-              <h3>
-                <SmartLink href={`${normalizeSlug(article.id)}/`}>{article.data.title}</SmartLink>
-              </h3>
-              <p>{article.data.summary}</p>
-              <p class="read-more-row">
-                <SmartLink href={`${normalizeSlug(article.id)}/`}>Lire l’alerte : {article.data.title}</SmartLink>
-              </p>
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-  )}
-
-  <section class="section news-section" aria-labelledby="news-title">
-    <div class="container">
-      <div class="section-heading section-heading-row">
-        <div>
-          <h2 id="news-title">{home.news.title}</h2>
-          <p>{home.news.intro}</p>
-        </div>
-        <SmartLink class="button button-outline" href={home.news.action.url}>{home.news.action.label}</SmartLink>
-      </div>
-      <div class="card-grid">
-        {latestNews.map((article) => (
-          <article class="index-item">
-            <p class="eyebrow">{article.data.category}</p>
-            <h3><SmartLink href={`${normalizeSlug(article.id)}/`}>{article.data.title}</SmartLink></h3>
-            <p class="news-date">
-              Publié le <time datetime={article.data.date.toISOString()}>{formatFrenchDate(article.data.date)}</time>
-            </p>
-            <p>{article.data.summary}</p>
-            <p class="read-more-row">
-              <SmartLink href={`${normalizeSlug(article.id)}/`}>Lire l’article : {article.data.title}</SmartLink>
-            </p>
-          </article>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <section class="section institution-section" aria-labelledby="institution-title">
-    <div class="container institution-inner">
-      <div>
-        <h2 id="institution-title">{home.institution.title}</h2>
-        <p>{home.institution.text}</p>
-      </div>
-      <SmartLink class="button button-light" href={home.institution.action.url}>{home.institution.action.label}</SmartLink>
-    </div>
-  </section>
-
-  <section class="section contact-strip" aria-labelledby="contact-title">
-    <div class="container">
-      <div>
-        <h2 id="contact-title">Besoin d’aide ?</h2>
-        <p>Appelez le <a href="tel:+33251478090">02 51 47 80 90</a> ou consultez nos coordonnées et horaires.</p>
-      </div>
-      <SmartLink class="button button-dark" href="contact/">Voir les contacts</SmartLink>
-    </div>
-  </section>
+<BaseLayout title={home.data.seo.title} description={home.data.seo.description}>
+  <SiteContent entry={home} context={context}>
+    <WeatherWidget />
+  </SiteContent>
 </BaseLayout>
