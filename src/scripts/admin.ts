@@ -22,7 +22,7 @@ export function initializeAdmin(): void {
   const previewFrame = element<HTMLIFrameElement>("preview-frame");
   const productionFrame = element<HTMLIFrameElement>("production-frame");
   const workspace = element("workspace");
-  let previewOrigin = window.location.origin;
+  let previewOrigin = manifest.deployment || window.location.origin;
   let previewBase = manifest.base;
   let selectedContent = "home";
   let selectedRoute = "";
