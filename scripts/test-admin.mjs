@@ -4,6 +4,14 @@ import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { cmsUrl, cmsFrameMessage, previewUrl, safeRoute, normalizeBase, deploymentFromCheck, validateDeployment, REPOSITORY } from "../src/lib/admin.ts";
 import { rebaseInternalUrl, rebaseStaticRedirect, unicodeRedirects } from "./base-links.mjs";
+import { getSiteConfig } from "./site-config.mjs";
+
+test("Cloudflare builds default to root without changing the local /site-web fallback", () => {
+  assert.deepEqual(getSiteConfig({}), { site: "https://federationchassevendee.github.io", base: "/site-web" });
+  assert.deepEqual(getSiteConfig({ CF_PAGES: "1" }), { site: "https://fdc85.maury.app", base: "/" });
+  assert.equal(getSiteConfig({ CF_PAGES_BRANCH: "feature" }).base, "/");
+  assert.deepEqual(getSiteConfig({ CF_PAGES: "1", ASTRO_SITE: "https://custom.test", ASTRO_BASE_PATH: "/custom" }), { site: "https://custom.test", base: "/custom" });
+});
 
 test("Pages CMS routes preserve full nested file paths and encode branch as one segment", () => {
   const root = "https://app.pagescms.org/FederationChasseVendee/site-web-fdc85/feature%2F%C3%A9t%C3%A9";

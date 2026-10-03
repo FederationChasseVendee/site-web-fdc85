@@ -21,6 +21,10 @@ npm run preview
 La production Cloudflare est `https://fdc85.maury.app/`, avec
 `ASTRO_SITE=https://fdc85.maury.app` et `ASTRO_BASE_PATH=/`. Sans variables,
 le build conserve le repli historique `https://federationchassevendee.github.io/site-web/`.
+Sur Cloudflare (`CF_PAGES` ou `CF_PAGES_BRANCH`), les valeurs par défaut deviennent
+`https://fdc85.maury.app` et `/`, y compris si les variables Astro ne sont pas
+configurées dans l’environnement preview. Une variable Astro explicite reste
+prioritaire ; aucun paramètre Cloudflare partagé n’est modifié par ce code.
 Le build adapte les liens Markdown importés depuis l’ancien préfixe et les trois
 redirections HTML Unicode à la base choisie, sans réécrire les contenus source.
 

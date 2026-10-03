@@ -3,6 +3,7 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { extname, join, relative } from "node:path";
 import { spawnSync } from "node:child_process";
 import { runInNewContext } from "node:vm";
+import { getSiteConfig } from "./site-config.mjs";
 
 const sitePath = "src/content/site.json";
 const originalSiteSource = readFileSync(sitePath, "utf8");
@@ -88,7 +89,7 @@ try {
     );
     const script = scripts[0][1];
     for (const scenario of [
-      { host: new URL(process.env.ASTRO_SITE || "https://federationchassevendee.github.io").hostname, search: "", embedded: false, expected: 1 },
+      { host: new URL(getSiteConfig().site).hostname, search: "", embedded: false, expected: 1 },
       { host: "a1b2c3d4.fdc85.pages.dev", search: "", embedded: false, expected: 0 },
       { host: "fdc85.maury.app", search: "?admin-preview=1", embedded: false, expected: 0 },
       { host: "fdc85.maury.app", search: "", embedded: true, expected: 0 },
