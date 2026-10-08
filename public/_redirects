@@ -1,3 +1,3 @@
 /site-web/* /:splat 301
-/admin https://app.pagescms.org/federationchassevendee/site-web-fdc85 302
-/admin/ https://app.pagescms.org/federationchassevendee/site-web-fdc85 302
+/admin /edit/ 302
+/admin/ /edit/ 302

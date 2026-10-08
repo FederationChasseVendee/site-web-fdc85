@@ -1,9 +1,11 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { extname, join, relative } from "node:path";
+import { siteConfig } from "./site-config.mjs";
 
-const configuredBase = process.env.ASTRO_BASE_PATH?.replace(/^\/+|\/+$/g, "");
-const base = configuredBase ? `/${configuredBase}/` : "/site-web/";
-const siteUrl = process.env.ASTRO_SITE ?? "https://federationchassevendee.github.io";
+const deployment = siteConfig();
+const configuredBase = deployment.base.replace(/^\/+|\/+$/g, "");
+const base = configuredBase ? `/${configuredBase}/` : "/";
+const siteUrl = deployment.site;
 const siteRoot = new URL(base, `${siteUrl.replace(/\/+$/, "")}/`).href;
 const absoluteRoot = siteRoot.endsWith("/") ? siteRoot : `${siteRoot}/`;
 const basePath = new URL(base, `${siteUrl.replace(/\/+$/, "")}/`).pathname;
@@ -41,20 +43,26 @@ const documentFiles = walk(join(distDirectory, "assets", "documents"))
 for (const htmlFile of htmlFiles) {
   const html = readFileSync(htmlFile, "utf8");
   const displayPath = relative(distDirectory, htmlFile);
+  const isEditorRoute = displayPath.replace(/\\/g, "/") === "edit/index.html";
   const h1Count = (html.match(/<h1(?:\s|>)/g) ?? []).length;
 
   if (!html.includes('href="#contenu"') || !html.includes('<main id="contenu">')) {
     throw new Error(`Lien d’évitement ou zone principale absent dans ${displayPath}`);
   }
-  if (h1Count !== 1) {
+  if (!isEditorRoute && h1Count !== 1) {
     throw new Error(`${displayPath} doit contenir exactement un titre h1 (trouvé : ${h1Count}).`);
   }
   if (html.includes("\uFFFD")) {
     throw new Error(`Caractère de remplacement Unicode détecté dans ${displayPath}.`);
   }
   const canonical = html.match(/<link rel="canonical" href="([^"]+)"/)?.[1];
-  if (!canonical?.startsWith(absoluteRoot) && !canonical?.startsWith(legacyCanonicalRoot)) {
+  if (!isEditorRoute && !canonical?.startsWith(absoluteRoot) && !canonical?.startsWith(legacyCanonicalRoot)) {
     throw new Error(`URL canonique absente ou hors de ${absoluteRoot} dans ${displayPath}.`);
+  }
+  if (isEditorRoute && (!html.includes('<meta name="robots" content="noindex, nofollow">')
+    || html.includes("data-website-id=")
+    || html.includes("cloud.umami.is/script.js"))) {
+    throw new Error("La route d’édition doit être noindex/nofollow et ne doit pas charger Umami.");
   }
 
   for (const image of html.matchAll(/<img\b[^>]*>/g)) {
@@ -64,10 +72,16 @@ for (const htmlFile of htmlFiles) {
   }
 
   for (const match of html.matchAll(internalAttributePattern)) {
+    if (isEditorRoute && match[1].startsWith("/api/")) continue;
     const target = targetFor(match[1]);
     if (!existsSync(target)) {
       throw new Error(`Cible locale absente dans ${displayPath} : ${match[1]}`);
     }
+  }
+
+  const editorRoute = join(distDirectory, "edit", "index.html");
+  if (!existsSync(editorRoute)) {
+    throw new Error("Route d’édition absente du site généré.");
   }
 
   for (const anchor of html.matchAll(/<a\b[^>]*target="_blank"[^>]*>.*?<\/a>/gs)) {
@@ -194,6 +208,7 @@ if (!homeHtml.includes(`href="${base}" aria-label="${site.shortName} — Accueil
 
 for (const htmlFile of routeFiles) {
   if (htmlFile.endsWith(join(distDirectory, "index.html"))) continue;
+  if (htmlFile.endsWith(join(distDirectory, "edit", "index.html"))) continue;
   const html = readFileSync(htmlFile, "utf8");
   if (!html.includes('aria-label="Fil d’Ariane"')) {
     throw new Error(`Fil d’Ariane absent dans ${relative(distDirectory, htmlFile)}`);

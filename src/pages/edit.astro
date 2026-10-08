@@ -1,0 +1,104 @@
+---
+import "../editor/editor.css";
+const base = import.meta.env.BASE_URL;
+const canonical = new URL(`${base}edit/`, Astro.site);
+---
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="description" content="Atelier d'édition du site avec aperçu et assistant local." />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href={`${base}favicon.svg`} />
+    <title>Modifier le site — FDC85</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenu">Aller au contenu</a>
+    <header class="editor-navbar">
+      <a class="brand" href={base} aria-label="FDC85 — retour au site">FDC85 <span>/ Éditeur</span></a>
+      <button id="select-pull" class="pull-switch" hidden aria-expanded="false" aria-controls="pull-menu"></button>
+      <div id="pull-menu" class="pull-menu" hidden>
+        <button id="change-pull">Choisir une modification</button>
+        <button id="close-pull" class="danger">Abandonner cette modification</button>
+      </div>
+      <div id="editor-actions" class="navbar-actions" hidden>
+        <span id="save-status" class="status-label"></span>
+        <a id="github-link" class="button quiet" target="_blank" rel="noopener noreferrer">GitHub <span class="sr-only">(nouvel onglet)</span> ↗</a>
+        <button id="save" disabled>Sauvegarder</button>
+        <button id="publish" class="primary" disabled>Mettre en production</button>
+      </div>
+      <button id="logout" class="quiet" hidden>Déconnexion</button>
+    </header>
+    <main id="contenu">
+      <section id="welcome" class="gate">
+        <p class="eyebrow">Votre site, vos mots</p>
+        <h1>Faites évoluer votre site.<br />Simplement.</h1>
+        <p>Décrivez un changement, regardez le résultat et choisissez quand le publier.</p>
+        <a id="login" class="button primary" href="/api/editor/login" aria-disabled="true">Continuer avec GitHub</a>
+        <p id="connection-status" class="notice" role="status">Vérification de la connexion…</p>
+        <p class="muted">Les changements passent toujours par une pull request. L'IA travaille dans votre navigateur.</p>
+      </section>
+      <section id="selection" class="gate selection" hidden aria-labelledby="selection-heading">
+        <p class="eyebrow">Une idée, une modification</p>
+        <h2 id="selection-heading">Sur quoi travaillons-nous ?</h2>
+        <p id="pull-status" role="status"></p>
+        <div id="pull-list" class="pull-list"></div>
+        <form id="create-form" class="new-request">
+          <label for="request-name">Quel changement souhaitez-vous faire ?</label>
+          <div class="new-request-row">
+            <input id="request-name" required maxlength="100" placeholder="Ex. Simplifier la page d'accueil" autocomplete="off" />
+            <button id="create" class="primary">Créer la modification</button>
+          </div>
+          <p class="muted">Une nouvelle PR [Editor][votre login] sera créée, sans modifier le site en ligne.</p>
+        </form>
+      </section>
+      <section id="atelier" class="atelier" hidden aria-label="Aperçu et assistant">
+        <div class="mobile-tabs">
+          <button id="preview-tab" aria-pressed="true">Aperçu</button>
+          <button id="chat-tab" aria-pressed="false">Assistant</button>
+        </div>
+        <div id="workspace" class="workspace" data-tab="preview">
+          <section class="preview-panel" aria-label="Aperçu du site">
+            <div class="preview-toolbar">
+              <span id="runtime-status" role="status">Préparation de l'aperçu…</span>
+              <div class="preview-controls">
+                <button id="desktop" class="quiet" aria-pressed="true">Ordinateur</button>
+                <button id="mobile" class="quiet" aria-pressed="false">Mobile</button>
+                <button id="retry-runtime" class="quiet" hidden>Réessayer</button>
+              </div>
+            </div>
+            <div id="preview-frame" class="preview-frame">
+              <div id="preview-loading" class="preview-loading" role="status">Les sources et les dépendances sont chargées localement.</div>
+              <iframe id="preview" title="Aperçu local de la modification" allow="cross-origin-isolated" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" hidden></iframe>
+            </div>
+          </section>
+          <aside class="chat-panel" aria-label="Assistant local">
+            <header class="chat-heading"><h2>Votre assistant</h2><p id="model-status" role="status">Vérification du modèle local…</p></header>
+            <div id="messages" class="messages" role="log" aria-live="polite" aria-label="Conversation"></div>
+            <form id="chat-form" class="composer">
+              <label class="sr-only" for="prompt">Décrivez une modification</label>
+              <textarea id="prompt" rows="3" required maxlength="2000" placeholder="Décrivez ce que vous souhaitez changer…"></textarea>
+              <div class="composer-actions"><button id="stop-agent" type="button" class="quiet" hidden>Arrêter</button><button id="undo" type="button" class="quiet" disabled>Annuler le changement</button><button id="send" class="primary" disabled>Envoyer</button></div>
+            </form>
+            <details class="model-options"><summary>Modèle et diagnostic</summary>
+              <label for="model-choice">Modèle local</label>
+              <select id="model-choice"><option value="3b">Coder 3B — qualité, ≈ 2,5 Go de VRAM</option><option value="1.5b">Coder 1,5B — plus léger, ≈ 1,6 Go de VRAM</option></select>
+              <button id="reload-model" class="quiet">Charger / réessayer</button>
+              <button id="stop-model" class="quiet">Arrêter le modèle</button>
+              <pre id="diagnostics" aria-label="Journal technique"></pre>
+            </details>
+          </aside>
+        </div>
+      </section>
+    </main>
+    <footer id="background-status" class="background-status" role="status"></footer>
+    <div id="notification" class="notification" role="alert" hidden></div>
+    <dialog id="confirmation" aria-labelledby="confirmation-title">
+      <h2 id="confirmation-title"></h2><p id="confirmation-text"></p>
+      <form method="dialog"><button value="cancel" autofocus>Annuler</button><button id="confirm-action" value="confirm" class="primary">Confirmer</button></form>
+    </dialog>
+    <script>import "../editor/client";</script>
+  </body>
+</html>

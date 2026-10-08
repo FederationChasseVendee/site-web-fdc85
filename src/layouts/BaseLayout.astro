@@ -27,7 +27,30 @@ const canonical = new URL(redirectTo ?? Astro.url.pathname, Astro.site);
 const favicon = `${import.meta.env.BASE_URL}favicon.png`.replace(/\/{2,}/g, "/");
 const feed = `${import.meta.env.BASE_URL}feed.xml`.replace(/\/{2,}/g, "/");
 const socialImage = image ? new URL(`${import.meta.env.BASE_URL}${image.replace(/^\/+/, "")}`.replace(/\/{2,}/g, "/"), Astro.site) : undefined;
-const umami = getUmamiConfig(site.analytics);
+const browserDraft = import.meta.env.PUBLIC_BROWSER_DRAFT === "true";
+const umami = browserDraft ? undefined : getUmamiConfig(site.analytics);
+
+function httpOrigin(value: unknown) {
+  if (typeof value !== "string" || !value.trim()) return undefined;
+  try {
+    const url = new URL(value.trim());
+    if (!["http:", "https:"].includes(url.protocol)
+      || url.username
+      || url.password
+      || url.pathname !== "/"
+      || url.search
+      || url.hash) {
+      return undefined;
+    }
+    return url.origin;
+  } catch {
+    return undefined;
+  }
+}
+
+const previewParentOrigin = browserDraft
+  ? httpOrigin(import.meta.env.PUBLIC_EDITOR_PARENT_ORIGIN)
+  : undefined;
 ---
 
 <!doctype html>
@@ -38,7 +61,9 @@ const umami = getUmamiConfig(site.analytics);
     <meta name="generator" content={Astro.generator} />
     <meta name="theme-color" content="#173f35" />
     <meta name="description" content={description} />
-    {redirectTo && <meta name="robots" content="noindex, follow" />}
+    {browserDraft
+      ? <meta name="robots" content="noindex, nofollow" />
+      : redirectTo && <meta name="robots" content="noindex, follow" />}
     {redirectTo && <meta http-equiv="refresh" content={`0; url=${redirectTo}`} />}
     <link rel="canonical" href={canonical} />
     <link rel="alternate" type="application/atom+xml" title={`Actualités — ${site.shortName}`} href={feed} />
@@ -62,6 +87,16 @@ const umami = getUmamiConfig(site.analytics);
         data-website-id={umami.websiteId}
         data-do-not-track="true"
       ></script>
+    )}
+    {previewParentOrigin && (
+      <script is:inline define:vars={{ previewParentOrigin }}>
+        window.addEventListener("load", () => {
+          window.parent.postMessage(
+            { type: "editor-preview-route", pathname: location.pathname },
+            previewParentOrigin,
+          );
+        }, { once: true });
+      </script>
     )}
   </head>
   <body>
