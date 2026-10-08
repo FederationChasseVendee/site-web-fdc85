@@ -182,6 +182,11 @@ pas à la taille d’un fichier téléchargé. Le choix explicite
 de VRAM**. Sur un appareil sans prise en charge f16, le choix fp32 consomme
 davantage de VRAM. Il n’existe pas de repli vers un fournisseur cloud.
 
+Après une interruption ou un délai dépassé de l’IA, le cache local du modèle
+reste disponible. Le worker interrompu doit être arrêté ; le bouton
+**Charger / réessayer** recharge alors le modèle depuis ce cache au lieu de
+réutiliser le moteur interrompu.
+
 Pour un aperçu réel, utiliser Chrome ou Edge sur ordinateur dans un contexte
 HTTPS (localhost est l’exception de développement). La page `/edit/` doit
 recevoir `Cross-Origin-Opener-Policy: same-origin` et
@@ -202,16 +207,42 @@ git archive --format=zip --prefix=repo/ --output=public\editor-validation-archiv
 node scripts\editor-browser-benchmark.mjs
 ```
 
+Pour la campagne actuelle, lancer un Chrome indépendant avec le débogage
+distant limité à `127.0.0.1:9222` (`--remote-debugging-address=127.0.0.1
+--remote-debugging-port=9222`) et un profil dédié situé hors du dépôt. Ce
+profil ne doit pas être partagé avec une autre session de développement.
 Laisser Astro tourner sur le port `4322`, puis ouvrir
 `http://127.0.0.1:4335/` dans un onglet Chrome ou Edge de premier niveau
 (pas dans un iframe). Cliquer sur le bouton de test **Coder 3B** pour lancer le
 vrai WebContainer et les dix demandes du benchmark : contenus JSON, Markdown et
-CSS. Le seuil attendu est **au moins 9/10**, avec vérification exacte de la
-modification ciblée et aucune modification hors cible.
+CSS. Chaque cas doit être isolé, avec vérification exacte de la modification
+ciblée et aucune modification hors cible. Le seuil de validation n’est pas
+encore établi.
+
+La vérification préalable a confirmé npm, WASI, le serveur Astro de
+développement et des réponses HTTP 200 avec le modèle GPU. Une première
+tentative a donné 0/10 sous un plafond de quatre minutes ; son premier timeout
+a révélé la réutilisation invalide d’un moteur interrompu. Les cas suivants
+n’étaient donc pas indépendants et ce résultat ne permet pas d’établir le seuil.
+
+Une tentative avec un schéma `oneOf` et des regex a échoué au premier cas après
+324 secondes : `Grammar matcher rejected the newly sampled token`. Le candidat
+avait inventé un hash et du texte avant la lecture de la source, puis a été
+bloqué. L’exécution a été arrêtée manuellement pendant le cas 2 ; seul le cas 1
+était complet et aucun seuil n’a été atteint. Cette tentative n’est pas un
+résultat de qualité validé.
+
+La correction remplace cette union par un objet plat : les actions d’écriture
+ne sont autorisées qu’après lecture de la source, et les hashes sont contraints
+à l’énumération des SHA réellement lus. Il n’y a plus de réutilisation du moteur
+après une erreur de grammaire ou de génération ; les erreurs fatales remontent
+immédiatement. La nouvelle campagne réelle utilise aussi une isolation entre
+cas et une échéance commune de **huit minutes** pour l’application et le
+benchmark ; elle est encore en cours.
 
 Cette procédure est une tentative en cours : aucun résultat mesuré n’est
-présent ou revendiqué dans cette documentation. À la fin, arrêter les deux
-serveurs (Ctrl+C), puis supprimer précisément
+présenté comme une qualité validée. À la fin, arrêter les deux serveurs
+(Ctrl+C), puis supprimer précisément
 `public\editor-validation-archive.zip`. Ne pas envoyer l’archive, créer de
 pull request, fusionner ou publier pendant ce benchmark.
 
@@ -226,7 +257,8 @@ StackBlitz les conditions de licence de WebContainer en production : le client
 runtime est MIT, mais la licence du service runtime est distincte. Aucun achat,
 compte fournisseur ou changement de configuration externe n’est fourni ou
 partagé par ce dépôt ; le runtime de production reste donc opt-in et bloqué
-tant que cette confirmation de licence n’a pas été obtenue.
+tant que cette confirmation de licence n’a pas été obtenue. Cette campagne
+n’autorise ni n’active la production.
 
 ## Configuration externe de l’authentification et des Functions
 

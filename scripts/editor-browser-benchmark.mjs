@@ -7,14 +7,16 @@ const html = `<!doctype html><html lang="fr"><meta charset="utf-8"><title>Benchm
 <h1>Benchmark local : WebGPU + vrai Astro en WebContainer</h1>
 <p>Ce test ne se connecte pas à GitHub, ne crée aucune PR et ne publie rien. Il utilise l'archive locale des fichiers suivis.
 Chaque demande repart des sources d'origine. Réussite attendue : au moins 9/10, sans changement hors cible.</p>
-<button id="start">Lancer les dix demandes (Coder 3B)</button><p id="status">Prêt à tester.</p><pre id="results"></pre><pre id="logs"></pre>
+<select id="model" aria-label="Modèle testé"><option value="standard">Coder 3B</option><option value="small">Coder 1,5B</option></select>
+<button id="start">Lancer les dix demandes</button><p id="status">Prêt à tester.</p><pre id="results"></pre><pre id="logs"></pre>
 <iframe id="preview" allow="cross-origin-isolated" title="Vrai aperçu Astro local"></iframe>
 <script type="module">
 import {CodeModel} from "/site-web/src/editor/model.ts";
 import {BrowserRuntime} from "/site-web/src/editor/runtime.ts";
 import {LocalWorkspace,readArchive} from "/site-web/src/editor/workspace.ts";
 import {runAgent} from "/site-web/src/editor/agent.ts";
-const state=window.editorBenchmark={phase:"idle",results:[],logs:[],error:null};
+import {editorConfig} from "/site-web/src/editor/config.ts";
+const state=window.editorBenchmark={phase:"idle",results:[],actions:[],logs:[],error:null};
 const status=message=>{state.phase=message;document.getElementById("status").textContent=message};
 const log=message=>{state.logs.push(message);if(state.logs.length>100)state.logs.shift();document.getElementById("logs").textContent=state.logs.join("\\n")};
 const model=new CodeModel(status,()=>{},log);
@@ -42,6 +44,10 @@ function expected(files,test){
 }
 document.getElementById("start").onclick=async()=>{
  document.getElementById("start").disabled=true;
+ const selected=document.getElementById("model").value;
+ const modelId=selected==="small"?editorConfig.smallModel:editorConfig.model;
+ state.modelId=modelId;
+ document.getElementById("model").disabled=true;
  state.abort=new AbortController();
  const signal=state.abort.signal;
  try{
@@ -49,17 +55,18 @@ document.getElementById("start").onclick=async()=>{
    const response=await fetch("/site-web/editor-validation-archive.zip",{signal});
    if(!response.ok)throw Error("Créez d'abord l'archive de validation locale (voir script).");
    const sources=await readArchive(response,signal,status);
-   await Promise.all([model.load("Qwen2.5-Coder-3B-Instruct-q4f16_1-MLC"),runtime.prepare(sources,signal)]);
+   await Promise.all([model.load(modelId),runtime.prepare(sources,signal)]);
    for(let index=0;index<cases.length;index++){
      signal.throwIfAborted();
      const test=cases[index];
      const workspace=new LocalWorkspace("a".repeat(40),sources);
      const matches=expected(sources,test);
+     if(!model.ready)await model.load(modelId);
      await runtime.open(workspace.files,signal);
      const begin=performance.now();
      let passed=false,error=null;
      try{
-       const summary=await runAgent({workspace,runtime,generate:(...args)=>model.complete(...args),prompt:test[0],title:"Benchmark "+(index+1),route:index===8?"/contact/":"/",signal:AbortSignal.any([signal,AbortSignal.timeout(240000)]),progress:status});
+       const summary=await runAgent({workspace,runtime,generate:async(...args)=>{const reply=await model.complete(...args);state.actions.push({case:index+1,reply});return reply},prompt:test[0],title:"Benchmark "+(index+1),route:index===8?"/contact/":"/",signal:AbortSignal.any([signal,AbortSignal.timeout(editorConfig.maxAgentMilliseconds)]),recoverySignal:signal,progress:status});
        const changes=workspace.changes();
        passed=changes.length===1&&changes[0].path===test[1]&&matches(workspace.text(test[1]));
        if(!passed)error="Le résultat ne correspond pas exactement à la demande ou modifie un autre fichier.";

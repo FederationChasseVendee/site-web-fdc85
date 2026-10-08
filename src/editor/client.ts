@@ -207,7 +207,7 @@ element("chat-form", HTMLFormElement).addEventListener("submit", (event) => {
   if (!request) { notice("Décrivez une modification avant de l'envoyer.", true); return; }
   if (button("send").disabled) return;
   prompt.value = "";
-  void act(() => controller.chat(request, (system, request, context, signal) => model.complete(system, request, context, signal)));
+  void act(() => controller.chat(request, (...args) => model.complete(...args)));
 });
 prompt.addEventListener("keydown", (event) => {
   if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) { event.preventDefault(); element("chat-form", HTMLFormElement).requestSubmit(); }

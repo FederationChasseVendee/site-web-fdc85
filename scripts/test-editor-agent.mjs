@@ -55,3 +55,28 @@ test("the model cannot edit without a prior verified read", async () => {
   await assert.rejects(runAgent(request(workspace,run,async()=>JSON.stringify({action:"edit",path,expectedHash:hash,oldText:"Accueil",newText:"X"}))),/Lisez ce fichier/);
   assert.equal(workspace.dirty,false);
 });
+
+test("generation permissions follow successful reads and invalidate hashes after writes", async () => {
+  const workspace=createWorkspace(), run=runtime();
+  const hash=await fileHash(workspace.files.get(path));
+  const permissions=[];
+  const actions=[{action:"read",path},{action:"edit",path,expectedHash:hash,oldText:"Accueil",newText:"Nouveau"},{action:"done",text:"Titre modifié."}];
+  await runAgent(request(workspace,run,async(_system,_request,_context,_signal,options)=>{
+    permissions.push(options.readHashes);
+    return JSON.stringify(actions.shift());
+  }));
+  assert.deepEqual(permissions,[[],[hash],[]]);
+});
+
+test("fatal engine failures are not retried as malformed tool responses", async () => {
+  const workspace=createWorkspace(), run=runtime();
+  let calls=0;
+  await assert.rejects(runAgent(request(workspace,run,async()=>{calls++;throw Error("Engine failed");})),/Engine failed/);
+  assert.equal(calls,1);
+  assert.equal(workspace.dirty,false);
+});
+
+test("default reads include useful source context and remain bounded for later pages", () => {
+  assert.deepEqual(parseAction(JSON.stringify({action:"read",path})),{action:"read",path,startLine:1,endLine:81});
+  assert.deepEqual(parseAction(JSON.stringify({action:"read",path,startLine:100})),{action:"read",path,startLine:100,endLine:180});
+});
