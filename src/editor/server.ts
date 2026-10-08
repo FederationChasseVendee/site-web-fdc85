@@ -596,19 +596,20 @@ function markerMatches(value: unknown, expectedSha: string, id: string, payloadH
     && parents.length === 1 && record(parents[0]).sha === expectedSha;
 }
 
-async function savedInHistory(github: GitHub, expectedSha: string, headSha: string, id: string, payloadHash: string): Promise<boolean> {
-  if (markerMatches(await github.json(`/git/commits/${headSha}`), expectedSha, id, payloadHash)) return true;
+async function savedInHistory(github: GitHub, expectedSha: string, headSha: string, id: string, payloadHash: string): Promise<string | null> {
+  if (markerMatches(await github.json(`/git/commits/${headSha}`), expectedSha, id, payloadHash)) return headSha;
   for (let page = 1; page <= 20; page++) {
     const comparison = record(await github.json(`/compare/${expectedSha}...${headSha}?per_page=100&page=${page}`));
-    if (comparison.status !== "ahead" && comparison.status !== "identical") return false;
+    if (comparison.status !== "ahead" && comparison.status !== "identical") return null;
     const commits = array(comparison.commits);
-    if (commits.some((commit) => markerMatches(commit, expectedSha, id, payloadHash))) return true;
-    if (commits.length < 100) return false;
+    const saved = commits.find((commit) => markerMatches(commit, expectedSha, id, payloadHash));
+    if (saved) return sha(record(saved).sha);
+    if (commits.length < 100) return null;
   }
   throw new HttpError(409, "La demande a trop évolué pour retrouver cette sauvegarde. Rechargez-la avant de continuer.");
 }
 
-async function savePull(github: GitHub, config: Configuration, session: Session, number: number, body: Record<string, unknown>): Promise<EditorPull> {
+async function savePull(github: GitHub, config: Configuration, session: Session, number: number, body: Record<string, unknown>): Promise<EditorPull & { savedSha: string }> {
   const expectedSha = inputSha(body.expectedSha);
   const changes = changesInput(body.changes);
   const id = requestId(body.requestId);
@@ -620,7 +621,8 @@ async function savePull(github: GitHub, config: Configuration, session: Session,
   }
   let current = await getPull(github, number);
   if (current.pull.headSha !== expectedSha) {
-    if (await savedInHistory(github, expectedSha, current.pull.headSha, id, payloadHash)) return current.pull;
+    const savedSha = await savedInHistory(github, expectedSha, current.pull.headSha, id, payloadHash);
+    if (savedSha) return { ...current.pull, savedSha };
     guardHead(current.pull, expectedSha);
   }
   if (previous?.commitSha) throw new HttpError(409, "La branche a été réinitialisée après cette sauvegarde. Rechargez-la.");
@@ -663,16 +665,18 @@ async function savePull(github: GitHub, config: Configuration, session: Session,
   const commitSha = sha(createdCommit.sha);
   current = await getPull(github, number);
   if (current.pull.headSha !== expectedSha) {
-    if (await savedInHistory(github, expectedSha, current.pull.headSha, id, payloadHash)) return current.pull;
+    const savedSha = await savedInHistory(github, expectedSha, current.pull.headSha, id, payloadHash);
+    if (savedSha) return { ...current.pull, savedSha };
     guardHead(current.pull, expectedSha);
   }
   await github.json(`/git/refs/heads/${current.pull.headRef}`, "PATCH", { sha: commitSha, force: false });
   await store(config, key, { kind: "save", expectedSha, payloadHash, commitSha }, operationTtl);
   const result = (await getPull(github, number)).pull;
-  if (result.headSha !== commitSha && !await savedInHistory(github, expectedSha, result.headSha, id, payloadHash)) {
+  const savedSha = result.headSha === commitSha ? commitSha : await savedInHistory(github, expectedSha, result.headSha, id, payloadHash);
+  if (!savedSha) {
     throw new HttpError(409, "La branche a changé après la sauvegarde. Rechargez la demande.");
   }
-  return result;
+  return { ...result, savedSha };
 }
 
 async function pullChecks(github: GitHub, config: Configuration, data: PullData): Promise<PullChecks> {

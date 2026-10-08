@@ -3,6 +3,7 @@ import { extname, join, relative } from "node:path";
 import { siteConfig } from "./site-config.mjs";
 
 const deployment = siteConfig();
+const browserDraft = process.env.PUBLIC_BROWSER_DRAFT === "true";
 const configuredBase = deployment.base.replace(/^\/+|\/+$/g, "");
 const base = configuredBase ? `/${configuredBase}/` : "/";
 const siteUrl = deployment.site;
@@ -79,16 +80,16 @@ for (const htmlFile of htmlFiles) {
     }
   }
 
-  const editorRoute = join(distDirectory, "edit", "index.html");
-  if (!existsSync(editorRoute)) {
-    throw new Error("Route d’édition absente du site généré.");
-  }
-
   for (const anchor of html.matchAll(/<a\b[^>]*target="_blank"[^>]*>.*?<\/a>/gs)) {
     if (!/\srel="[^"]*noreferrer[^"]*"/.test(anchor[0]) || !anchor[0].includes("nouvel onglet")) {
       throw new Error(`Lien externe non annoncé ou sans rel=noreferrer dans ${displayPath}`);
     }
   }
+}
+
+const editorRoute = join(distDirectory, "edit", "index.html");
+if (!browserDraft && !existsSync(editorRoute)) {
+  throw new Error("Route d’édition absente du site généré.");
 }
 
 for (const file of documentFiles) {
@@ -104,6 +105,7 @@ const unicodeRedirects = [
   "🟢-ouverture-des-validations-du-permis-de-chasser-2026-2027-🟢",
   "🕊️-tourterelle-des-bois-ouverture-dimanche-30-aout",
 ];
+const redirectRobots = `<meta name="robots" content="noindex, ${browserDraft ? "nofollow" : "follow"}">`;
 for (const file of redirectFiles) {
   const source = readFileSync(file, "utf8");
   const destination = source.match(/^destination:\s*(.+)$/m)?.[1]?.trim();
@@ -113,7 +115,7 @@ for (const file of redirectFiles) {
 
   for (const route of unicodeRedirects) {
     const html = readFileSync(join(distDirectory, route, "index.html"), "utf8");
-    if (!html.includes('<meta name="robots" content="noindex, follow">')
+    if (!html.includes(redirectRobots)
       || (!html.includes(`<link rel="canonical" href="${absoluteRoot}`)
         && !html.includes(`<link rel="canonical" href="${legacyCanonicalRoot}`))) {
       throw new Error(`Redirection Unicode incomplète pour /${route}/.`);
@@ -134,7 +136,7 @@ for (const file of redirectFiles) {
   if (!html.includes(`href="${resolvedDestination}"`)) {
     throw new Error(`Lien de secours visible absent pour /${route}/.`);
   }
-  if (!html.includes('<meta name="robots" content="noindex, follow">')) {
+  if (!html.includes(redirectRobots)) {
     throw new Error(`Directive noindex absente pour la redirection /${route}/.`);
   }
 }

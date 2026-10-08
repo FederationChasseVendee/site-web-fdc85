@@ -1,4 +1,4 @@
-import { isRecord, type EditorStatus, type EditorPull, type FileChange, type PullChecks, type MergeResult, type DeploymentStatus, type RepositoryAdapter } from "./contracts.ts";
+import { isRecord, type EditorStatus, type EditorPull, type FileChange, type PullChecks, type MergeResult, type DeploymentStatus, type RepositoryAdapter, type SavedPull } from "./contracts.ts";
 import { baseBranch, isSha, repositoryName, validPath } from "./policy.ts";
 
 export class EditorApiError extends Error {
@@ -106,8 +106,11 @@ export class GitHubRepository implements RepositoryAdapter {
   async changes(fromSha: string, pull: EditorPull) {
     return parseChanges(await this.json(`pulls/${pull.number}/changes?${new URLSearchParams({ from: fromSha, expectedSha: pull.headSha })}`));
   }
-  async save(pull: EditorPull, changes: FileChange[], requestId: string) {
-    return parsePull(await this.json(`pulls/${pull.number}/save`, { expectedSha: pull.headSha, changes, requestId }));
+  async save(pull: EditorPull, changes: FileChange[], requestId: string): Promise<SavedPull> {
+    const value = await this.json(`pulls/${pull.number}/save`, { expectedSha: pull.headSha, changes, requestId });
+    const updated = parsePull(value);
+    if (!isRecord(value) || !isSha(value.savedSha)) throw new Error("Le SHA de la sauvegarde confirmée n'a pas été fourni par GitHub.");
+    return { ...updated, savedSha: value.savedSha };
   }
   async close(pull: EditorPull) { await this.json(`pulls/${pull.number}/close`, { expectedSha: pull.headSha }); }
   async checks(pull: EditorPull): Promise<PullChecks> {

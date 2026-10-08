@@ -25,6 +25,8 @@ export interface FileChange {
   encoding: "utf8" | "base64";
 }
 
+export interface SavedPull extends EditorPull { savedSha: string }
+
 export interface PullChecks {
   sha: string;
   state: "pending" | "success" | "failure";
@@ -51,7 +53,7 @@ export interface RepositoryAdapter {
   createPull(title: string, requestId: string): Promise<EditorPull>;
   archive(sha: string, pull?: number, signal?: AbortSignal): Promise<Response>;
   changes(fromSha: string, pull: EditorPull): Promise<FileChange[]>;
-  save(pull: EditorPull, changes: FileChange[], requestId: string): Promise<EditorPull>;
+  save(pull: EditorPull, changes: FileChange[], requestId: string): Promise<SavedPull>;
   close(pull: EditorPull): Promise<void>;
   checks(pull: EditorPull): Promise<PullChecks>;
   merge(pull: EditorPull): Promise<MergeResult>;

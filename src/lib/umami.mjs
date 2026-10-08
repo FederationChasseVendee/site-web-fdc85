@@ -19,7 +19,7 @@ export function getUmamiConfig(analytics) {
 
   if (!WEBSITE_ID_PATTERN.test(websiteId)) {
     throw new Error(
-      "Configuration Analytics invalide : désactivez Umami ou renseignez un Website ID Umami valide dans Pages CMS > Paramètres du site > Analytics.",
+      "Configuration Analytics invalide : désactivez Umami ou renseignez un Website ID Umami valide dans src/content/site.json via /edit/.",
     );
   }
 

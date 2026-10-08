@@ -452,6 +452,7 @@ test("save uses one grouped Git tree/commit and a non-force ref, preserving bina
   assert.equal(result.status, 200, await result.clone().text());
   const pull = await result.json();
   assert.notEqual(pull.headSha, initialHead);
+  assert.equal(pull.savedSha, pull.headSha);
   const mutations = app.github.mutations();
   const tree = mutations.find((call) => call.url.pathname.endsWith("/git/trees")).body;
   assert.equal(tree.base_tree, initialTree);
@@ -465,7 +466,9 @@ test("save uses one grouped Git tree/commit and a non-force ref, preserving bina
   assert.deepEqual(mutations.find((call) => call.url.pathname.endsWith("/git/blobs") && call.body.encoding === "base64").body.content, bytes.toString("base64"));
   const again = await app.request("pulls/7/save", { method: "POST", body: saveBody(changes) });
   assert.equal(again.status, 200, await again.clone().text());
-  assert.equal((await again.json()).headSha, pull.headSha);
+  const recovered = await again.json();
+  assert.equal(recovered.headSha, pull.headSha);
+  assert.equal(recovered.savedSha, pull.savedSha);
   assert.equal(app.github.mutations().filter((call) => call.url.pathname.endsWith("/git/commits")).length, 1);
   assert.equal((await app.request("pulls/7/save", { method: "POST", body: saveBody([{ ...textChange, content: "different" }]) })).status, 409);
 });
@@ -478,12 +481,57 @@ test("save recovers an accepted ref after network loss, including later descenda
   assert.equal((await app.request("pulls/7/save", { method: "POST", body })).status, 503);
   const savedSha = app.github.latestPull().head.sha;
   assert.notEqual(savedSha, initialHead);
+  const immediateRetry = await app.request("pulls/7/save", { method: "POST", body });
+  assert.equal(immediateRetry.status, 200);
+  const immediate = await immediateRetry.json();
+  assert.equal(immediate.headSha, savedSha);
+  assert.equal(immediate.savedSha, savedSha);
   const second = await app.request("pulls/7/save", { method: "POST", body: saveBody([{ ...textChange, content: "later" }], { expectedSha: savedSha, requestId: secondId }) });
   assert.equal(second.status, 200);
+  const descendant = await second.json();
+  assert.equal(descendant.savedSha, descendant.headSha);
+  assert.notEqual(descendant.headSha, savedSha);
   const retry = await app.request("pulls/7/save", { method: "POST", body });
   assert.equal(retry.status, 200, await retry.clone().text());
-  assert.equal((await retry.json()).headSha, app.github.latestPull().head.sha);
+  const recovered = await retry.json();
+  assert.equal(recovered.headSha, descendant.headSha);
+  assert.equal(recovered.savedSha, savedSha);
+  assert.notEqual(recovered.savedSha, recovered.headSha);
   assert.equal(app.github.mutations().filter((call) => call.url.pathname.endsWith("/git/commits")).length, 2);
+});
+
+test("first save success preserves our savedSha when another author advances the confirmed head", async () => {
+  const app = setup();
+  await app.authenticate();
+  let pullReads = 0;
+  let savedSha;
+  let descendantSha;
+  app.github.override = ({ url, method }) => {
+    if (method === "GET" && url.pathname.endsWith("/pulls/7") && ++pullReads === 3) {
+      savedSha = app.github.latestPull().head.sha;
+      descendantSha = app.github.nextSha();
+      app.github.commits.set(descendantSha, {
+        sha: descendantSha, message: "Another author's update", parents: [{ sha: savedSha }],
+        tree: app.github.commits.get(savedSha).tree,
+      });
+      app.github.refs.set("editor/alice/test-7", descendantSha);
+      app.github.latestPull().head.sha = descendantSha;
+    }
+  };
+  const result = await app.request("pulls/7/save", { method: "POST", body: saveBody([textChange]) });
+  assert.equal(result.status, 200, await result.clone().text());
+  const saved = await result.json();
+  assert.equal(saved.savedSha, savedSha);
+  assert.equal(saved.headSha, descendantSha);
+  assert.notEqual(saved.savedSha, saved.headSha);
+  assert.equal(saved.number, 7);
+  assert.equal(saved.headRef, "editor/alice/test-7");
+  const retry = await app.request("pulls/7/save", { method: "POST", body: saveBody([textChange]) });
+  assert.equal(retry.status, 200);
+  const recovered = await retry.json();
+  assert.equal(recovered.savedSha, savedSha);
+  assert.equal(recovered.headSha, descendantSha);
+  assert.equal(app.github.mutations().filter((call) => call.url.pathname.endsWith("/git/commits")).length, 1);
 });
 
 test("malicious/protected paths, malformed bodies and size/count bounds never move the ref", async () => {

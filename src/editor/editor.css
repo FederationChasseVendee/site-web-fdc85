@@ -76,6 +76,8 @@ button:hover:not(:disabled), .button:hover { background: #edf1e9; }
 body.editing .background-status { display: none; }
 .notice { font-size: 12px; line-height: 1.7; }
 .notification { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 10; max-width: min(90vw, 600px); padding: 10px 15px; border-radius: 6px; background: #25362b; color: white; font-size: 12px; box-shadow: 0 4px 20px #0002; }
+.notification[data-error="true"] { background: #78362d; }
+.notification a { color: white; }
 dialog { border: 1px solid var(--line); border-radius: 10px; padding: 22px; width: min(440px, calc(100% - 30px)); color: inherit; }
 dialog::backdrop { background: #25362b66; }
 dialog h2 { font-size: 21px; font-weight: 600; margin-top: 0; }

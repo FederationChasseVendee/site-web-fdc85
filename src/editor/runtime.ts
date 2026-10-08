@@ -78,6 +78,8 @@ function cancelled(error: unknown): boolean {
 function previewPath(path: string): boolean {
   return workspacePath(path) && path !== configPath
     && path !== "src/pages/edit.astro" && path !== "src/pages/admin.astro"
+    && !/^scripts\/test-editor-[^/]*\.mjs$/.test(path)
+    && path !== "scripts/editor-browser-benchmark.mjs"
     && !["src/editor/", "src/admin/", "functions/", ".github/", ".editor/"].some((prefix) => path.startsWith(prefix))
     && !["src/editor", "src/admin", "functions", ".github", internalPath].includes(path);
 }

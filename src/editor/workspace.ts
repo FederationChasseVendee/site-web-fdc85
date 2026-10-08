@@ -205,6 +205,10 @@ export class LocalWorkspace {
     this.sha = sha;
     this.baseline = new Map(this.files);
   }
+  async baselineHash(path: string): Promise<string | null> {
+    const bytes = this.baseline.get(path);
+    return bytes ? fileHash(bytes) : null;
+  }
   text(path: string): string {
     if (!readablePath(path)) throw new Error("Ce fichier n'est pas accessible à l'assistant.");
     const bytes = this.files.get(path);
@@ -238,6 +242,7 @@ interface StoredDraft {
   changes: FileChange[];
   messages: ChatMessage[];
   history: FileChange[][];
+  baseHashes: Record<string, string | null>;
 }
 
 function parseChanges(value: unknown): FileChange[] {
@@ -319,14 +324,14 @@ export class BrowserStorage {
       request.onblocked = () => reject(new Error("Fermez les autres onglets de l'éditeur pour initialiser le stockage."));
     });
   }
-  private async draftRecord(ref: string, record?: StoredDraft): Promise<unknown> {
+  private async draftRecord(ref: string, record?: StoredDraft | null): Promise<unknown> {
     const db = await this.database();
     try {
       return await new Promise((resolve, reject) => {
-        const tx = db.transaction("drafts", record ? "readwrite" : "readonly");
+        const tx = db.transaction("drafts", record !== undefined ? "readwrite" : "readonly");
         const store = tx.objectStore("drafts");
         const key = `${this.login}:${ref}`;
-        const request = record ? store.put(record, key) : store.get(key);
+        const request = record === null ? store.delete(key) : record ? store.put(record, key) : store.get(key);
         let result: unknown;
         request.onsuccess = () => { result = request.result; };
         tx.oncomplete = () => resolve(result);
@@ -335,7 +340,10 @@ export class BrowserStorage {
     } finally { db.close(); }
   }
   async saveDraft(ref: string, workspace: LocalWorkspace): Promise<void> {
-    await this.draftRecord(ref, { sha: workspace.sha, changes: workspace.changes(), messages: workspace.messages, history: workspace.history });
+    const changes = workspace.changes();
+    const baseHashes: Record<string, string | null> = {};
+    for (const change of changes) baseHashes[change.path] = await workspace.baselineHash(change.path);
+    await this.draftRecord(ref, { sha: workspace.sha, changes, messages: workspace.messages, history: workspace.history, baseHashes });
   }
   async restoreDraft(ref: string, workspace: LocalWorkspace): Promise<void> {
     const record = await this.draftRecord(ref);
@@ -345,7 +353,18 @@ export class BrowserStorage {
     }
     const changes = parseChanges(record.changes);
     if (record.sha !== workspace.sha && changes.length) {
-      throw new DraftConflictError("Un brouillon local correspond à une ancienne version de cette PR. Il est conservé : revenez à sa version ou sauvegardez-le séparément avant de reprendre.");
+      for (const change of changes) {
+        const current = workspace.files.get(change.path);
+        const desired = change.content === null ? undefined : decodeFile({ content: change.content, encoding: change.encoding });
+        if (bytesEqual(current, desired)) continue;
+        const hash = current ? await fileHash(current) : null;
+        if (!isRecord(record.baseHashes) || record.baseHashes[change.path] !== hash) {
+          throw new DraftConflictError("Un fichier modifié localement a aussi changé sur GitHub. Votre brouillon est conservé. Exportez-le ou choisissez explicitement de reprendre la version GitHub.");
+        }
+      }
+      const checkpoint = workspace.checkpoint();
+      workspace.files = applyChanges(workspace.files, changes, true);
+      workspace.finish(checkpoint);
     }
     if (record.sha === workspace.sha) {
       workspace.files = applyChanges(workspace.files, changes, true);
@@ -356,4 +375,10 @@ export class BrowserStorage {
       return { role: message.role, text: message.text };
     });
   }
+  async exportDraft(ref: string): Promise<{ sha: string; changes: FileChange[] }> {
+    const value = await this.draftRecord(ref);
+    if (!isRecord(value) || !isSha(value.sha)) throw new Error("Aucun brouillon local à exporter.");
+    return { sha: value.sha, changes: parseChanges(value.changes) };
+  }
+  async discardDraft(ref: string): Promise<void> { await this.draftRecord(ref, null); }
 }

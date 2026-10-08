@@ -27,9 +27,11 @@ export function hastBaseLinks(base) {
   };
 }
 
-export function rebaseStaticRedirect(html, site, base) {
+export function rebaseStaticRedirect(html, site, base, browserDraft = false) {
   const root = new URL(`${base.replace(/\/+$/, "")}/`, site).href;
+  const redirectRobots = `<meta name="robots" content="noindex, ${browserDraft ? "nofollow" : "follow"}">`;
   return html
     .replaceAll("https://federationchassevendee.github.io/site-web/", root)
-    .replace(/((?:href|content)="(?:0; url=)?)\/site-web\//g, `$1${new URL(root).pathname}`);
+    .replace(/((?:href|content)="(?:0; url=)?)\/site-web\//g, `$1${new URL(root).pathname}`)
+    .replace(/<meta name="robots" content="noindex, (?:follow|nofollow)">/, redirectRobots);
 }

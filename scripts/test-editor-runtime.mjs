@@ -218,6 +218,28 @@ test("mount preserves all local bytes and excludes credentials, generated files 
   assert.deepEqual(observed.urls, []);
 });
 
+test("preview mount excludes editor test modules and browser benchmark but keeps required production scripts", async (t) => {
+  const excluded = [
+    "scripts/test-editor-runtime.mjs",
+    "scripts/test-editor-policy.mjs",
+    "scripts/test-editor-backend.mjs",
+    "scripts/test-editor-future-feature.mjs",
+    "scripts/editor-browser-benchmark.mjs",
+  ];
+  const files = sources({
+    ...Object.fromEntries(excluded.map((path) => [path, 'import "../src/editor/runtime.ts";'])),
+    "scripts/check-generated-site.mjs": "export const check = true;",
+    "scripts/test-umami.mjs": "export const analytics = true;",
+  });
+  const { runtime, container } = setup(t);
+  await runtime.prepare(files, signal());
+  for (const path of excluded) assert.equal(container.files.has(path), false, path);
+  for (const path of [
+    "scripts/editor-headers.mjs", "scripts/base-links.mjs", "scripts/site-config.mjs",
+    "scripts/check-generated-site.mjs", "scripts/test-umami.mjs",
+  ]) assert.deepEqual(container.files.get(path), files.get(path), path);
+});
+
 test("npm ci and three isolated official WASI projects use exact lock versions and matching bridges", async (t) => {
   const { runtime, container } = setup(t);
   await runtime.prepare(sources(), signal());

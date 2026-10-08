@@ -7,9 +7,10 @@ export function staticRedirectBaseIntegration(site, base) {
     name: "fdc85-static-redirect-base",
     hooks: {
       "astro:build:done": ({ dir }) => {
+        const browserDraft = process.env.PUBLIC_BROWSER_DRAFT === "true";
         for (const route of unicodeRedirects) {
           const file = fileURLToPath(new URL(`${encodeURIComponent(route)}/index.html`, dir));
-          writeFileSync(file, rebaseStaticRedirect(readFileSync(file, "utf8"), site, base), "utf8");
+          writeFileSync(file, rebaseStaticRedirect(readFileSync(file, "utf8"), site, base, browserDraft), "utf8");
         }
       },
     },
