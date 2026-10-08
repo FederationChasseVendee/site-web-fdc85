@@ -79,4 +79,5 @@ test("fatal engine failures are not retried as malformed tool responses", async 
 test("default reads include useful source context and remain bounded for later pages", () => {
   assert.deepEqual(parseAction(JSON.stringify({action:"read",path})),{action:"read",path,startLine:1,endLine:81});
   assert.deepEqual(parseAction(JSON.stringify({action:"read",path,startLine:100})),{action:"read",path,startLine:100,endLine:180});
+  assert.throws(()=>parseAction(JSON.stringify({action:"read",path,startLine:"100"})),/81 lignes/);
 });

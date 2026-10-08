@@ -43,9 +43,12 @@ export function parseAction(raw: string): AgentAction {
   if (typeof value.path !== "string") throw new Error("Chemin de fichier absent.");
   if (value.action === "read") {
     const start = value.startLine ?? 1;
+    if (typeof start !== "number" || !Number.isSafeInteger(start) || start < 1) {
+      throw new Error("Lecture limitée à 81 lignes à partir de la ligne 1.");
+    }
     const end = value.endLine ?? (start + 80);
-    if (typeof start !== "number" || typeof end !== "number" || !Number.isSafeInteger(start) || !Number.isSafeInteger(end)
-      || start < 1 || end < start || end - start > 80) throw new Error("Lecture limitée à 81 lignes à partir de la ligne 1.");
+    if (typeof end !== "number" || !Number.isSafeInteger(end)
+      || end < start || end - start > 80) throw new Error("Lecture limitée à 81 lignes à partir de la ligne 1.");
     return { action: "read", path: value.path, startLine: start, endLine: end };
   }
   if (value.action === "search") {
