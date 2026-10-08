@@ -18,6 +18,7 @@ create: path, expectedHash:null, text (complete new file; respect src/content.co
 delete: path, expectedHash (from read).
 done: text (short French explanation of the actual result).
 Read a file BEFORE editing/deleting it. If a tool or validation fails, inspect the error and correct it, do not claim success. At done the controller checks Astro and can request fixes.
+Paths are repository-relative, with no leading slash: use src/content/home.json, never /src/content/home.json.
 Home is src/content/home.json. Navigation is src/content/site.json. Pages/articles are Markdown in src/content; schemas are src/content.config.ts. Styling is src/styles/global.css. Use tools rather than inventing paths or hashes.`;
 
 type AgentAction =
@@ -95,6 +96,7 @@ export async function runAgent(request: AgentRequest): Promise<string> {
   const { workspace, runtime, signal } = request;
   const checkpoint = workspace.checkpoint();
   const reads = new Map<string, string>();
+  const readablePaths = [...workspace.files.keys()].filter(readablePath);
   let lastResult = "";
   const actions: string[] = [];
   let errors = 0;
@@ -105,13 +107,14 @@ export async function runAgent(request: AgentRequest): Promise<string> {
     for (let step = 0; step < editorConfig.maxAgentSteps; step++) {
       signal.throwIfAborted();
       request.progress(step === 0 ? "Je consulte le site…" : "Je prépare votre modification…");
-      const context = JSON.stringify({ route: request.route, modification: request.title, actions: actions.slice(-8), result: lastResult });
-      const reply = await request.generate(systemPrompt, request.prompt, context.slice(0, editorConfig.maxContextCharacters), signal, { readHashes: [...reads.values()] });
+      const context = `${JSON.stringify({ route: request.route, modification: request.title, actions: actions.slice(-8) })}\nLATEST TOOL RESULT:\n${lastResult}`;
+      const reply = await request.generate(systemPrompt, request.prompt, context.slice(0, editorConfig.maxContextCharacters), signal, { readHashes: [...reads.values()], readablePaths });
       let action: AgentAction;
       try { action = parseAction(reply); }
       catch (error) {
         signal.throwIfAborted();
         if (++errors > editorConfig.maxCorrections) throw new Error(`Le modèle n'arrive pas à préparer une action valide : ${errorMessage(error)}`);
+        reads.clear();
         lastResult = `ERROR: ${errorMessage(error)}. Return a valid small JSON action.`;
         continue;
       }
@@ -139,7 +142,7 @@ export async function runAgent(request: AgentRequest): Promise<string> {
           const selected = lines.slice(action.startLine - 1, action.endLine).join("\n");
           if (selected.length > 5000) throw new Error("Ce passage est trop long. Lisez un intervalle plus court.");
           reads.set(action.path, hash);
-          lastResult = JSON.stringify({ path: action.path, expectedHash: hash, startLine: action.startLine, totalLines: lines.length, text: selected });
+          lastResult = `READ ${JSON.stringify(action.path)}\nSHA256: ${hash}\nLines ${action.startLine}-${Math.min(action.endLine, lines.length)} of ${lines.length}.\nSOURCE TEXT:\n${selected}`;
         } else if (action.action === "search") {
           if (!readablePath(action.path)) throw new Error("Fichier non accessible à l'assistant.");
           const matches = workspace.text(action.path).split("\n").flatMap((text, index) => text.includes(action.query) ? [{ line: index + 1, text: text.slice(0, 250) }] : []).slice(0, 20);
@@ -161,7 +164,8 @@ export async function runAgent(request: AgentRequest): Promise<string> {
       } catch (error) {
         signal.throwIfAborted();
         if (++errors > editorConfig.maxCorrections || corrections > editorConfig.maxCorrections) throw error;
-        lastResult = `TOOL ERROR: ${errorMessage(error)}. Correct it using the allowed tools.`;
+        reads.clear();
+        lastResult = `TOOL ERROR: ${errorMessage(error)}. Read the actual source again before correcting the change.`;
       }
     }
     throw new Error("La demande dépasse le nombre d'actions autorisé. Essayez une modification plus ciblée.");

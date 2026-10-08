@@ -81,3 +81,20 @@ test("default reads include useful source context and remain bounded for later p
   assert.deepEqual(parseAction(JSON.stringify({action:"read",path,startLine:100})),{action:"read",path,startLine:100,endLine:180});
   assert.throws(()=>parseAction(JSON.stringify({action:"read",path,startLine:"100"})),/81 lignes/);
 });
+
+test("source context is plain text rather than double-encoded JSON and failed edits require a fresh read", async () => {
+  const workspace=createWorkspace(), run=runtime();
+  const hash=await fileHash(workspace.files.get(path));
+  const contexts=[], permissions=[];
+  const actions=[{action:"read",path},{action:"edit",path,expectedHash:hash,oldText:"invented",newText:"Nouveau"},{action:"read",path},{action:"done",text:"Pas de modification."}];
+  await runAgent(request(workspace,run,async(_system,_request,context,_signal,options)=>{
+    contexts.push(context);
+    permissions.push(options.readHashes);
+    assert.deepEqual(options.readablePaths,[path]);
+    return JSON.stringify(actions.shift());
+  }));
+  assert.ok(contexts[1].includes(`SOURCE TEXT:\n${initial}`));
+  assert.equal(contexts[1].includes('\\\\"title\\\\"'),false);
+  assert.deepEqual(permissions,[[],[hash],[],[hash]]);
+  assert.equal(workspace.dirty,false);
+});

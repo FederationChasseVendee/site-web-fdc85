@@ -213,42 +213,61 @@ distant limité à `127.0.0.1:9222` (`--remote-debugging-address=127.0.0.1
 profil ne doit pas être partagé avec une autre session de développement.
 Laisser Astro tourner sur le port `4322`, puis ouvrir
 `http://127.0.0.1:4335/` dans un onglet Chrome ou Edge de premier niveau
-(pas dans un iframe). Cliquer sur le bouton de test **Coder 3B** pour lancer le
+(pas dans un iframe). Choisir **Coder 3B** ou **Coder 1,5B**, puis lancer le
 vrai WebContainer et les dix demandes du benchmark : contenus JSON, Markdown et
 CSS. Chaque cas doit être isolé, avec vérification exacte de la modification
 ciblée et aucune modification hors cible. Le seuil de validation n’est pas
 encore établi.
 
 La vérification préalable a confirmé npm, WASI, le serveur Astro de
-développement et des réponses HTTP 200 avec le modèle GPU. Une première
-tentative a donné 0/10 sous un plafond de quatre minutes ; son premier timeout
-a révélé la réutilisation invalide d’un moteur interrompu. Les cas suivants
-n’étaient donc pas indépendants et ce résultat ne permet pas d’établir le seuil.
+développement et des réponses HTTP 200 avec le modèle GPU. Les mesures réelles
+restent non validées :
 
-Une tentative avec un schéma `oneOf` et des regex a échoué au premier cas après
-324 secondes : `Grammar matcher rejected the newly sampled token`. Le candidat
-avait inventé un hash et du texte avant la lecture de la source, puis a été
-bloqué. L’exécution a été arrêtée manuellement pendant le cas 2 ; seul le cas 1
-était complet et aucun seuil n’a été atteint. Cette tentative n’est pas un
-résultat de qualité validé.
+- première tentative : **0/10** sous un plafond de quatre minutes ; le timeout
+  a révélé la réutilisation invalide d’un moteur interrompu, donc les cas
+  suivants n’étaient pas indépendants ;
+- schéma `oneOf` et regex : échec après **324 secondes** avec
+  `Grammar matcher rejected the newly sampled token`, après un candidat ayant
+  inventé un hash et du texte avant lecture ;
+- objet plat Coder 3B : timeout du premier cas après **480 secondes** ;
+- Coder 1,5B : lecture complète de 81 lignes, puis échec après **468 secondes**
+  avec `oldText` absent ou ambigu ; candidat incorrect bloqué ;
+- contexte brut Coder 3B : répétition de `/src/content/home.json` après
+  **259 secondes**, alors qu’un chemin absolu est interdit ;
+- correctif de chemins : lecture correcte, puis timeout du premier cas après
+  **481 secondes** ; le modèle a recopié
+  `« V démarches de chasse, simplement »` au lieu du vrai
+  `« Vos démarches de chasse, simplement »`, et l’édition a été refusée.
 
-La correction remplace cette union par un objet plat : les actions d’écriture
-ne sont autorisées qu’après lecture de la source, et les hashes sont contraints
-à l’énumération des SHA réellement lus. Il n’y a plus de réutilisation du moteur
-après une erreur de grammaire ou de génération ; les erreurs fatales remontent
-immédiatement. La nouvelle campagne réelle utilise aussi une isolation entre
-cas et une échéance commune de **huit minutes** pour l’application et le
-benchmark ; elle est encore en cours.
+L’exécution a été arrêtée avant le cas 2 lors du rechargement. La cause
+identifiée était aussi un contexte JSON doublement encodé contenant le texte
+source et les corrections sans source visible.
 
-Cette procédure est une tentative en cours : aucun résultat mesuré n’est
-présenté comme une qualité validée. À la fin, arrêter les deux serveurs
-(Ctrl+C), puis supprimer précisément
+Le contrat à conserver est désormais : texte brut sous `SOURCE TEXT`, actions
+d’écriture uniquement après lecture, hashes limités aux SHA lus, chemins limités
+à la liste réellement lisible de la phase courante et relecture obligatoire
+après échec. Le générateur reçoit cette liste et un schéma `enum` de chemins
+pendant la lecture ; la policy n’est pas relâchée. Il n’y a plus de
+réutilisation du moteur après une erreur de grammaire ou de génération, et les
+erreurs fatales remontent immédiatement.
+
+Aucun score de 9/10 n’a été atteint et aucun ensemble de dix cas indépendants
+n’a été terminé. npm, WASI, Astro et les réponses HTTP 200 sont prouvés, mais
+le modèle local reste trop lent et peu fiable sur un GPU sans f16. Les 99 tests,
+le typecheck et le build passent. Le travail reste une pull request brouillon, la production est désactivée et la
+performance ainsi que la qualité restent à résoudre. Les corrections précédentes
+ont été poussées dans `c1766f9` et `4e2390f`.
+
+Cette procédure est documentée pour une reprise ultérieure : aucun résultat
+mesuré ne valide la qualité globale. À la fin d’une exécution, arrêter les deux
+serveurs (Ctrl+C), puis supprimer précisément
 `public\editor-validation-archive.zip`. Ne pas envoyer l’archive, créer de
 pull request, fusionner ou publier pendant ce benchmark.
 
 Le runtime navigateur vient du prototype PR17. Le benchmark de cohabitation de
-cette nouvelle intégration n’est pas encore terminé : cette documentation ne
-revendique donc aucune mesure de qualité d’un nouveau modèle en production.
+cette nouvelle intégration reste bloqué sur la performance et la qualité :
+cette documentation ne revendique aucune mesure de qualité d’un nouveau modèle
+en production.
 
 En développement, le runtime est activé par le mode dev. Pour un build non
 développement, `PUBLIC_EDITOR_RUNTIME_ENABLED=true` est **obligatoire** avant
@@ -258,7 +277,7 @@ runtime est MIT, mais la licence du service runtime est distincte. Aucun achat,
 compte fournisseur ou changement de configuration externe n’est fourni ou
 partagé par ce dépôt ; le runtime de production reste donc opt-in et bloqué
 tant que cette confirmation de licence n’a pas été obtenue. Cette campagne
-n’autorise ni n’active la production.
+n’autorise ni n’active la production, qui reste actuellement désactivée.
 
 ## Configuration externe de l’authentification et des Functions
 

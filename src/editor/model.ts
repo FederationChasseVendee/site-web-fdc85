@@ -3,12 +3,12 @@ import type { WebWorkerMLCEngine } from "@mlc-ai/web-llm";
 import { errorMessage } from "./contracts.ts";
 
 const string = { type: "string" };
-export interface GenerationOptions { readHashes: readonly string[] }
+export interface GenerationOptions { readHashes: readonly string[]; readablePaths: readonly string[] }
 
 export function actionSchema(options: GenerationOptions) {
   const properties: Record<string, object> = {
     action: { type: "string", enum: ["list", "read", "search", "done", ...(options.readHashes.length ? ["edit", "create", "delete"] : [])] },
-    path: string, query: string, text: string,
+    path: options.readHashes.length ? string : { type: "string", enum: options.readablePaths }, query: string, text: string,
   };
   if (options.readHashes.length) {
     properties.startLine = { type: "integer", minimum: 1 };

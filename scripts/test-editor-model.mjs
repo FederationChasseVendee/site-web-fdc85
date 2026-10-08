@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { actionSchema, CodeModel } from "../src/editor/model.ts";
 
-const noReads = { readHashes: [] };
+const noReads = { readHashes: [], readablePaths: ["src/content/home.json"] };
 
 function fixture(response) {
   const statuses = [], requests = [];
@@ -45,13 +45,14 @@ test("valid replies use constrained JSON and never silently accept truncated com
   assert.equal(schema.properties.action.enum.includes("edit"), false);
   assert.equal("oldText" in schema.properties, false);
   assert.equal("endLine" in schema.properties, false);
+  assert.deepEqual(schema.properties.path.enum, noReads.readablePaths);
   const truncated = fixture({ choices: [{ message: { content: '{"action":"read"}' }, finish_reason: "length" }] });
   await assert.rejects(truncated.model.complete("system", "request", "workspace", new AbortController().signal, noReads), /trop longue/);
   assert.equal(truncated.model.ready, false);
 });
 test("write grammars expose only versions read from the real filesystem", () => {
   const hash = "a".repeat(64);
-  const schema = actionSchema({ readHashes: [hash, hash] });
+  const schema = actionSchema({ ...noReads, readHashes: [hash, hash] });
   assert.equal(schema.properties.action.enum.includes("edit"), true);
   assert.deepEqual(schema.properties.expectedHash.enum, [hash, null]);
 });
