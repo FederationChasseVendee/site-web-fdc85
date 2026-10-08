@@ -21,7 +21,8 @@ export function editablePath(path: string): boolean {
 }
 
 export function readablePath(path: string): boolean {
-  return editablePath(path) || ["src/content.config.ts", "src/lib/urls.ts", "src/lib/content.ts"].includes(path);
+  return editablePath(path) && /\.(md|json|astro|css|ts|svg)$/.test(path)
+    || ["src/content.config.ts", "src/lib/urls.ts", "src/lib/content.ts"].includes(path);
 }
 
 export function workspacePath(path: string): boolean {

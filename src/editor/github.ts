@@ -1,5 +1,5 @@
-import { isRecord, type EditorStatus, type EditorPull, type FileChange, type PullChecks, type MergeResult, type DeploymentStatus, type RepositoryAdapter } from "./contracts";
-import { baseBranch, isSha, repositoryName, validPath } from "./policy";
+import { isRecord, type EditorStatus, type EditorPull, type FileChange, type PullChecks, type MergeResult, type DeploymentStatus, type RepositoryAdapter } from "./contracts.ts";
+import { baseBranch, isSha, repositoryName, validPath } from "./policy.ts";
 
 export class EditorApiError extends Error {
   readonly status: number;
