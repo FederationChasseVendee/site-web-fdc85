@@ -84,6 +84,7 @@ const server = createServer((incoming, outgoing) => {
   if (incoming.url === "/") { outgoing.setHeader("Content-Type", "text/html; charset=utf-8"); outgoing.end(html); return; }
   const target = new URL(incoming.url, upstream);
   if (target.origin !== upstream) { outgoing.writeHead(400); outgoing.end("Invalid proxy target"); return; }
+  if (!target.pathname.startsWith("/site-web/")) target.pathname = `/site-web${target.pathname}`;
   const proxy = request(target, { method: incoming.method }, response => {
     outgoing.writeHead(response.statusCode ?? 502, { ...response.headers, "cross-origin-opener-policy": "same-origin", "cross-origin-embedder-policy": "require-corp" });
     pipeline(response, outgoing, error => { if (error) console.error(error.message); });

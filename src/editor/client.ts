@@ -198,12 +198,14 @@ async function abandonPull(pull: EditorPull) {
 element("create-form", HTMLFormElement).addEventListener("submit", (event) => {
   event.preventDefault();
   const name = element("request-name", HTMLInputElement).value.trim();
-  if (name && !controller.busy) void act(() => controller.create(name));
+  if (!name) { notice("Donnez un nom à la modification avant de la créer.", true); return; }
+  if (!controller.busy) void act(() => controller.create(name));
 });
 element("chat-form", HTMLFormElement).addEventListener("submit", (event) => {
   event.preventDefault();
   const request = prompt.value.trim();
-  if (!request || button("send").disabled) return;
+  if (!request) { notice("Décrivez une modification avant de l'envoyer.", true); return; }
+  if (button("send").disabled) return;
   prompt.value = "";
   void act(() => controller.chat(request, (system, request, context, signal) => model.complete(system, request, context, signal)));
 });

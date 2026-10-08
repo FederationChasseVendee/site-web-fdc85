@@ -176,13 +176,26 @@ function setup(t, options = {}) {
   return { runtime, container, observed };
 }
 
-async function until(predicate) {
-  for (let attempt = 0; attempt < 100; ++attempt) {
+async function until(predicate, timeoutMs = 5_000) {
+  const deadline = performance.now() + timeoutMs;
+  while (performance.now() < deadline) {
     if (predicate()) return;
-    await new Promise((resolve) => setImmediate(resolve));
+    await new Promise((resolve) => setTimeout(resolve, Math.min(5, deadline - performance.now())));
   }
-  assert.fail("runtime did not reach the expected operation");
+  assert.fail(`runtime did not reach the expected operation within ${timeoutMs} ms`);
 }
+
+test("until waits for asynchronous completion and fails at a bounded elapsed-time deadline", async () => {
+  let completed = false;
+  const timer = setTimeout(() => { completed = true; }, 25);
+  try {
+    await until(() => completed);
+    assert.equal(completed, true);
+  } finally {
+    clearTimeout(timer);
+  }
+  await assert.rejects(until(() => false, 20), /within 20 ms/);
+});
 
 test("module imports without booting an SDK or requiring browser globals", (t) => {
   const { runtime, observed } = setup(t);
@@ -649,19 +662,26 @@ test("non-cancellable filesystem work cannot write late into a different branch 
   const second = new FakeContainer();
   const pending = deferred();
   const mount = first.mount.bind(first);
-  first.mount = async (tree) => { await pending.promise; await mount(tree); };
+  let mountStarted = false;
+  let mountFinished = false;
+  first.mount = async (tree) => {
+    mountStarted = true;
+    await pending.promise;
+    await mount(tree);
+    mountFinished = true;
+  };
   let boots = 0;
   const { runtime } = setup(t, { boot: async () => ++boots === 1 ? first : second });
   const controller = new AbortController();
   const rejection = assert.rejects(runtime.open(sources({ "src/content/home.json": "old branch" }), controller.signal), { name: "AbortError" });
-  await until(() => first.listeners.get("error")?.size === 1);
-  await new Promise((resolve) => setImmediate(resolve));
+  await until(() => mountStarted);
   controller.abort();
   await rejection;
   assert.equal(first.teardownCount, 1);
   await runtime.open(sources({ "src/content/home.json": "new branch" }), signal());
   pending.resolve();
-  await new Promise((resolve) => setImmediate(resolve));
+  await until(() => mountFinished);
+  assert.equal(decode(first.files.get("src/content/home.json")), "old branch");
   assert.equal(decode(second.files.get("src/content/home.json")), "new branch");
   assert.equal(second.teardownCount, 0);
 });
