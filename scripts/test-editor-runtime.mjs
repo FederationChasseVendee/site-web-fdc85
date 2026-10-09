@@ -453,14 +453,14 @@ test("validate actually invokes Astro check, wrapper build and generated-site ch
   const start = container.calls.length;
   await runtime.validate(signal());
   const validation = container.calls.slice(start);
+  assert.deepEqual(validation.map(({ command }) => command), ["node", "node", "npm", "npm"]);
   assert.deepEqual(validation.map(({ args }) => args), [
-    ["exec", "--no", "--", "astro", "check", "--config", "editor.browser.config.mjs"],
-    ["exec", "--no", "--", "astro", "build", "--config", "editor.browser.config.mjs"],
+    [".editor/validate.mjs", "check"],
+    [".editor/validate.mjs", "build"],
     ["run", "check:generated"],
     ["run", "dev", "--", "--config", "editor.browser.config.mjs", "--host", "0.0.0.0", "--port", "4321"],
   ]);
-  for (const { command, options } of validation) {
-    assert.equal(command, "npm");
+  for (const { options } of validation) {
     assert.equal(options.env.ASTRO_SITE, "https://browser-draft.invalid");
     assert.equal(options.env.ASTRO_BASE_PATH, "/");
     assert.equal(options.env.PUBLIC_BROWSER_DRAFT, "true");
@@ -468,6 +468,40 @@ test("validate actually invokes Astro check, wrapper build and generated-site ch
     assert.equal(Object.hasOwn(options.env, "PUBLIC_EDITOR_PARENT_ORIGIN"), false);
   }
   assert.equal(container.installs, 1);
+});
+
+test("browser validators exit only after official SDK results and diagnostics, never after printed success", async (t) => {
+  const { runtime, container } = setup(t);
+  await runtime.prepare(sources(), signal());
+  const script = decode(container.files.get(".editor/validate.mjs"))
+    .replace('import { build, sync } from "astro";', "")
+    .replace('import { check } from "@astrojs/check";', "");
+  for (const [mode, failed, expected] of [["check", false, 0], ["check", true, 1], ["check", undefined, 1], ["build", false, 0], ["build", true, 1]]) {
+    const trace = [], errors = [];
+    let finish;
+    const pending = new Promise(resolve => { finish = resolve; });
+    const config = value => assert.equal(value.configFile, "editor.browser.config.mjs");
+    const context = {
+      sync: async value => { config(value); trace.push("sync"); },
+      check: async value => { assert.equal(value.watch, false); trace.push("check"); await pending; return failed; },
+      build: async value => { config(value); trace.push("build"); await pending; if (failed) throw new Error("Invalid site"); },
+      console: { error: error => errors.push(error.message) },
+      process: {
+        argv: ["node", ".editor/validate.mjs", mode], env: {},
+        stdout: { write: (text, callback) => { assert.equal(text, ""); trace.push("stdout"); callback(); } },
+        stderr: { write: (text, callback) => { assert.equal(text, ""); trace.push("stderr"); callback(); } },
+        exit: code => trace.push(`exit:${code}`),
+      },
+    };
+    const result = runInNewContext(`(async () => { ${script} })()`, context);
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(trace.some(value => value.startsWith("exit:")), false);
+    finish();
+    await result;
+    assert.deepEqual(trace, [...(mode === "check" ? ["sync", "check"] : ["build"]), "stdout", "stderr", `exit:${expected}`]);
+    assert.equal(context.process.env.NODE_ENV, "production");
+    assert.equal(errors.length, mode === "check" && failed === undefined || mode === "build" && failed ? 1 : 0);
+  }
 });
 
 test("browser process environment uses only the current exact parent origin when location exists", async (t) => {

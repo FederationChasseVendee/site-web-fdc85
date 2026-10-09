@@ -27,6 +27,7 @@ export type RuntimeBoot = () => Promise<RuntimeContainer>;
 
 const configPath = "editor.browser.config.mjs";
 const internalPath = ".editor";
+const validationPath = `${internalPath}/validate.mjs`;
 const environment = {
   ASTRO_BASE_PATH: "/",
   ASTRO_SITE: "https://browser-draft.invalid",
@@ -208,6 +209,34 @@ export default {
 `;
 }
 
+function browserValidation(): string {
+  return `import { build, sync } from "astro";
+import { check } from "@astrojs/check";
+process.env.NODE_ENV = "production";
+async function validate() {
+  const config = { configFile: "${configPath}" };
+  if (process.argv[2] === "check") {
+    await sync(config);
+    const failed = await check({ watch: false });
+    if (typeof failed !== "boolean") throw new Error("Astro check n'a pas retourné de résultat.");
+    return failed ? 1 : 0;
+  }
+  if (process.argv[2] === "build") {
+    await build(config);
+    return 0;
+  }
+  throw new Error("Commande de validation inconnue.");
+}
+const code = await validate().catch(error => { console.error(error); return 1; });
+await Promise.all([process.stdout, process.stderr].map(stream =>
+  new Promise((resolve, reject) => stream.write("", error => error ? reject(error) : resolve()))
+));
+// Finish the dedicated CLI only after the real result and diagnostic output.
+// Browser WASI workers can otherwise keep a completed validator alive.
+process.exit(code);
+`;
+}
+
 interface Job {
   controller: AbortController;
   generation: number;
@@ -295,9 +324,9 @@ export class BrowserRuntime implements RuntimeAdapter {
       const restart = this.server !== null;
       await this.stopServer(job);
       this.hooks.stage("Vérification Astro");
-      await this.run("npm", ["exec", "--no", "--", "astro", "check", "--config", configPath], job, "astro check");
+      await this.run("node", [validationPath, "check"], job, "astro check");
       this.hooks.stage("Construction Astro");
-      await this.run("npm", ["exec", "--no", "--", "astro", "build", "--config", configPath], job, "astro build");
+      await this.run("node", [validationPath, "build"], job, "astro build");
       await this.run("npm", ["run", "check:generated"], job, "Vérification du site généré");
       if (restart) await this.startServer(job);
       this.hooks.stage("Vérification terminée");
@@ -449,6 +478,7 @@ export class BrowserRuntime implements RuntimeAdapter {
       await this.io(job, () => container.fs.rm(path, { recursive: true, force: true }), `Nettoyage de ${path}`);
     }
     await this.writeFile(configPath, browserConfig(), job);
+    await this.writeFile(validationPath, browserValidation(), job);
   }
 
   private async prepareFiles(files: Map<string, Uint8Array>, job: Job): Promise<void> {
