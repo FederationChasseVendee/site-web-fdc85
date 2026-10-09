@@ -294,6 +294,21 @@ test("immutable preview URLs canonicalize login before assigning a host-bound OA
   assert.equal(canonical.headers.getSetCookie().length,1);
 });
 
+test("GitHub requests do not invoke the platform fetch with the adapter as its receiver", async () => {
+  const app=setup();
+  await app.authenticate();
+  let calls=0;
+  const handle=createEditorHandler({ now:()=>Date.parse("2026-10-08T20:00:00Z"), fetch: function(input,init) {
+    assert.equal(this,undefined);
+    calls++;
+    return app.github.fetch(input,init);
+  } });
+  const result=await handle(new Request(`${origin}/api/editor/status`,{headers:{Cookie:app.cookie()}}),app.env);
+  assert.equal(result.status,200);
+  assert.equal((await result.json()).authenticated,true);
+  assert.equal(calls,2);
+});
+
 test("OAuth uses one-time state, PKCE, encrypted TTL storage and opaque rotated cookies", async () => {
   const app = setup();
   app.env.EDITOR_BASE_PATH = "/site-web";

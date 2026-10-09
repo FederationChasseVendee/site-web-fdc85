@@ -331,8 +331,9 @@ class GitHub {
 
   async response(path: string, method = "GET", body?: object): Promise<Response> {
     let response: Response;
+    const fetcher = this.fetcher;
     try {
-      response = await this.fetcher(path.startsWith("https://api.github.com/") ? path : `${apiRoot}${path}`, {
+      response = await fetcher(path.startsWith("https://api.github.com/") ? path : `${apiRoot}${path}`, {
         method, redirect: "manual",
         headers: {
           Authorization: `Bearer ${this.session.accessToken}`, Accept: "application/vnd.github+json",
