@@ -142,6 +142,7 @@ export class CodeModel {
       if (!content) throw new Error("Le modèle n'a pas produit de réponse exploitable.");
       if (response.choices[0]?.finish_reason === "length") throw new Error("La réponse du modèle est trop longue. Demandez un changement plus ciblé.");
       this.log(`IA locale : ${response.usage?.prompt_tokens ?? "?"} tokens d'entrée, ${response.usage?.completion_tokens ?? "?"} tokens de sortie.`);
+      this.log(`Action IA proposée : ${content.slice(0, 1200)}`);
       return content;
     } catch (error) {
       if (generation === this.generation) {

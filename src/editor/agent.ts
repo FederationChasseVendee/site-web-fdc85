@@ -12,7 +12,9 @@ Actions:
 {"action":"read","path":"file"} reads up to 81 lines. Optional startLine/endLine (1-based); format:"lines" shows raw JSON instead of values.
 {"action":"search","path":"file","query":"literal text"} finds line numbers.
 {"action":"edit","target":"EXACT identifier from latest read","text":"new value"} replaces only that source reference. JSON strings need no extra quotes. Other JSON values need valid JSON. A line reference needs the complete new line, without a newline.
+Line identifiers are L1, L2, etc., not CSS variable names or file paths. For example, target:"L2" replaces the complete second line. JSON identifiers are the displayed pointers, e.g. /hero/title.
 {"action":"lines","path":"file","startLine":1,"endLine":2,"text":"new lines"} replaces only previously shown raw lines.
+For related changes to consecutive lines, use ONE lines action containing the complete replacement block. Keep identifiers, layout and unrelated values. For a global palette, inspect theme tokens and matching literal colors elsewhere; preserve contrast.
 {"action":"create","path":"new file","text":"complete content"}
 {"action":"delete","path":"previously read file"}
 {"action":"done"} finishes; optional text is a short French summary.
