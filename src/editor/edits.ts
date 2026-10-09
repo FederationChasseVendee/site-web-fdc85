@@ -1,9 +1,11 @@
+import { parse, walk } from "css-tree";
+
 export interface EditTarget {
   path: string;
   hash: string;
   start: number;
   end: number;
-  kind: "string" | "json" | "line";
+  kind: "string" | "json" | "css" | "line";
   value: string;
 }
 
@@ -12,6 +14,29 @@ export function sourceTargets(path: string, source: string, hash: string, startL
   const lines = source.split("\n");
   const first = lines.slice(0, startLine - 1).join("\n").length + (startLine > 1 ? 1 : 0);
   const last = Math.min(source.length, lines.slice(0, endLine).join("\n").length);
+  if (path.endsWith(".css") && format === "values") {
+    const ast = parse(source, { positions: true, onParseError: (error) => { throw error; } });
+    const duplicates = new Set<string>();
+    walk(ast, {
+      visit: "Declaration",
+      enter(node) {
+        const location = node.value.loc;
+        if (!location || location.start.offset < first || location.end.offset > last) return;
+        const id = `L${location.start.line}/${node.property}`;
+        if (targets.has(id) || duplicates.has(id)) {
+          targets.delete(id);
+          duplicates.add(id);
+          return;
+        }
+        let start = location.start.offset, end = location.end.offset;
+        while (start < end && /\s/.test(source[start]!)) start++;
+        while (end > start && /\s/.test(source[end - 1]!)) end--;
+        if (start === end) return;
+        targets.set(id, { path, hash, start, end, kind: "css", value: source.slice(start, end) });
+      },
+    });
+    if (targets.size) return targets;
+  }
   if (!path.endsWith(".json") || format === "lines") {
     let offset = first;
     for (let line = startLine; line <= Math.min(endLine, lines.length); line++) {
@@ -71,6 +96,10 @@ export function sourceTargets(path: string, source: string, hash: string, startL
 
 export function applyTarget(source: string, target: EditTarget, text: string): string {
   if (target.kind === "line" && /[\r\n]/.test(text)) throw new Error("Une référence de ligne ne remplace qu'une ligne. Utilisez l'action lines pour plusieurs lignes.");
+  if (target.kind === "css") {
+    if (!text.trim()) throw new Error("Une valeur CSS ne peut pas être vide.");
+    parse(text, { context: "value", onParseError: (error) => { throw error; } });
+  }
   if (target.kind === "json") JSON.parse(text);
   const replacement = target.kind === "string" ? JSON.stringify(text)
     : target.kind === "json" ? text.trim() : text;

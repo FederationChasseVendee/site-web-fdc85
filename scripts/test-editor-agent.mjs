@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { LocalWorkspace } from "../src/editor/workspace.ts";
-import { completionPrompt, inspectionPrompt, systemPrompt, parseAction, replaceText, runAgent } from "../src/editor/agent.ts";
+import { completionPrompt, inspectionPrompt, systemPrompt, valueEditPrompt, parseAction, replaceText, runAgent } from "../src/editor/agent.ts";
 import { fileHash } from "../src/editor/policy.ts";
 import { applyTarget, applyTargets, replaceReadLines, sourceTargets } from "../src/editor/edits.ts";
 import { GpuResourcesError } from "../src/editor/model.ts";
@@ -49,7 +49,7 @@ test("batch references are applied atomically in source order with one undo and 
   const file = "src/styles/global.css", original = ":root {\r\n  --a: #123456;\r\n  --b: #654321;\r\n  --radius: 1rem;\r\n}\r\n";
   const workspace = new LocalWorkspace("a".repeat(40), new Map([[file, bytes(original)]])), run = runtime();
   await runAgent(request(workspace, run, generator([
-    { action: "read", path: file, endLine: 5 },
+    { action: "read", path: file, endLine: 5, format: "lines" },
     { action: "edits", changes: [{ target: "L3", text: "  --b: #987654;" }, { target: "L2", text: "  --a: #abcdef;" }] },
     { action: "done" },
   ])));
@@ -96,7 +96,7 @@ test("validation failures reach the model and require a fresh read and real corr
     return JSON.stringify(actions.shift());
   }));
   assert.equal(prompts[3], inspectionPrompt);
-  assert.equal(prompts[4], systemPrompt);
+  assert.equal(prompts[4], valueEditPrompt);
   assert.match(contexts[3], /Invalid qualified rule/);
   assert.match(contexts[4], /Invalid qualified rule/);
   assert.equal(permissions[3].hasChanges, false);
@@ -265,9 +265,53 @@ test("the generator receives only inspection tools until a verified read", async
   const workspace=createWorkspace(),run=runtime(),systems=[];
   const actions=[{action:"read",path},{action:"edit",target:"/title",text:"Nouveau"},{action:"done",text:"Terminé."}];
   await runAgent(request(workspace,run,async(system)=>{systems.push(system);return JSON.stringify(actions.shift());}));
-  assert.deepEqual(systems,[inspectionPrompt,systemPrompt,completionPrompt]);
+  assert.deepEqual(systems,[inspectionPrompt,valueEditPrompt,completionPrompt]);
   assert.equal(inspectionPrompt.includes('"action":"edit"'),false);
   assert.equal(inspectionPrompt.includes('"action":"done"'),false);
+});
+
+test("CSS value references preserve declarations, comments, important flags and CRLF without exposing source instructions", () => {
+  const file = "src/styles/theme.css";
+  const source = '/* --fake: red; */\r\n:root {\r\n  --brown: #123456;\r\n  --shadow: 0 1rem rgb(1 2 3 / 20%);\r\n}\r\na { color: var(--brown) !important; content: "--fake: blue;"; }\r\n';
+  const targets = sourceTargets(file, source, "hash", 1, 6, "values");
+  assert.equal(targets.has("L1/--fake"), false);
+  assert.equal(targets.has("L3"), false);
+  assert.equal(targets.get("L3/--brown").value, "#123456");
+  assert.equal(targets.get("L4/--shadow").value, "0 1rem rgb(1 2 3 / 20%)");
+  const result = applyTargets(source, [{ target: targets.get("L3/--brown"), text: "#654321" }, { target: targets.get("L6/color"), text: "rgb(4 5 6)" }]);
+  assert.equal(result, source.replace("#123456", "#654321").replace("var(--brown)", "rgb(4 5 6)"));
+  assert.match(result, / !important;/);
+  assert.deepEqual([...sourceTargets(file, source, "hash", 3, 3, "values").keys()], ["L3/--brown"]);
+  assert.throws(() => applyTarget(source, targets.get("L3/--brown"), "#654321; --injected: red"), /Unexpected|expected/i);
+  assert.throws(() => applyTarget(source, targets.get("L3/--brown"), ""), /vide/);
+});
+
+test("CSS code and duplicate declarations retain explicit raw-line access without ambiguous value references", () => {
+  const file = "src/styles/theme.css", source = ":root { --a: red; --a: blue; }\nbody {\n color: green;\n}\n";
+  const values = sourceTargets(file, source, "hash", 1, 4, "values");
+  assert.equal(values.has("L1/--a"), false);
+  assert.equal(values.get("L3/color").value, "green");
+  const raw = sourceTargets(file, source, "hash", 1, 1, "lines");
+  assert.deepEqual([...raw.keys()], ["L1"]);
+  assert.equal(raw.get("L1").value, ":root { --a: red; --a: blue; }");
+  assert.deepEqual([...sourceTargets(file, source, "hash", 2, 2, "values").keys()], ["L2"]);
+  assert.throws(() => sourceTargets(file, ":root {\n color red;\n}\n", "hash", 1, 3, "values"));
+});
+
+test("the value phase applies model-chosen CSS colors without reconstructing selectors or disturbing layout", async () => {
+  const file = "src/styles/theme.css", source = ":root {\n  --primary: #123456;\n  --surface: #fdfcf8;\n  --radius: 1rem;\n}\n";
+  const workspace = new LocalWorkspace("a".repeat(40), new Map([[file, bytes(source)]])), run = runtime(), systems = [], options = [];
+  const actions = [{ action: "read", path: file }, { action: "edits", changes: [{ target: "L2/--primary", text: "#654321" }, { target: "L3/--surface", text: "#faf1e8" }] }, { action: "done" }];
+  await runAgent(request(workspace, run, async (system, _request, context, _signal, permissions) => {
+    systems.push(system); options.push(permissions);
+    if (systems.length === 2) assert.match(context, /L2\/--primary = #123456/);
+    return JSON.stringify(actions.shift());
+  }));
+  assert.deepEqual(systems, [inspectionPrompt, valueEditPrompt, completionPrompt]);
+  assert.deepEqual(options.map(option => option.valueTargetsOnly), [false, true, false]);
+  assert.equal(workspace.text(file), source.replace("#123456", "#654321").replace("#fdfcf8", "#faf1e8"));
+  assert.equal(run.writes.length, 1);
+  assert.equal(workspace.history.length, 1);
 });
 
 test("a single exact JSON fence is accepted but prose, multiple blocks and invented actions are rejected", () => {

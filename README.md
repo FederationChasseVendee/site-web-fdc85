@@ -302,7 +302,11 @@ source et les corrections sans source visible.
 
 Le contrat actuel ne demande plus au modèle de recopier un hash ou un ancien
 texte. Une lecture expose des références vérifiées : pointeurs JSON pour les
-valeurs, identifiants de lignes pour Markdown, CSS et templates. L’action
+valeurs, références de valeurs CSS comme `L2/--forest-950` et identifiants
+de lignes pour Markdown et templates. Un parseur CSS expose uniquement
+les plages réelles des valeurs de déclaration, sans recopier les sélecteurs,
+accolades ou `!important`. `format:"lines"` conserve l’édition du code CSS.
+L’action
 `edit(target, text)` remplace uniquement la référence lue ; `lines` permet un
 passage de code dont toutes les lignes ont été consultées. Les versions restent
 vérifiées par le filesystem hôte ; les autres octets, fins de ligne et valeurs
@@ -317,7 +321,9 @@ réessayer, au lieu de répéter `done` et la compilation du même fichier inval
 
 Les phases d’inspection, d’édition et de conclusion sont séparées. Aucun outil
 d’écriture n’est proposé avant une lecture réelle ; aucune conclusion initiale
-n’est acceptée. Sur les GPU f16, le schéma JSON contraint les chemins et
+n’est acceptée. Une lecture de valeurs utilise un contrat court d’édition
+groupée ; les créations et changements de code demandent d’abord une lecture
+brute. Sur les GPU f16, le schéma JSON contraint les chemins et
 références proposés. Sur le GPU Intel fp32 testé, le matcher a rejeté des tokens
 avec le schéma détaillé **et** avec un schéma d’objet JSON générique, y compris
 sur le déploiement. Ce profil conserve donc le même modèle local et le
@@ -364,10 +370,17 @@ sa branche existe toujours au commit sauvegardé ci-dessus et que `main`
 est inchangée. Le navigateur conserve les brouillons et revient au choix
 de modification.
 
+Le rejeu de la demande de palette marron sur la PR de test #20 a ensuite
+exposé une perte du périphérique GPU avec 3B et plusieurs actions invalides
+avec 1,5B. Les essais refusés ont restauré les fichiers et n’ont rien
+sauvegardé. La récupération GPU, les références CSS et le contrat court
+sont couverts par les tests ; le succès de cette demande déployée reste
+à vérifier.
+
 Aucun score de 9/10 n’a été atteint et aucun ensemble de dix cas indépendants
 n’a été terminé : deux réussites du même scénario ne constituent pas cette
-mesure. Le POC est fonctionnel, mais une demande prend encore plusieurs
-minutes sur l’Intel gen-9 sans f16 testé. Les **127 tests**, le typecheck et le
+mesure. Le scénario de titre du POC fonctionne, mais une demande prend encore
+plusieurs minutes sur l’Intel gen-9 sans f16 testé. Les **130 tests**, le typecheck et le
 build passent. La PR d’implémentation reste brouillon ; le runtime, l’App,
 le KV et les secrets ne sont activés que sur Preview. Une licence pour
 l’utilisation commerciale et une mesure de qualité globale restent requises

@@ -9,11 +9,12 @@ export interface GenerationOptions {
   targets?: readonly string[];
   hasChanges?: boolean;
   validationFailed?: boolean;
+  valueTargetsOnly?: boolean;
 }
 
 export function actionSchema(options: GenerationOptions) {
   const properties: Record<string, object> = {
-    action: { type: "string", enum: ["list", "read", "search", ...(!options.validationFailed && (options.readHashes.length || options.hasChanges) ? ["done"] : []), ...(options.readHashes.length ? ["edit", "edits", "lines", "create", "delete"] : [])] },
+    action: { type: "string", enum: ["list", "read", "search", ...(!options.validationFailed && (options.readHashes.length || options.hasChanges) ? ["done"] : []), ...(options.readHashes.length ? options.valueTargetsOnly ? ["edit", "edits"] : ["edit", "edits", "lines", "create", "delete"] : [])] },
     path: options.readHashes.length ? string : { type: "string", enum: options.readablePaths }, query: string, text: string,
     startLine: { type: "integer", minimum: 1 },
     endLine: { type: "integer", minimum: 1 },

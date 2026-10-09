@@ -12,12 +12,14 @@
     "preview": "astro preview"
   },
   "devDependencies": {
-    "@webgpu/types": "0.1.74"
+    "@webgpu/types": "0.1.74",
+    "@types/css-tree": "3.2.0"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "0.4.1",
     "@mlc-ai/web-llm": "0.2.85",
     "@webcontainer/api": "1.6.4",
+    "css-tree": "3.2.1",
     "fflate": "0.8.3",
     "@astrojs/check": "^0.9.4",
     "astro": "^7.3.3",
