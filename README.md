@@ -376,14 +376,22 @@ de modification.
 Le rejeu de la demande de palette marron sur la PR de test #20 a ensuite
 exposé une perte du périphérique GPU avec 3B et plusieurs actions invalides
 avec 1,5B. Les essais refusés ont restauré les fichiers et n’ont rien
-sauvegardé. La récupération GPU, les références CSS et le contrat court
-sont couverts par les tests ; le succès de cette demande déployée reste
-à vérifier.
+sauvegardé. Avec le nouveau contrat CSS réellement chargé, 1,5B a passé
+check/build/contrôle généré, mais a donné la même couleur au fond et au
+texte : cette proposition a été annulée par l’UI, pas sauvegardée.
+3B a ensuite conservé des teintes vertes et dépassé la limite de 480 secondes.
+Le parseur et une compilation réussie ne prouvent donc pas le respect
+de la demande ni les contrastes. La récupération GPU, les références CSS
+et le contrat court sont couverts par les tests ; une palette marron
+déployée réellement correcte reste à établir. La requête utilisateur
+est désormais placée après les données source, pour ne pas être éclipsée
+par les anciennes couleurs ; les consignes préservent les relations
+clair/foncé, mais ne constituent pas un validateur visuel.
 
 Aucun score de 9/10 n’a été atteint et aucun ensemble de dix cas indépendants
 n’a été terminé : deux réussites du même scénario ne constituent pas cette
 mesure. Le scénario de titre du POC fonctionne, mais une demande prend encore
-plusieurs minutes sur l’Intel gen-9 sans f16 testé. Les **130 tests**, le typecheck et le
+plusieurs minutes sur l’Intel gen-9 sans f16 testé. Les **131 tests**, le typecheck et le
 build passent. La PR d’implémentation reste brouillon ; le runtime, l’App,
 le KV et les secrets ne sont activés que sur Preview. Une licence pour
 l’utilisation commerciale et une mesure de qualité globale restent requises
