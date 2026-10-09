@@ -193,10 +193,13 @@ Le serveur transmet sa base effective dans une preuve locale vérifiée avant
 de construire l’URL de l’iframe. Ses réponses sont toujours `noindex/nofollow`
 et bloquent les scripts tiers, même si une ancienne branche ne possède pas
 encore le garde `PUBLIC_BROWSER_DRAFT` dans son layout.
-Le suivi de la page courante est aussi injecté par l’API officielle de
-WebContainer : il ne dépend pas de la présence du bridge dans une ancienne
-branche. Les messages de navigation sont adressés à l’origine exacte de
-l’éditeur ; aucune information de session n’entre dans ce script.
+Le suivi de la page courante est aussi injecté par un middleware enregistré
+avec l’API officielle d’intégration Astro : il ne dépend pas de la présence
+du bridge dans une ancienne branche. L’essai `WebContainer.setPreviewScript`
+n’a pas livré de script dans les réponses réelles du host `local-corp` testé,
+donc ce chemin n’est pas utilisé. Les messages de navigation sont adressés
+à l’origine exacte de l’éditeur ; aucune information de session n’entre dans
+ce script, et aucun fichier public du dépôt n’est réécrit.
 
 Le modèle WebLLM sélectionné par défaut est
 `Qwen2.5-Coder-3B-Instruct-q4f16_1-MLC`, choisi pour la qualité. L’estimation

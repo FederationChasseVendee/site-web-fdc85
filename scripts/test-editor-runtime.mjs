@@ -79,8 +79,6 @@ class FakeContainer {
   nodeVersion = "22.12.0";
   compilerProof = true;
   previewBase = "/";
-  previewScripts = [];
-  async setPreviewScript(source) { this.previewScripts.push(source); }
 
   fs = {
     mkdir: async (path) => { this.mutations.push(["mkdir", path]); },
@@ -439,6 +437,10 @@ test("wrapper preserves the site's base and content-store watcher while fencing 
   assert.equal(context.config.vite.server.strictPort, true);
   assert.equal(context.config.vite.server.allowedHosts, true);
   assert.equal(context.config.vite.plugins[0].name, "kept");
+  let middlewareEntry;
+  context.config.integrations[0].hooks["astro:config:setup"]({ addMiddleware: entry => { middlewareEntry = entry; } });
+  assert.equal(middlewareEntry.entrypoint, "/project/.editor/preview-middleware.mjs");
+  assert.equal(middlewareEntry.order, "post");
   context.config.vite.plugins[1].configureServer({
     middlewares: { use: callback => { previewHeaders = callback; } },
     environments: {
@@ -576,9 +578,14 @@ test("browser process environment uses only the current exact parent origin when
   const { runtime, container } = setup(t);
   await runtime.prepare(sources(), signal());
   for (const { options } of container.calls) assert.equal(options.env.PUBLIC_EDITOR_PARENT_ORIGIN, "https://editor.example:8443");
-  assert.equal(container.previewScripts.length, 1);
+  const middleware = decode(container.files.get(".editor/preview-middleware.mjs"))
+    .replace('import { defineMiddleware } from "astro:middleware";', "")
+    .replace("export const onRequest", "globalThis.onRequest");
   const listeners = new Map(), sent = [];
   const context = {
+    defineMiddleware: handler => handler,
+    process: { env: { PUBLIC_EDITOR_PARENT_ORIGIN: "https://editor.example:8443" } },
+    Headers, Response, URL,
     location: { pathname: "/site-web/contact/" },
     window: {
       addEventListener: (event, listener) => listeners.set(event, listener),
@@ -586,7 +593,17 @@ test("browser process environment uses only the current exact parent origin when
     },
     document: { addEventListener: (event, listener) => listeners.set(event, listener) },
   };
-  runInNewContext(container.previewScripts[0], context);
+  runInNewContext(middleware, context);
+  const originalHtml = "<!doctype html><html><head><title>Old branch</title></head><body><h1>Contact</h1></body></html>";
+  const response = await context.onRequest({}, async () => new Response(originalHtml, {
+    headers: { "content-type": "text/html", "content-length": "999", "x-preserved": "yes" },
+  }));
+  assert.equal(response.headers.get("content-length"), null);
+  assert.equal(response.headers.get("x-preserved"), "yes");
+  const html = await response.text();
+  assert.equal(html.replace(/<script type="module">[\s\S]*?<\/script>/, ""), originalHtml);
+  const script = html.match(/<script type="module">([\s\S]*?)<\/script>/)[1];
+  runInNewContext(script, context);
   for (const event of ["load", "popstate", "astro:page-load"]) listeners.get(event)();
   assert.equal(sent.length, 3);
   for (const { value, origin } of sent) {
@@ -594,6 +611,9 @@ test("browser process environment uses only the current exact parent origin when
     assert.equal(value.type, "editor-preview-route");
     assert.equal(value.pathname, "/site-web/contact/");
   }
+  const asset = new Response("not HTML", { headers: { "content-type": "text/css" } });
+  assert.equal(await context.onRequest({}, async () => asset), asset);
+  await assert.rejects(context.onRequest({}, async () => new Response("<html>", { headers: { "content-type": "text/html" } })), /fermeture head/);
 });
 
 test("installer and validation errors reject, are reported and do not claim ready or successful validation", async (t) => {

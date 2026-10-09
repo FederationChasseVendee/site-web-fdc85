@@ -17,7 +17,6 @@ export interface RuntimeContainer {
     rm(path: string, options: { recursive: boolean; force: boolean }): Promise<void>;
   };
   mount(tree: FileSystemTree): Promise<void>;
-  setPreviewScript(source: string): Promise<void>;
   spawn(command: string, args: string[], options?: SpawnOptions): Promise<RuntimeProcess>;
   on(event: "server-ready", listener: (port: number, url: string) => void): () => void;
   on(event: "error", listener: (error: { message: string }) => void): () => void;
@@ -29,6 +28,7 @@ export type RuntimeBoot = () => Promise<RuntimeContainer>;
 const configPath = "editor.browser.config.mjs";
 const internalPath = ".editor";
 const validationPath = `${internalPath}/validate.mjs`;
+const previewMiddlewarePath = `${internalPath}/preview-middleware.mjs`;
 const environment = {
   ASTRO_SITE: "https://browser-draft.invalid",
   PUBLIC_BROWSER_DRAFT: "true",
@@ -181,6 +181,14 @@ export default {
   site: process.env.ASTRO_SITE ?? "https://browser-draft.invalid",
   server: { ...original.server, host: "0.0.0.0", port: 4321 },
   devToolbar: { enabled: false },
+  integrations: [...(original.integrations ?? []), {
+    name: "editor-preview-route",
+    hooks: {
+      "astro:config:setup": ({ addMiddleware }) => addMiddleware({
+        entrypoint: process.cwd() + "/${previewMiddlewarePath}", order: "post",
+      }),
+    },
+  }],
   vite: {
     ...original.vite,
     server: { ...original.vite?.server, host: "0.0.0.0", port: 4321, strictPort: true, allowedHosts: true },
@@ -244,6 +252,27 @@ await Promise.all([process.stdout, process.stderr].map(stream =>
 // Finish the dedicated CLI only after the real result and diagnostic output.
 // Browser WASI workers can otherwise keep a completed validator alive.
 process.exit(code);
+`;
+}
+
+function previewMiddleware(): string {
+  return `import { defineMiddleware } from "astro:middleware";
+const parentOrigin = process.env.PUBLIC_EDITOR_PARENT_ORIGIN;
+if (!parentOrigin || new URL(parentOrigin).origin !== parentOrigin) throw new Error("Origine de l'éditeur absente ou invalide.");
+const script = '<script type="module">(() => { const report = () => window.parent.postMessage({ type: "editor-preview-route", pathname: location.pathname }, '
+  + JSON.stringify(parentOrigin)
+  + '); window.addEventListener("load", report); window.addEventListener("popstate", report); document.addEventListener("astro:page-load", report); })();</script>';
+export const onRequest = defineMiddleware(async (_context, next) => {
+  const response = await next();
+  if (!response.headers.get("content-type")?.includes("text/html")) return response;
+  const html = await response.text();
+  if (!/<\\/head\\s*>/i.test(html)) throw new Error("L'aperçu HTML ne contient pas de fermeture head.");
+  const headers = new Headers(response.headers);
+  headers.delete("content-length");
+  return new Response(html.replace(/<\\/head\\s*>/i, script + "$&"), {
+    status: response.status, statusText: response.statusText, headers,
+  });
+});
 `;
 }
 
@@ -422,7 +451,7 @@ export class BrowserRuntime implements RuntimeAdapter {
     const pending = Promise.resolve().then(() => {
       this.guard(job);
       return this.boot();
-    }).then(async (container) => {
+    }).then((container) => {
       if (job.controller.signal.aborted || job.generation !== this.generation) {
         try { container.teardown(); }
         catch (error) {
@@ -439,16 +468,6 @@ export class BrowserRuntime implements RuntimeAdapter {
         this.dispose();
         this.hooks.error(`WebContainer : ${error.message}. Vérifiez le réseau et les permissions de stockage StackBlitz.`);
       });
-      const parentOrigin = runtimeEnvironment().PUBLIC_EDITOR_PARENT_ORIGIN;
-      if (parentOrigin) {
-        await this.io(job, () => container.setPreviewScript(`(() => {
-const report = () => window.parent.postMessage(
-  { type: "editor-preview-route", pathname: location.pathname }, ${JSON.stringify(parentOrigin)});
-window.addEventListener("load", report);
-window.addEventListener("popstate", report);
-document.addEventListener("astro:page-load", report);
-})();`), "Suivi de la page prévisualisée");
-      }
       return container;
     });
     bootBarrier = pending.then(() => undefined, () => {
@@ -499,6 +518,7 @@ document.addEventListener("astro:page-load", report);
     }
     await this.writeFile(configPath, browserConfig(), job);
     await this.writeFile(validationPath, browserValidation(), job);
+    await this.writeFile(previewMiddlewarePath, previewMiddleware(), job);
   }
 
   private async prepareFiles(files: Map<string, Uint8Array>, job: Job): Promise<void> {
