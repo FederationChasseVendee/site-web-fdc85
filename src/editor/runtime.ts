@@ -193,7 +193,7 @@ export default {
           server.environments.client.hot.send({ type: "full-reload", path: "*" });
         };
         mkdirSync(".astro", { recursive: true });
-        const watcher = watch(".astro", (_event, name) => {
+        const watcher = watch(".astro", { persistent: false }, (_event, name) => {
           if (name === "data-store.json") reloadContent(process.cwd() + "/.astro/" + name);
         });
         watcher.on("error", error => {

@@ -405,8 +405,9 @@ test("wrapper rebases all local sources and preserves the proven Astro content-s
     process: { env: { ASTRO_SITE: "https://test-draft.invalid" }, cwd: () => "/project" },
     console: { log() {}, error() {} },
     mkdirSync: (path, options) => { assert.equal(path, ".astro"); assert.equal(options.recursive, true); },
-    watch: (path, callback) => {
+    watch: (path, options, callback) => {
       assert.equal(path, ".astro");
+      assert.equal(options.persistent, false);
       watchCallback = callback;
       return {
         on: (event, listener) => { assert.equal(event, "error"); errorCallback = listener; },

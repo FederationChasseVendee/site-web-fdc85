@@ -173,6 +173,11 @@ téléchargements peuvent nécessiter une connexion réseau et l’accès à npm
 service WebContainer de StackBlitz et au catalogue de modèles Hugging Face.
 L’absence du réseau, un quota ou une erreur d’installation est signalé
 explicitement ; l’éditeur ne remplace pas l’aperçu par une fausse réussite.
+La surveillance interne du store Astro n’est pas persistante : elle continue
+à fournir le HMR pendant que le serveur tourne, mais ne maintient pas un
+processus `astro check` ouvert après la fin de ses diagnostics. La validation
+attend toujours les véritables codes de sortie de check, build et contrôle du
+site généré ; un texte de succès dans le journal ne suffit pas.
 
 Le modèle WebLLM sélectionné par défaut est
 `Qwen2.5-Coder-3B-Instruct-q4f16_1-MLC`, choisi pour la qualité. L’estimation
