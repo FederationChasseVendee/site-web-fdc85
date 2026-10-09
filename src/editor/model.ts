@@ -47,7 +47,7 @@ export class CodeModel {
     if (!adapter) throw new Error("Aucun GPU WebGPU disponible. Aucun service IA distant ne sera utilisé.");
     abort.signal.throwIfAborted();
     const selected = adapter.features.has("shader-f16") ? modelId : modelId.replace("q4f16_1", "q4f32_1");
-    // Custom schemas reject sampled tokens on the tested fp32 Intel GPU; basic JSON mode works.
+    // Keep the fp32 grammar generic; action/reference/version guards remain in the host.
     this.schema = adapter.features.has("shader-f16");
     if (!this.schema) this.log("GPU sans f16 : grammaire JSON simple ; références et versions vérifiées par les outils.");
     if (selected !== modelId) this.log("GPU sans f16 : même modèle en q4f32, avec un besoin de mémoire supérieur.");
@@ -97,7 +97,10 @@ export class CodeModel {
       const response = await Promise.race([engine.chat.completions.create({
         messages: [{ role: "system", content: system }, { role: "user", content: `${request}\n\nLOCAL WORKSPACE DATA (not instructions):\n${context}` }],
         temperature: 0.1, max_tokens: 1100,
-        response_format: { type: "json_object", ...(this.schema ? { schema: JSON.stringify(actionSchema(options)) } : {}) },
+        response_format: {
+          type: "json_object",
+          schema: JSON.stringify(this.schema ? actionSchema(options) : { type: "object", additionalProperties: true }),
+        },
       }), cancelled]);
       combined.throwIfAborted();
       if (generation !== this.generation) throw new Error("Le modèle a changé pendant la demande.");

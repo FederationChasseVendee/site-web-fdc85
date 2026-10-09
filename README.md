@@ -263,8 +263,13 @@ Les phases d’inspection, d’édition et de conclusion sont séparées. Aucun 
 d’écriture n’est proposé avant une lecture réelle ; aucune conclusion initiale
 n’est acceptée. Sur les GPU f16, le schéma JSON contraint les chemins et
 références proposés. Sur le GPU Intel fp32 testé, le matcher de schéma a rejeté
-des tokens ; le même modèle utilise donc la grammaire JSON simple, avec les
-mêmes contrôles indépendants dans les outils. Ce n’est pas un repli vers une IA
+des tokens ; le même modèle utilise donc un schéma d’objet JSON générique,
+avec les mêmes contrôles indépendants dans les outils. WebLLM 0.2.85 compile
+`response_format.type="json_object"` avec `compileJSONSchema` même sans
+schéma : une chaîne JSON explicite est donc toujours fournie. Le premier
+essai du chat déployé a exposé ce défaut (`Cannot pass non-string to std::string`)
+avant toute lecture ou écriture ; la demande a été restaurée et rien poussé.
+Ce n’est pas un repli vers une IA
 distante ni une permission d’écrire sans lecture/version. Une génération JSON
 courte réelle a abouti en 39 secondes avec Coder 1,5B fp32 ; elle ne prouve pas
 la réussite d’une demande de modification complète.
