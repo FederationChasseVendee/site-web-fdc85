@@ -77,6 +77,21 @@ export function applyTarget(source: string, target: EditTarget, text: string): s
   return source.slice(0, target.start) + replacement + source.slice(target.end);
 }
 
+export function applyTargets(source: string, changes: readonly { target: EditTarget; text: string }[]): string {
+  if (!changes.length || changes.length > 32) throw new Error("Une édition groupée exige de 1 à 32 références lues.");
+  const ordered = [...changes].sort((a, b) => a.target.start - b.target.start);
+  const first = ordered[0]!.target;
+  for (let index = 0; index < ordered.length; index++) {
+    const target = ordered[index]!.target;
+    if (target.path !== first.path || target.hash !== first.hash) throw new Error("Les références doivent provenir de la même lecture de fichier.");
+    if (index > 0 && (target.start <= ordered[index - 1]!.target.start
+      || target.start < ordered[index - 1]!.target.end)) throw new Error("Les références ne doivent pas se chevaucher ou être répétées.");
+  }
+  let result = source;
+  for (const { target, text } of ordered.reverse()) result = applyTarget(result, target, text);
+  return result;
+}
+
 export function replaceReadLines(source: string, path: string, startLine: number, endLine: number, text: string, hash: string, targets: Map<string, EditTarget>): string {
   const first = targets.get(`L${startLine}`);
   const last = targets.get(`L${endLine}`);

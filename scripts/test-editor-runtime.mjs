@@ -635,6 +635,21 @@ test("installer and validation errors reject, are reported and do not claim read
   }
 });
 
+test("real failed command diagnostics are bounded and passed to callers for source correction", async (t) => {
+  const { runtime, container } = setup(t);
+  await runtime.open(sources(), signal());
+  container.onSpawn = ({ args, process }) => {
+    if (!args.includes("build")) return;
+    process.stream.enqueue("noise ".repeat(1200) + "\nCSS Invalid qualified rule: src/styles/global.css line 17");
+    return 1;
+  };
+  await assert.rejects(runtime.validate(signal()), error => {
+    assert.match(error.message, /CSS Invalid qualified rule: src\/styles\/global.css line 17/);
+    assert.ok(error.message.length < 5200);
+    return true;
+  });
+});
+
 test("early and later unexpected server exits are failures, with readers and listeners cleaned up", async (t) => {
   const { runtime, container, observed } = setup(t);
   container.onSpawn = ({ args }) => args[0] === "run" && args[1] === "dev" ? 1 : undefined;

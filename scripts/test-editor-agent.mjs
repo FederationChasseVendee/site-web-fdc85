@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { LocalWorkspace } from "../src/editor/workspace.ts";
 import { completionPrompt, inspectionPrompt, systemPrompt, parseAction, replaceText, runAgent } from "../src/editor/agent.ts";
 import { fileHash } from "../src/editor/policy.ts";
-import { applyTarget, replaceReadLines, sourceTargets } from "../src/editor/edits.ts";
+import { applyTarget, applyTargets, replaceReadLines, sourceTargets } from "../src/editor/edits.ts";
 import { GpuResourcesError } from "../src/editor/model.ts";
 
 const bytes = value => new TextEncoder().encode(value);
@@ -34,13 +34,77 @@ test("unauthorized or invented actions cannot modify files", async () => {
 
 test("failed validation rolls back all files and the live preview", async () => {
   const workspace=createWorkspace(), run=runtime();
-  run.validate=async()=>{throw new Error("Build fixture failure");};
+  let validations = 0;
+  run.validate=async()=>{ validations++; throw new Error("Build fixture failure"); };
   const actions=[{action:"read",path},{action:"edit",target:"/title",text:"Nouveau"},...Array.from({length:4},()=>({action:"done",text:"Terminé"}))];
   await assert.rejects(runAgent(request(workspace,run,generator(actions))),/Astro refuse/);
   assert.equal(workspace.text(path),initial);
   assert.equal(workspace.history.length,0);
   assert.equal(new TextDecoder().decode(run.writes.at(-1).content),initial);
   assert.equal(run.opens,1);
+  assert.equal(validations,1);
+});
+
+test("batch references are applied atomically in source order with one undo and unrelated bytes preserved", async () => {
+  const file = "src/styles/global.css", original = ":root {\r\n  --a: #123456;\r\n  --b: #654321;\r\n  --radius: 1rem;\r\n}\r\n";
+  const workspace = new LocalWorkspace("a".repeat(40), new Map([[file, bytes(original)]])), run = runtime();
+  await runAgent(request(workspace, run, generator([
+    { action: "read", path: file, endLine: 5 },
+    { action: "edits", changes: [{ target: "L3", text: "  --b: #987654;" }, { target: "L2", text: "  --a: #abcdef;" }] },
+    { action: "done" },
+  ])));
+  assert.equal(workspace.text(file), original.replace("#123456", "#abcdef").replace("#654321", "#987654"));
+  assert.equal(run.writes.length, 1);
+  assert.equal(workspace.history.length, 1);
+  workspace.undo();
+  assert.equal(workspace.text(file), original);
+});
+
+test("invalid or duplicate batch references reject before any partial filesystem write", async () => {
+  for (const changes of [[{ target: "/title", text: "new" }, { target: "/missing", text: "bad" }], [{ target: "/title", text: "first" }, { target: "/title", text: "second" }]]) {
+    const workspace = createWorkspace(), run = runtime();
+    await assert.rejects(runAgent(request(workspace, run, generator([
+      { action: "read", path }, { action: "edits", changes },
+      { action: "read", path }, { action: "edits", changes },
+      { action: "read", path }, { action: "edits", changes },
+    ]))), /référence|références/);
+    assert.equal(workspace.text(path), initial);
+    assert.equal(run.writes.length, 0);
+  }
+  assert.throws(() => parseAction('{"action":"edits","changes":[]}'), /1 à 32/);
+  assert.throws(() => parseAction(JSON.stringify({ action: "edits", changes: Array.from({ length: 33 }, () => ({ target: "L1", text: "x" })) })), /1 à 32/);
+  assert.throws(() => parseAction('{"action":"edits","changes":[{"target":"L1","text":false}]}'), /Chaque édition/);
+});
+
+test("batch helpers reject mixed source versions and preserve JSON escaping without shifting later references", () => {
+  const original = '{"a":"first","b":"second","n":42}', targets = sourceTargets(path, original, "hash", 1, 1, "values");
+  const first = targets.get("/a"), second = targets.get("/b");
+  assert.equal(applyTargets(original, [{ target: first, text: 'much longer "\n' }, { target: second, text: "b" }]), '{"a":"much longer \\"\\n","b":"b","n":42}');
+  assert.throws(() => applyTargets(original, []), /1 à 32/);
+  assert.throws(() => applyTargets(original, [{ target: first, text: "x" }, { target: { ...second, hash: "other" }, text: "y" }]), /même lecture/);
+  assert.throws(() => applyTargets(original, [{ target: first, text: "x" }, { target: { ...second, path: "other.json" }, text: "y" }]), /même lecture/);
+  assert.throws(() => applyTargets(original, [{ target: first, text: "x" }, { target: { ...second, start: first.end - 1 }, text: "y" }]), /chevaucher/);
+});
+
+test("validation failures reach the model and require a fresh read and real correction before another check", async () => {
+  const workspace = createWorkspace(), run = runtime(), contexts = [], prompts = [], permissions = [];
+  let validations = 0;
+  run.validate = async () => { if (++validations === 1) throw new Error("CSS Invalid qualified rule at line 3"); };
+  const actions = [{ action: "read", path }, { action: "edit", target: "/title", text: "invalid" }, { action: "done" }, { action: "read", path }, { action: "edit", target: "/title", text: "corrected" }, { action: "done" }];
+  await runAgent(request(workspace, run, async (system, _request, context, _signal, options) => {
+    prompts.push(system); contexts.push(context); permissions.push(options);
+    return JSON.stringify(actions.shift());
+  }));
+  assert.equal(prompts[3], inspectionPrompt);
+  assert.equal(prompts[4], systemPrompt);
+  assert.match(contexts[3], /Invalid qualified rule/);
+  assert.match(contexts[4], /Invalid qualified rule/);
+  assert.equal(permissions[3].hasChanges, false);
+  assert.equal(permissions[4].validationFailed, true);
+  assert.equal(permissions[5].validationFailed, false);
+  assert.equal(validations, 2);
+  assert.equal(workspace.text(path), '{"title":"corrected"}');
+  assert.equal(workspace.history.length, 1);
 });
 
 test("exact replacements preserve CRLF and reject ambiguous/empty matches", () => {

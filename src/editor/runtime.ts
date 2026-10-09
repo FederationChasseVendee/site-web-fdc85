@@ -287,6 +287,7 @@ interface ProcessRecord {
   logs: Promise<void>;
   cancelLogs: AbortController;
   outputError?: Error;
+  outputTail?: string;
   expectedExit: boolean;
   ready: boolean;
   generation: number;
@@ -609,7 +610,10 @@ fs.writeFileSync("${internalPath}/compiler-proof.json", JSON.stringify({ ready: 
     this.processes.add(record);
     record.logs = process.output.pipeTo(new WritableStream<string>({
       write: (text) => {
-        if (this.container === container && !cancelLogs.signal.aborted && !job.controller.signal.aborted) this.hooks.log(text);
+        if (this.container === container && !cancelLogs.signal.aborted && !job.controller.signal.aborted) {
+          record.outputTail = ((record.outputTail ?? "") + text).slice(-5000);
+          this.hooks.log(text);
+        }
       },
     }), { signal: cancelLogs.signal }).catch((error: unknown) => {
       if (cancelLogs.signal.aborted) return;
@@ -680,7 +684,7 @@ fs.writeFileSync("${internalPath}/compiler-proof.json", JSON.stringify({ ready: 
       await this.wait(record.logs, `Fermeture du journal ${label}`, job);
       complete = true;
       if (record.outputError) throw record.outputError;
-      if (code !== 0) throw new Error(`${label} a échoué (code ${code}). Consultez le journal ; rien n’a été publié.`);
+      if (code !== 0) throw new Error(`${label} a échoué (code ${code}). Rien n’a été publié.\n${record.outputTail ?? ""}`);
     } finally {
       if (logDrainTimer !== undefined) clearTimeout(logDrainTimer);
       if (!complete) await this.terminate(record);

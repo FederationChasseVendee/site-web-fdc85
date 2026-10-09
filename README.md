@@ -308,6 +308,12 @@ passage de code dont toutes les lignes ont été consultées. Les versions reste
 vérifiées par le filesystem hôte ; les autres octets, fins de ligne et valeurs
 JSON sont préservés. Une erreur impose une relecture, et chaque changement
 reste soumis à la validation Astro et au rollback atomique.
+`edits(changes)` groupe de 1 à 32 références du même fichier et de la même
+lecture en une écriture atomique, sans recopier un bloc de code complet.
+Les références répétées ou qui se chevauchent sont refusées. Après un échec
+de validation, le diagnostic réel du processus est transmis au modèle :
+une nouvelle lecture et une correction effective sont exigées avant de
+réessayer, au lieu de répéter `done` et la compilation du même fichier invalide.
 
 Les phases d’inspection, d’édition et de conclusion sont séparées. Aucun outil
 d’écriture n’est proposé avant une lecture réelle ; aucune conclusion initiale
@@ -361,7 +367,7 @@ de modification.
 Aucun score de 9/10 n’a été atteint et aucun ensemble de dix cas indépendants
 n’a été terminé : deux réussites du même scénario ne constituent pas cette
 mesure. Le POC est fonctionnel, mais une demande prend encore plusieurs
-minutes sur l’Intel gen-9 sans f16 testé. Les **122 tests**, le typecheck et le
+minutes sur l’Intel gen-9 sans f16 testé. Les **127 tests**, le typecheck et le
 build passent. La PR d’implémentation reste brouillon ; le runtime, l’App,
 le KV et les secrets ne sont activés que sur Preview. Une licence pour
 l’utilisation commerciale et une mesure de qualité globale restent requises

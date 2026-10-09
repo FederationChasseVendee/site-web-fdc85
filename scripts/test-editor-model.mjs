@@ -46,6 +46,7 @@ test("valid replies use constrained JSON and never silently accept truncated com
   assert.equal(schema.properties.action.enum.includes("edit"), false);
   assert.equal(schema.properties.action.enum.includes("done"), false);
   assert.equal("oldText" in schema.properties, false);
+  assert.equal(schema.properties.action.enum.includes("edits"), false);
   assert.equal(actionSchema({...noReads,hasChanges:true}).properties.action.enum.includes("done"),true);
   assert.equal("endLine" in schema.properties, true);
   assert.deepEqual(schema.properties.path.enum, noReads.readablePaths);
@@ -59,7 +60,11 @@ test("write grammars expose only source references read from the real filesystem
   const targets = ["/title"];
   const schema = actionSchema({ ...noReads, readHashes: [hash], targets });
   assert.equal(schema.properties.action.enum.includes("edit"), true);
+  assert.equal(schema.properties.action.enum.includes("edits"), true);
   assert.deepEqual(schema.properties.target.enum, targets);
+  assert.deepEqual(schema.properties.changes.items.properties.target.enum, targets);
+  assert.equal(schema.properties.changes.maxItems, 32);
+  assert.equal(actionSchema({ ...noReads, readHashes: [hash], targets, hasChanges: true, validationFailed: true }).properties.action.enum.includes("done"), false);
   assert.equal("expectedHash" in schema.properties, false);
   assert.equal("oldText" in schema.properties, false);
 });
