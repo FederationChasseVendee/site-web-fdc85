@@ -217,7 +217,7 @@ Laisser Astro tourner sur le port `4322`, puis ouvrir
 vrai WebContainer et les dix demandes du benchmark : contenus JSON, Markdown et
 CSS. Chaque cas doit être isolé, avec vérification exacte de la modification
 ciblée et aucune modification hors cible. Le seuil de validation n’est pas
-encore établi.
+encore atteint : la cible est au moins neuf cas réussis sur dix.
 
 La vérification préalable a confirmé npm, WASI, le serveur Astro de
 développement et des réponses HTTP 200 avec le modèle GPU. Les mesures réelles
@@ -243,17 +243,35 @@ L’exécution a été arrêtée avant le cas 2 lors du rechargement. La cause
 identifiée était aussi un contexte JSON doublement encodé contenant le texte
 source et les corrections sans source visible.
 
-Le contrat à conserver est désormais : texte brut sous `SOURCE TEXT`, actions
-d’écriture uniquement après lecture, hashes limités aux SHA lus, chemins limités
-à la liste réellement lisible de la phase courante et relecture obligatoire
-après échec. Le générateur reçoit cette liste et un schéma `enum` de chemins
-pendant la lecture ; la policy n’est pas relâchée. Il n’y a plus de
-réutilisation du moteur après une erreur de grammaire ou de génération, et les
-erreurs fatales remontent immédiatement.
+Le contrat actuel ne demande plus au modèle de recopier un hash ou un ancien
+texte. Une lecture expose des références vérifiées : pointeurs JSON pour les
+valeurs, identifiants de lignes pour Markdown, CSS et templates. L’action
+`edit(target, text)` remplace uniquement la référence lue ; `lines` permet un
+passage de code dont toutes les lignes ont été consultées. Les versions restent
+vérifiées par le filesystem hôte ; les autres octets, fins de ligne et valeurs
+JSON sont préservés. Une erreur impose une relecture, et chaque changement
+reste soumis à la validation Astro et au rollback atomique.
+
+Les phases d’inspection, d’édition et de conclusion sont séparées. Aucun outil
+d’écriture n’est proposé avant une lecture réelle ; aucune conclusion initiale
+n’est acceptée. Sur les GPU f16, le schéma JSON contraint les chemins et
+références proposés. Sur le GPU Intel fp32 testé, le matcher de schéma a rejeté
+des tokens ; le même modèle utilise donc la grammaire JSON simple, avec les
+mêmes contrôles indépendants dans les outils. Ce n’est pas un repli vers une IA
+distante ni une permission d’écrire sans lecture/version. Une génération JSON
+courte réelle a abouti en 39 secondes avec Coder 1,5B fp32 ; elle ne prouve pas
+la réussite d’une demande de modification complète.
+
+La dernière campagne a encore observé une mauvaise cible SEO avec Coder 1,5B
+et une conclusion initiale sans édition avec Coder 3B. Le contrat et les gardes
+ont été corrigés ; l’essai final n’a pas fourni de résultat exploitable sous des
+runtimes concurrents. Le benchmark contrôle désormais chaque écriture physique
+dans WebContainer et le `h1` compilé du premier cas. La vérification doit être
+reprise avec un seul runtime et un seul moteur GPU.
 
 Aucun score de 9/10 n’a été atteint et aucun ensemble de dix cas indépendants
 n’a été terminé. npm, WASI, Astro et les réponses HTTP 200 sont prouvés, mais
-le modèle local reste trop lent et peu fiable sur un GPU sans f16. Les 99 tests,
+le modèle local reste trop lent et peu fiable sur un GPU sans f16. Les 112 tests,
 le typecheck et le build passent. Le travail reste une pull request brouillon, la production est désactivée et la
 performance ainsi que la qualité restent à résoudre. Les corrections précédentes
 ont été poussées dans `c1766f9` et `4e2390f`.

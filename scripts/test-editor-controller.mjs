@@ -4,7 +4,6 @@ import { zipSync } from "fflate";
 import { EditorController } from "../src/editor/controller.ts";
 import { BrowserStorage } from "../src/editor/workspace.ts";
 import { EditorApiError } from "../src/editor/github.ts";
-import { fileHash } from "../src/editor/policy.ts";
 
 const bytes = value => new TextEncoder().encode(value);
 const sha = "a".repeat(40), head = "b".repeat(40), saved = "c".repeat(40);
@@ -57,8 +56,7 @@ function fixture(enabled = true) {
 
 async function open(f) { await f.controller.initialize(); await f.controller.select(pull()); }
 async function edit(f, title = "Nouveau") {
-  const hash = await fileHash(f.controller.workspace.files.get(path));
-  const actions = [{ action: "read", path }, { action: "edit", path, expectedHash: hash, oldText: "Accueil", newText: title }, { action: "done", text: "Titre modifié." }];
+  const actions = [{ action: "read", path }, { action: "edit", target: "/title", text: title }, { action: "done", text: "Titre modifié." }];
   await f.controller.chat("Modifie le titre", async () => JSON.stringify(actions.shift()));
 }
 
@@ -171,8 +169,14 @@ test("a committed ambiguous save is recognized without repeating the changes", a
 });
 test("actions are serialized while an edit is running", async t => {
   const f = fixture(); t.after(() => f.controller.dispose()); await open(f);
-  let release;
-  const pending = f.controller.chat("Question", async () => { await new Promise(resolve => { release = resolve; }); return '{"action":"done","text":"Sans changement."}'; });
+  let release, calls = 0;
+  const pending = f.controller.chat("Question", async () => {
+    if (calls++ === 0) {
+      await new Promise(resolve => { release = resolve; });
+      return JSON.stringify({action:"read",path});
+    }
+    return '{"action":"done","text":"Sans changement."}';
+  });
   await new Promise(resolve => setImmediate(resolve));
   await assert.rejects(f.controller.leave(), /opération/);
   release(); await pending; assert.equal(f.controller.busy, false);

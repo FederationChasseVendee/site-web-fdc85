@@ -16,11 +16,26 @@ import {BrowserRuntime} from "/site-web/src/editor/runtime.ts";
 import {LocalWorkspace,readArchive} from "/site-web/src/editor/workspace.ts";
 import {runAgent} from "/site-web/src/editor/agent.ts";
 import {editorConfig} from "/site-web/src/editor/config.ts";
-const state=window.editorBenchmark={phase:"idle",results:[],actions:[],logs:[],error:null};
+const state=window.editorBenchmark={phase:"idle",results:[],actions:[],logs:[],error:null,proof:{physicalWrites:[],validations:[]}};
 const status=message=>{state.phase=message;document.getElementById("status").textContent=message};
 const log=message=>{state.logs.push(message);if(state.logs.length>100)state.logs.shift();document.getElementById("logs").textContent=state.logs.join("\\n")};
 const model=new CodeModel(status,()=>{},log);
 const runtime=new BrowserRuntime({stage:status,log,ready:url=>{state.previewUrl=url;document.getElementById("preview").src=url},error:log});
+const write=runtime.write.bind(runtime),validate=runtime.validate.bind(runtime);
+runtime.write=async(path,content)=>{
+ await write(path,content);
+ if(content!==null){
+   const actual=await runtime.container.fs.readFile(path,"utf8");
+   if(actual!==new TextDecoder("utf-8",{fatal:true}).decode(content))throw Error("Le vrai fichier WebContainer ne correspond pas au brouillon : "+path);
+   state.proof.physicalWrites.push({case:state.currentCase,path,bytes:content.length,matches:true});
+ }
+};
+runtime.validate=async signal=>{
+ await validate(signal);
+ const html=await runtime.container.fs.readFile("dist/index.html","utf8");
+ const heading=new DOMParser().parseFromString(html,"text/html").querySelector("h1")?.textContent.trim();
+ state.proof.validations.push({case:state.currentCase,compiledHeading:heading});
+};
 window.stopEditorBenchmark=()=>{state.abort?.abort();model.stop();runtime.stop()};
 const home="src/content/home.json",site="src/content/site.json",contact="src/content/standard-pages/contact.md",css="src/styles/global.css";
 const cases=[
@@ -59,6 +74,7 @@ document.getElementById("start").onclick=async()=>{
    for(let index=0;index<cases.length;index++){
      signal.throwIfAborted();
      const test=cases[index];
+     state.currentCase=index+1;
      const workspace=new LocalWorkspace("a".repeat(40),sources);
      const matches=expected(sources,test);
      if(!model.ready)await model.load(modelId);
@@ -68,7 +84,9 @@ document.getElementById("start").onclick=async()=>{
      try{
        const summary=await runAgent({workspace,runtime,generate:async(...args)=>{const reply=await model.complete(...args);state.actions.push({case:index+1,reply});return reply},prompt:test[0],title:"Benchmark "+(index+1),route:index===8?"/contact/":"/",signal:AbortSignal.any([signal,AbortSignal.timeout(editorConfig.maxAgentMilliseconds)]),recoverySignal:signal,progress:status});
        const changes=workspace.changes();
-       passed=changes.length===1&&changes[0].path===test[1]&&matches(workspace.text(test[1]));
+       const physical=state.proof.physicalWrites.some(proof=>proof.case===index+1&&proof.path===test[1]&&proof.matches);
+       const validation=state.proof.validations.find(proof=>proof.case===index+1);
+       passed=changes.length===1&&changes[0].path===test[1]&&matches(workspace.text(test[1]))&&physical&&!!validation&&(index!==0||validation.compiledHeading===test[3]);
        if(!passed)error="Le résultat ne correspond pas exactement à la demande ou modifie un autre fichier.";
        log(summary);
      }catch(cause){error=cause instanceof Error?cause.message:String(cause)}

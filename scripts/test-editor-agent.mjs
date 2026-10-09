@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { LocalWorkspace } from "../src/editor/workspace.ts";
-import { parseAction, replaceText, runAgent } from "../src/editor/agent.ts";
+import { completionPrompt, inspectionPrompt, systemPrompt, parseAction, replaceText, runAgent } from "../src/editor/agent.ts";
 import { fileHash } from "../src/editor/policy.ts";
+import { applyTarget, replaceReadLines, sourceTargets } from "../src/editor/edits.ts";
 
 const bytes = value => new TextEncoder().encode(value);
 const path = "src/content/home.json";
@@ -14,8 +15,7 @@ const request = (workspace, runtime, generate) => ({workspace,runtime,generate,p
 
 test("the agent reads, makes a targeted change, validates and records one undo", async () => {
   const workspace=createWorkspace(), run=runtime();
-  const hash=await fileHash(workspace.files.get(path));
-  const reply=await runAgent(request(workspace,run,generator([{action:"read",path},{action:"edit",path,expectedHash:hash,oldText:"Accueil",newText:"Nouveau"},{action:"done",text:"Le titre a été modifié."}])));
+  const reply=await runAgent(request(workspace,run,generator([{action:"read",path},{action:"edit",target:"/title",text:"Nouveau"},{action:"done",text:"Le titre a été modifié."}])));
   assert.equal(reply,"Le titre a été modifié.");
   assert.equal(workspace.text(path),'{"title":"Nouveau"}');
   assert.equal(workspace.history.length,1);
@@ -34,8 +34,7 @@ test("unauthorized or invented actions cannot modify files", async () => {
 test("failed validation rolls back all files and the live preview", async () => {
   const workspace=createWorkspace(), run=runtime();
   run.validate=async()=>{throw new Error("Build fixture failure");};
-  const hash=await fileHash(workspace.files.get(path));
-  const actions=[{action:"read",path},{action:"edit",path,expectedHash:hash,oldText:"Accueil",newText:"Nouveau"},...Array.from({length:4},()=>({action:"done",text:"Terminé"}))];
+  const actions=[{action:"read",path},{action:"edit",target:"/title",text:"Nouveau"},...Array.from({length:4},()=>({action:"done",text:"Terminé"}))];
   await assert.rejects(runAgent(request(workspace,run,generator(actions))),/Astro refuse/);
   assert.equal(workspace.text(path),initial);
   assert.equal(workspace.history.length,0);
@@ -51,8 +50,7 @@ test("exact replacements preserve CRLF and reject ambiguous/empty matches", () =
 
 test("the model cannot edit without a prior verified read", async () => {
   const workspace=createWorkspace(), run=runtime();
-  const hash=await fileHash(workspace.files.get(path));
-  await assert.rejects(runAgent(request(workspace,run,async()=>JSON.stringify({action:"edit",path,expectedHash:hash,oldText:"Accueil",newText:"X"}))),/Lisez ce fichier/);
+  await assert.rejects(runAgent(request(workspace,run,async()=>JSON.stringify({action:"edit",target:"/title",text:"X"}))),/Lisez ce fichier/);
   assert.equal(workspace.dirty,false);
 });
 
@@ -60,7 +58,7 @@ test("generation permissions follow successful reads and invalidate hashes after
   const workspace=createWorkspace(), run=runtime();
   const hash=await fileHash(workspace.files.get(path));
   const permissions=[];
-  const actions=[{action:"read",path},{action:"edit",path,expectedHash:hash,oldText:"Accueil",newText:"Nouveau"},{action:"done",text:"Titre modifié."}];
+  const actions=[{action:"read",path},{action:"edit",target:"/title",text:"Nouveau"},{action:"done",text:"Titre modifié."}];
   await runAgent(request(workspace,run,async(_system,_request,_context,_signal,options)=>{
     permissions.push(options.readHashes);
     return JSON.stringify(actions.shift());
@@ -77,24 +75,142 @@ test("fatal engine failures are not retried as malformed tool responses", async 
 });
 
 test("default reads include useful source context and remain bounded for later pages", () => {
-  assert.deepEqual(parseAction(JSON.stringify({action:"read",path})),{action:"read",path,startLine:1,endLine:81});
-  assert.deepEqual(parseAction(JSON.stringify({action:"read",path,startLine:100})),{action:"read",path,startLine:100,endLine:180});
+  assert.deepEqual(parseAction(JSON.stringify({action:"read",path})),{action:"read",path,startLine:1,endLine:81,format:"values"});
+  assert.deepEqual(parseAction(JSON.stringify({action:"read",path,startLine:100})),{action:"read",path,startLine:100,endLine:180,format:"values"});
   assert.throws(()=>parseAction(JSON.stringify({action:"read",path,startLine:"100"})),/81 lignes/);
 });
 
-test("source context is plain text rather than double-encoded JSON and failed edits require a fresh read", async () => {
+test("source context exposes verified JSON values and failed edits require a fresh read", async () => {
   const workspace=createWorkspace(), run=runtime();
   const hash=await fileHash(workspace.files.get(path));
   const contexts=[], permissions=[];
-  const actions=[{action:"read",path},{action:"edit",path,expectedHash:hash,oldText:"invented",newText:"Nouveau"},{action:"read",path},{action:"done",text:"Pas de modification."}];
+  const actions=[{action:"read",path},{action:"edit",target:"/invented",text:"Nouveau"},{action:"read",path},{action:"done",text:"Pas de modification."}];
   await runAgent(request(workspace,run,async(_system,_request,context,_signal,options)=>{
     contexts.push(context);
     permissions.push(options.readHashes);
     assert.deepEqual(options.readablePaths,[path]);
+    assert.equal(context.startsWith("{"),false);
+    assert.ok(context.includes("CURRENT PAGE: /"));
     return JSON.stringify(actions.shift());
   }));
-  assert.ok(contexts[1].includes(`SOURCE TEXT:\n${initial}`));
+  assert.ok(contexts[1].includes('/title = "Accueil"'));
   assert.equal(contexts[1].includes('\\\\"title\\\\"'),false);
   assert.deepEqual(permissions,[[],[hash],[],[hash]]);
   assert.equal(workspace.dirty,false);
+  const scalarWorkspace=new LocalWorkspace("a".repeat(40),new Map([[path,bytes('{"count":42,"flag":true,"none":null}')]]));
+  let calls=0,scalarContext="";
+  await runAgent(request(scalarWorkspace,runtime(),async(_system,_request,context)=>{
+    if(calls++===0)return JSON.stringify({action:"read",path});
+    scalarContext=context;
+    return JSON.stringify({action:"done"});
+  }));
+  assert.ok(scalarContext.includes("/count = 42"));
+  assert.ok(scalarContext.includes("/flag = true"));
+  assert.ok(scalarContext.includes("/none = null"));
+});
+
+test("JSON references preserve every unrelated byte and handle escaping, arrays and scalar types", () => {
+  const source='{\r\n  "a/b~c": [{"text":"a \\"quote\\""}],\r\n  "n": 42, "flag":true, "nothing":null\r\n}\r\n';
+  const targets=sourceTargets(path,source,"hash",1,81,"values");
+  const target=targets.get("/a~1b~0c/0/text");
+  assert.equal(target.value,'a "quote"');
+  assert.equal(applyTarget(source,target,'b "\\\n'),source.replace('"a \\"quote\\""',JSON.stringify('b "\\\n')));
+  assert.equal(applyTarget(source,targets.get("/n"),"43"),source.replace("42","43"));
+  assert.equal(applyTarget(source,targets.get("/n"),"1000000000000000123"),source.replace("42","1000000000000000123"));
+  assert.equal(applyTarget(source,targets.get("/flag"),"false"),source.replace("true","false"));
+  assert.equal(applyTarget(source,targets.get("/nothing"),'{"new":1}'),source.replace("null",'{"new":1}'));
+  assert.throws(()=>sourceTargets(path,'{"x":{"a":"1"},"x":{"b":"2"}}',"hash",1,81,"values"),/dupliquées/);
+});
+
+test("only shown lines can be replaced and source-bound edits preserve CRLF", () => {
+  const file="src/styles/global.css",source="first\r\n  --radius: 1rem;\r\nthird\r\n";
+  const targets=sourceTargets(file,source,"hash",2,2,"lines");
+  assert.deepEqual([...targets.keys()],["L2"]);
+  assert.equal(applyTarget(source,targets.get("L2"),"  --radius: 0.5rem;"),source.replace("1rem","0.5rem"));
+  assert.equal(replaceReadLines(source,file,2,2,"new\nextra","hash",targets),"first\r\nnew\r\nextra\r\nthird\r\n");
+  assert.throws(()=>replaceReadLines(source,file,1,2,"new","hash",targets),/doit avoir été lue/);
+  assert.throws(()=>applyTarget(source,targets.get("L2"),"new\nextra"),/qu'une ligne/);
+});
+
+test("a source-bound edit cannot bypass the real file version guard", async () => {
+  const workspace=createWorkspace(),run=runtime();
+  const actions=[{action:"read",path},{action:"edit",target:"/title",text:"Nouveau"}];
+  let calls=0;
+  await assert.rejects(runAgent(request(workspace,run,async()=>{
+    if(calls++===1)workspace.files.set(path,bytes('{"title":"Concurrent"}'));
+    return JSON.stringify(actions.shift()??{action:"edit",target:"/title",text:"Nouveau"});
+  })),/Lisez ce fichier/);
+  assert.equal(run.writes.some(write=>new TextDecoder().decode(write.content).includes("Nouveau")),false);
+  assert.equal(workspace.text(path),initial);
+});
+
+test("line edits support arbitrary template code and create/delete remain read-gated", async () => {
+  const file="src/pages/example.astro",source="<h1>Old</h1>\n<p>Keep</p>\n";
+  const workspace=new LocalWorkspace("a".repeat(40),new Map([[file,bytes(source)]])),run=runtime();
+  const actions=[
+    {action:"read",path:file},
+    {action:"lines",path:file,startLine:1,endLine:1,text:"<h1>New</h1>\n<p>Added</p>"},
+    {action:"read",path:file},
+    {action:"create",path:"src/pages/created.astro",text:"<h1>Created</h1>"},
+    {action:"delete",path:file},
+    {action:"done",text:"Modifications validées."},
+  ];
+  await runAgent(request(workspace,run,async(_system,_request,_context,_signal,options)=>{
+    if(actions[0].action==="delete")assert.ok(options.readablePaths.includes("src/pages/created.astro"));
+    if(actions[0].action==="done")assert.deepEqual(options.readablePaths,["src/pages/created.astro"]);
+    return JSON.stringify(actions.shift());
+  }));
+  assert.equal(workspace.files.has(file),false);
+  assert.equal(workspace.text("src/pages/created.astro"),"<h1>Created</h1>");
+  assert.equal(workspace.history.length,1);
+  workspace.undo();
+  assert.equal(workspace.text(file),source);
+  assert.equal(workspace.files.has("src/pages/created.astro"),false);
+});
+
+test("unconstrained model responses cannot create without inspecting actual sources", async () => {
+  const workspace=createWorkspace(),run=runtime();
+  await assert.rejects(runAgent(request(workspace,run,async()=>JSON.stringify({
+    action:"create",path:"src/pages/invented.astro",text:"<h1>Invented</h1>",
+  }))),/Lisez les sources/);
+  assert.equal(workspace.dirty,false);
+  assert.equal(run.writes.length,0);
+});
+
+test("the generator receives only inspection tools until a verified read", async () => {
+  const workspace=createWorkspace(),run=runtime(),systems=[];
+  const actions=[{action:"read",path},{action:"edit",target:"/title",text:"Nouveau"},{action:"done",text:"Terminé."}];
+  await runAgent(request(workspace,run,async(system)=>{systems.push(system);return JSON.stringify(actions.shift());}));
+  assert.deepEqual(systems,[inspectionPrompt,systemPrompt,completionPrompt]);
+  assert.equal(inspectionPrompt.includes('"action":"edit"'),false);
+  assert.equal(inspectionPrompt.includes('"action":"done"'),false);
+});
+
+test("a single exact JSON fence is accepted but prose, multiple blocks and invented actions are rejected", () => {
+  assert.deepEqual(parseAction('```json\n{"action":"read","path":"src/content/home.json"}\n```'),{
+    action:"read",path,startLine:1,endLine:81,format:"values",
+  });
+  assert.throws(()=>parseAction('Explanation\n```json\n{"action":"read","path":"src/content/home.json"}\n```'));
+  assert.throws(()=>parseAction('```json\n{"action":"list"}\n```\n```json\n{"action":"done","text":"X"}\n```'));
+  assert.throws(()=>parseAction('```json\n{"action":"merge"}\n```'));
+});
+
+test("done needs no generated prose but never bypasses real validation or undo recording", async () => {
+  const workspace=createWorkspace(),run=runtime();
+  let validated=0;
+  run.validate=async()=>{validated++;};
+  const summary=await runAgent(request(workspace,run,generator([
+    {action:"read",path},{action:"edit",target:"/title",text:"Nouveau"},{action:"done"},
+  ])));
+  assert.equal(summary,"Terminé.");
+  assert.equal(validated,1);
+  assert.equal(workspace.history.length,1);
+  assert.throws(()=>parseAction('{"action":"done","text":42}'),/Résumé/);
+});
+
+test("a hallucinated completion cannot finish a turn without inspecting any real source", async () => {
+  const workspace=createWorkspace(),run=runtime();
+  await assert.rejects(runAgent(request(workspace,run,async()=>JSON.stringify({action:"done",text:"I changed it"}))),/Aucune source consultée/);
+  assert.equal(workspace.dirty,false);
+  assert.equal(run.writes.length,0);
 });
