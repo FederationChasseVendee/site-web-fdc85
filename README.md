@@ -201,6 +201,20 @@ donc ce chemin n’est pas utilisé. Les messages de navigation sont adressés
 à l’origine exacte de l’éditeur ; aucune information de session n’entre dans
 ce script, et aucun fichier public du dépôt n’est réécrit.
 
+Les mesures natives du 9 octobre 2026 distinguent une **nouvelle page avec les
+caches du navigateur conservés** (115,7–152,3 s jusqu’à Node/Astro prêt) d’une
+reprise dans le **même conteneur vivant** (28,3–33,9 s). Une création réelle
+a pris 48,2 s, dont 7,4 s pour la confirmation de création GitHub ; un changement
+entre deux PR aux dépendances identiques a pris 29,3 s. La première visite
+sans cache et le changement vers un verrou différent n’ont pas été mesurés ;
+ces valeurs ne promettent aucun gain après la correction.
+Un ancien iframe pouvait retourner un HTTP 200 de placeholder après un
+redémarrage Astro à URL inchangée. Chaque signal réel de disponibilité du
+serveur consomme désormais une nouvelle révision de navigation de l’iframe,
+en conservant la route ; les rendus et la seconde confirmation du contrôleur
+ne la rejouent pas. La vérification exige le vrai contenu Astro et ses en-têtes
+`noindex/nofollow` et CSP, pas seulement HTTP 200 ou un ancien titre dans le DOM.
+
 Le profil WebLLM sélectionné par défaut est **Automatique** :
 `Qwen2.5-Coder-1.5B-Instruct-q4f16_1-MLC` sur GPU Intel ou sans f16,
 et `Qwen2.5-Coder-3B-Instruct-q4f16_1-MLC` sur les autres GPU avec f16.

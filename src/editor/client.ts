@@ -25,6 +25,8 @@ let modelStatus = "Préparation de l'IA locale…";
 let runtimeStatus = "Préchargement des sources…";
 let modelLoading = false;
 let renderedMessages = "";
+let previewRevision = 0;
+let renderedPreviewRevision = 0;
 let noticeTimer: ReturnType<typeof setTimeout> | undefined;
 let confirmation: Promise<boolean> | null = null;
 const diagnostics: string[] = [];
@@ -78,7 +80,7 @@ const model = new CodeModel((message) => {
 }, () => render(), log);
 const runtime = new BrowserRuntime({
   stage: progress, log,
-  ready: (url) => controller.preview(url),
+  ready: (url) => { ++previewRevision; controller.preview(url); },
   error: (message) => controller.runtimeFailed(message),
 });
 controller = new EditorController(new GitHubRepository(editorConfig.apiBase), runtime, {
@@ -173,7 +175,11 @@ function render() {
       : controller.workspace?.dirty ? "Brouillon local · non envoyé" : controller.checks?.message ?? "Version sauvegardée");
     if (controller.runtimeReady && controller.previewUrl) {
       const target = new URL(controller.route, controller.previewUrl).href;
-      if (frame.src !== target) frame.src = target;
+      // A restarted server needs a new iframe connection even at the same URL.
+      if (frame.src !== target || renderedPreviewRevision !== previewRevision) {
+        renderedPreviewRevision = previewRevision;
+        frame.src = target;
+      }
     }
     if (controller.published && deployment) text("runtime-status", deployment.message);
   }
