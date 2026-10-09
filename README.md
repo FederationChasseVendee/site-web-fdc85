@@ -452,6 +452,16 @@ Sa campagne globale reste à terminer avec un seul runtime et un seul moteur
 GPU ; cette documentation ne revendique pas de score global ni de mesure
 de qualité en production.
 
+La reprise d’un aperçu conserve désormais le processus Astro si le serveur
+est sain et que tous les fichiers montés sont identiques, octet par octet.
+Les métadonnées privées de PR, absentes du guest, ne forcent pas un redémarrage.
+Les changements de source, de dépendances ou de médias reprennent le parcours
+normal. Une écriture locale interdit la réutilisation jusqu’au redémarrage,
+pour ne pas confondre une notification HMR avec des sources réellement chargées.
+Les validations restent intégralement exécutées et redémarrent leur serveur.
+Cette optimisation doit être mesurée sur le déploiement avant d’annoncer
+un gain ; elle ne conserve pas Node après un rechargement de page.
+
 En développement, le runtime est activé par le mode dev. Pour un build non
 développement, `PUBLIC_EDITOR_RUNTIME_ENABLED=true` est **obligatoire** avant
 d’ouvrir l’atelier aux utilisateurs. Pour le POC déployé, définir ce flag

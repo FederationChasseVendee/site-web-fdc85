@@ -290,6 +290,7 @@ interface ProcessRecord {
   outputTail?: string;
   expectedExit: boolean;
   ready: boolean;
+  previewUrl?: string;
   generation: number;
   exited: boolean;
   exitCode?: number;
@@ -307,6 +308,7 @@ export class BrowserRuntime implements RuntimeAdapter {
   private active: Job | null = null;
   private processes = new Set<ProcessRecord>();
   private server: ProcessRecord | null = null;
+  private serverDirty = false;
   private unsubscribeError: (() => void) | null = null;
   private requiresReload = false;
   private readonly hooks: RuntimeHooks;
@@ -332,6 +334,18 @@ export class BrowserRuntime implements RuntimeAdapter {
   open(files: Map<string, Uint8Array>, signal: AbortSignal): Promise<string> {
     const filesCopy = snapshot(files);
     return this.enqueue(signal, async (job) => {
+      this.guard(job);
+      const server = this.server;
+      if (server?.ready && server.previewUrl && !server.exited && !server.expectedExit && !server.outputError
+        && !this.serverDirty && this.installedFingerprint && server.generation === job.generation
+        && filesCopy.size === this.sources.size
+        && [...filesCopy].every(([path, bytes]) => sameBytes(this.sources.get(path), bytes))) {
+        this.guard(job);
+        this.hooks.log("Sources inchangées : serveur Astro actif réutilisé.\n");
+        this.hooks.ready(server.previewUrl);
+        this.hooks.stage("Aperçu prêt");
+        return server.previewUrl;
+      }
       await this.prepareFiles(filesCopy, job);
       return this.startServer(job);
     });
@@ -347,6 +361,8 @@ export class BrowserRuntime implements RuntimeAdapter {
     return this.enqueue(new AbortController().signal, async (job) => {
       const container = this.requireContainer();
       if (!this.installedFingerprint) throw new Error("Préparez Node avant de modifier les sources.");
+      // A write can precede Astro's HMR refresh; require a restart before reuse.
+      if (this.server) this.serverDirty = true;
       if (bytes === null) {
         await this.io(job, () => container.fs.rm(path, { recursive: false, force: true }), "Suppression du fichier");
         this.sources.delete(path);
@@ -739,12 +755,15 @@ fs.writeFileSync("${internalPath}/compiler-proof.json", JSON.stringify({ ready: 
       }
       const previewUrl = settings.base === "/" ? url : new URL(`${settings.base.replace(/\/+$/, "")}/`, url).href;
       server.ready = true;
+      server.previewUrl = previewUrl;
+      this.serverDirty = false;
       this.hooks.ready(previewUrl);
       this.hooks.stage("Aperçu prêt");
       return previewUrl;
     } catch (error) {
       if (record && this.server === record) {
         this.server = null;
+        this.serverDirty = false;
         await this.terminate(record);
       }
       throw error;

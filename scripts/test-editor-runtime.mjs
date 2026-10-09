@@ -491,6 +491,97 @@ test("validate actually invokes Astro check, wrapper build and generated-site ch
   assert.equal(container.installs, 1);
 });
 
+test("identical mounted sources reuse the healthy Astro process without reinstalling or clearing generated caches", async t => {
+  const { runtime, container, observed } = setup(t);
+  container.previewBase = "/site-web";
+  const files = sources();
+  const url = await runtime.open(files, signal());
+  const calls = container.calls.length, mutations = container.mutations.length;
+  const server = container.servers[0].process;
+  container.files.set(".astro/data-store.json", encode("keep generated cache"));
+  files.set(".editor/requests/new-pr.json", encode('{"title":"Technical request"}'));
+  files.set("src/editor/client.ts", encode("protected editor code is not mounted"));
+  assert.equal(await runtime.open(files, signal()), url);
+  assert.equal(container.calls.length, calls);
+  assert.equal(container.mutations.length, mutations);
+  assert.equal(container.servers.length, 1);
+  assert.equal(server.killed, 0);
+  assert.equal(decode(container.files.get(".astro/data-store.json")), "keep generated cache");
+  assert.equal(container.installs, 1);
+  assert.equal(observed.boots, 1);
+  assert.deepEqual(observed.urls, [url, url]);
+  assert.match(observed.logs.join(""), /serveur Astro actif réutilisé/);
+});
+
+test("every mounted content, binary, addition and deletion change restarts Astro while keeping locked dependencies", async t => {
+  const { runtime, container } = setup(t);
+  let files = sources();
+  await runtime.open(files, signal());
+  const variants = [
+    { "src/content/home.json": '{"title":"Changed"}' },
+    { "public/assets/photo.webp": new Uint8Array([0, 255, 129, 32, 0]) },
+    { "src/pages/new.astro": "<h1>New</h1>" },
+    { "src/pages/new.astro": null },
+  ];
+  for (const change of variants) {
+    files = new Map(files);
+    for (const [path, content] of Object.entries(change)) {
+      if (content === null) files.delete(path);
+      else files.set(path, typeof content === "string" ? encode(content) : content);
+    }
+    const previous = container.servers.at(-1).process;
+    const servers = container.servers.length;
+    await runtime.open(files, signal());
+    assert.ok(previous.killed > 0);
+    assert.equal(container.servers.length, servers + 1);
+    assert.equal(container.installs, 1);
+  }
+});
+
+test("direct runtime writes and rollback cannot bypass a fresh Astro process even if tracked bytes match", async t => {
+  const { runtime, container } = setup(t);
+  const files = sources(), path = "src/content/home.json";
+  await runtime.open(files, signal());
+  const edited = encode('{"title":"Live edit"}');
+  await runtime.write(path, edited);
+  files.set(path, edited);
+  await runtime.open(files, signal());
+  assert.equal(container.servers.length, 2);
+  assert.ok(container.servers[0].process.killed > 0);
+  await runtime.write(path, encode('{"title":"Temporary"}'));
+  await runtime.write(path, edited);
+  await runtime.open(files, signal());
+  assert.equal(container.servers.length, 3);
+  assert.ok(container.servers[1].process.killed > 0);
+});
+
+test("cancelled reopen does not advertise readiness or mutate an unchanged live server", async t => {
+  const { runtime, container, observed } = setup(t);
+  const files = sources();
+  await runtime.open(files, signal());
+  const calls = container.calls.length, urls = observed.urls.length;
+  const abort = new AbortController();
+  abort.abort();
+  await assert.rejects(runtime.open(files, abort.signal), { name: "AbortError" });
+  assert.equal(container.calls.length, calls);
+  assert.equal(observed.urls.length, urls);
+  assert.equal(container.servers[0].process.killed, 0);
+});
+
+test("an exited or torn-down server can never be reused from matching source bytes", async t => {
+  const first = new FakeContainer(), second = new FakeContainer();
+  let boots = 0;
+  const { runtime, observed } = setup(t, { boot: async () => ++boots === 1 ? first : second });
+  await runtime.open(sources(), signal());
+  first.servers[0].process.finish(7);
+  await until(() => first.teardownCount === 1);
+  await runtime.open(sources(), signal());
+  assert.equal(boots, 2);
+  assert.equal(second.servers.length, 1);
+  assert.equal(second.installs, 1);
+  assert.match(observed.errors.join(""), /inattendue.*code 7/);
+});
+
 test("preview opens the repository's actual prefix instead of breaking its existing local links", async (t) => {
   const { runtime, container, observed } = setup(t);
   container.previewBase = "/site-web";
