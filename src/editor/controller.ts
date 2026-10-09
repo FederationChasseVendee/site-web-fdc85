@@ -155,6 +155,7 @@ export class EditorController {
     if (!this.pull || !this.workspace) return;
     const parsed = new URL(url);
     if (parsed.protocol !== "https:") throw new Error("L'origine de prévisualisation doit être HTTPS.");
+    if (!this.previewUrl || !this.route.startsWith(parsed.pathname)) this.route = parsed.pathname;
     this.previewUrl = parsed.href;
     this.runtimeReady = true; this.hooks.change();
   }

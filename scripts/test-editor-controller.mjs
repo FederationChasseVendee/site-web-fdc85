@@ -67,6 +67,18 @@ test("authenticated startup preloads main and PR selection uses exact-SHA delta"
   assert.equal(f.calls.find(call => call[0] === "changes")[2], head);
   assert.equal(f.controller.runtimeReady, true);
 });
+test("preview initializes its actual base route and preserves navigation only within that base", async t => {
+  const f = fixture(); t.after(() => f.controller.dispose());
+  f.runtime.open = async () => "https://preview.test/site-web/";
+  await open(f);
+  assert.equal(f.controller.route, "/site-web/");
+  assert.equal(new URL(f.controller.route, f.controller.previewUrl).href, "https://preview.test/site-web/");
+  f.controller.route = "/site-web/contact/";
+  f.controller.preview("https://preview.test/site-web/");
+  assert.equal(f.controller.route, "/site-web/contact/");
+  f.controller.preview("https://preview.test/another-base/");
+  assert.equal(f.controller.route, "/another-base/");
+});
 test("no write permission performs no checkout or runtime preparation", async t => {
   const f = fixture(); t.after(() => f.controller.dispose());
   f.repository.status = async () => ({ configured: true, authenticated: true, canWrite: false, user: { login: "test" }, repository: { defaultSha: sha } });
