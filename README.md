@@ -175,11 +175,15 @@ L’absence du réseau, un quota ou une erreur d’installation est signalé
 explicitement ; l’éditeur ne remplace pas l’aperçu par une fausse réussite.
 La surveillance interne du store Astro n’est pas persistante et continue
 à fournir le HMR pendant que le serveur tourne. Ce changement seul n’a pas
-suffi à terminer le check dans le navigateur : après les diagnostics,
-des ressources WASI pouvaient encore maintenir son processus ouvert.
+suffi à terminer l’attente du check dans le navigateur. Une instrumentation
+réelle a confirmé que le résultat SDK et le code de sortie étaient bien `0`,
+mais que WebContainer ne fermait pas le flux de sortie de ce processus WASI.
 Un runner CLI interne attend donc les API officielles `astro.sync`,
 `@astrojs/check.check` et `astro.build`, transmet les échecs, vide les sorties,
 puis termine explicitement son processus dédié avec le code réel du résultat.
+Après le véritable code de sortie, l’adaptateur laisse une seconde au journal
+pour se vider, puis ferme explicitement son lecteur si le flux reste ouvert
+(événement consigné). Un code non nul ou une erreur de lecture reste un échec.
 Il ne modifie aucun paquet fournisseur et n’infère jamais une réussite depuis
 le texte du journal. Le contrôle du site généré reste une étape obligatoire.
 

@@ -41,6 +41,7 @@ class FakeProcess {
   finished = false;
   outputCancelled = false;
   outputFailed = false;
+  leaveOutputOpen = false;
   completion = deferred();
   exit = this.completion.promise;
   output = new ReadableStream({
@@ -51,7 +52,7 @@ class FakeProcess {
   finish(code = 0) {
     if (this.finished) return;
     this.finished = true;
-    if (!this.outputCancelled && !this.outputFailed) this.stream.close();
+    if (!this.leaveOutputOpen && !this.outputCancelled && !this.outputFailed) this.stream.close();
     this.completion.resolve(code);
   }
 
@@ -501,6 +502,35 @@ test("browser validators exit only after official SDK results and diagnostics, n
     assert.deepEqual(trace, [...(mode === "check" ? ["sync", "check"] : ["build"]), "stdout", "stderr", `exit:${expected}`]);
     assert.equal(context.process.env.NODE_ENV, "production");
     assert.equal(errors.length, mode === "check" && failed === undefined || mode === "build" && failed ? 1 : 0);
+  }
+});
+
+test("an exited browser command can leave output open without stalling or hiding a nonzero exit", async (t) => {
+  for (const code of [0, 9]) {
+    const { runtime, container, observed } = setup(t, { timeoutMs: 3_000 });
+    await runtime.open(sources(), signal());
+    let command;
+    container.onSpawn = ({ args, process }) => {
+      if (args[0] !== ".editor/validate.mjs" || args[1] !== "check") return;
+      command = process;
+      process.leaveOutputOpen = true;
+      process.stream.enqueue("Real diagnostics\n");
+      return code;
+    };
+    if (code === 0) {
+      await runtime.validate(signal());
+      assert.equal(observed.stages.at(-1), "Vérification terminée");
+      assert.ok(container.calls.some(({ args }) => args.includes("check:generated")));
+    } else {
+      await assert.rejects(runtime.validate(signal()), /a échoué \(code 9\)/);
+      assert.notEqual(observed.stages.at(-1), "Vérification terminée");
+      assert.equal(container.calls.some(({ args }) => args.includes("check:generated")), false);
+    }
+    assert.equal(command.outputCancelled, true);
+    assert.equal(command.killed, 0);
+    assert.match(observed.logs.join(""), /Real diagnostics/);
+    assert.match(observed.logs.join(""), /fermeture du flux encore ouvert/);
+    runtime.stop();
   }
 });
 

@@ -624,16 +624,25 @@ fs.writeFileSync("${internalPath}/compiler-proof.json", JSON.stringify({ ready: 
   private async run(command: string, args: string[], job: Job, label: string): Promise<void> {
     const record = await this.spawn(command, args, job, label);
     let complete = false;
+    let logDrainTimer: ReturnType<typeof setTimeout> | undefined;
     try {
       const code = await this.wait(Promise.race([record.exit, record.logs.then(() => {
         if (record.outputError) throw record.outputError;
         return record.exit;
       })]), label, job);
-      await this.wait(record.logs, `Journal ${label}`, job);
+      await this.wait(Promise.race([record.logs, new Promise<void>((resolve) => {
+        logDrainTimer = setTimeout(() => {
+          this.hooks.log(`Journal ${label} : processus terminé (code ${code}), fermeture du flux encore ouvert.\n`);
+          record.cancelLogs.abort();
+          resolve();
+        }, 1_000);
+      })]), `Journal ${label}`, job);
+      await this.wait(record.logs, `Fermeture du journal ${label}`, job);
       complete = true;
       if (record.outputError) throw record.outputError;
       if (code !== 0) throw new Error(`${label} a échoué (code ${code}). Consultez le journal ; rien n’a été publié.`);
     } finally {
+      if (logDrainTimer !== undefined) clearTimeout(logDrainTimer);
       if (!complete) await this.terminate(record);
       this.processes.delete(record);
     }
