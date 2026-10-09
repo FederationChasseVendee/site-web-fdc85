@@ -214,6 +214,11 @@ serveur consomme désormais une nouvelle révision de navigation de l’iframe,
 en conservant la route ; les rendus et la seconde confirmation du contrôleur
 ne la rejouent pas. La vérification exige le vrai contenu Astro et ses en-têtes
 `noindex/nofollow` et CSP, pas seulement HTTP 200 ou un ancien titre dans le DOM.
+La régression a été vérifiée sur Chrome natif avec le bundle public corrigé
+`BHf-lfIr` : un changement réel #21 → #20 a réaffecté l’URL identique de
+l’iframe une seule fois, malgré les confirmations/rendus suivants. Le vrai
+contenu Astro, HTTP 200, `X-Robots-Tag: noindex, nofollow` et la CSP ont été
+confirmés sans reconnexion manuelle ; la CSS physique est restée inchangée.
 
 Le profil WebLLM sélectionné par défaut est **Automatique** :
 `Qwen2.5-Coder-1.5B-Instruct-q4f16_1-MLC` sur GPU Intel ou sans f16,
