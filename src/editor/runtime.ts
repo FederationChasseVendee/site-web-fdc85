@@ -17,6 +17,7 @@ export interface RuntimeContainer {
     rm(path: string, options: { recursive: boolean; force: boolean }): Promise<void>;
   };
   mount(tree: FileSystemTree): Promise<void>;
+  setPreviewScript(source: string): Promise<void>;
   spawn(command: string, args: string[], options?: SpawnOptions): Promise<RuntimeProcess>;
   on(event: "server-ready", listener: (port: number, url: string) => void): () => void;
   on(event: "error", listener: (error: { message: string }) => void): () => void;
@@ -421,7 +422,7 @@ export class BrowserRuntime implements RuntimeAdapter {
     const pending = Promise.resolve().then(() => {
       this.guard(job);
       return this.boot();
-    }).then((container) => {
+    }).then(async (container) => {
       if (job.controller.signal.aborted || job.generation !== this.generation) {
         try { container.teardown(); }
         catch (error) {
@@ -438,6 +439,16 @@ export class BrowserRuntime implements RuntimeAdapter {
         this.dispose();
         this.hooks.error(`WebContainer : ${error.message}. Vérifiez le réseau et les permissions de stockage StackBlitz.`);
       });
+      const parentOrigin = runtimeEnvironment().PUBLIC_EDITOR_PARENT_ORIGIN;
+      if (parentOrigin) {
+        await this.io(job, () => container.setPreviewScript(`(() => {
+const report = () => window.parent.postMessage(
+  { type: "editor-preview-route", pathname: location.pathname }, ${JSON.stringify(parentOrigin)});
+window.addEventListener("load", report);
+window.addEventListener("popstate", report);
+document.addEventListener("astro:page-load", report);
+})();`), "Suivi de la page prévisualisée");
+      }
       return container;
     });
     bootBarrier = pending.then(() => undefined, () => {

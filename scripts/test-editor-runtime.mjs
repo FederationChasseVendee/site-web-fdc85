@@ -79,6 +79,8 @@ class FakeContainer {
   nodeVersion = "22.12.0";
   compilerProof = true;
   previewBase = "/";
+  previewScripts = [];
+  async setPreviewScript(source) { this.previewScripts.push(source); }
 
   fs = {
     mkdir: async (path) => { this.mutations.push(["mkdir", path]); },
@@ -574,6 +576,24 @@ test("browser process environment uses only the current exact parent origin when
   const { runtime, container } = setup(t);
   await runtime.prepare(sources(), signal());
   for (const { options } of container.calls) assert.equal(options.env.PUBLIC_EDITOR_PARENT_ORIGIN, "https://editor.example:8443");
+  assert.equal(container.previewScripts.length, 1);
+  const listeners = new Map(), sent = [];
+  const context = {
+    location: { pathname: "/site-web/contact/" },
+    window: {
+      addEventListener: (event, listener) => listeners.set(event, listener),
+      parent: { postMessage: (value, origin) => sent.push({ value, origin }) },
+    },
+    document: { addEventListener: (event, listener) => listeners.set(event, listener) },
+  };
+  runInNewContext(container.previewScripts[0], context);
+  for (const event of ["load", "popstate", "astro:page-load"]) listeners.get(event)();
+  assert.equal(sent.length, 3);
+  for (const { value, origin } of sent) {
+    assert.equal(origin, "https://editor.example:8443");
+    assert.equal(value.type, "editor-preview-route");
+    assert.equal(value.pathname, "/site-web/contact/");
+  }
 });
 
 test("installer and validation errors reject, are reported and do not claim ready or successful validation", async (t) => {

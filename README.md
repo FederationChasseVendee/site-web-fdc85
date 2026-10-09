@@ -193,6 +193,10 @@ Le serveur transmet sa base effective dans une preuve locale vérifiée avant
 de construire l’URL de l’iframe. Ses réponses sont toujours `noindex/nofollow`
 et bloquent les scripts tiers, même si une ancienne branche ne possède pas
 encore le garde `PUBLIC_BROWSER_DRAFT` dans son layout.
+Le suivi de la page courante est aussi injecté par l’API officielle de
+WebContainer : il ne dépend pas de la présence du bridge dans une ancienne
+branche. Les messages de navigation sont adressés à l’origine exacte de
+l’éditeur ; aucune information de session n’entre dans ce script.
 
 Le modèle WebLLM sélectionné par défaut est
 `Qwen2.5-Coder-3B-Instruct-q4f16_1-MLC`, choisi pour la qualité. L’estimation
@@ -297,19 +301,35 @@ distante ni une permission d’écrire sans lecture/version. Une génération JS
 courte réelle a abouti en 39 secondes avec Coder 1,5B fp32 ; elle ne prouve pas
 la réussite d’une demande de modification complète.
 
-La dernière campagne a encore observé une mauvaise cible SEO avec Coder 1,5B
+Les premières campagnes avaient observé une mauvaise cible SEO avec Coder 1,5B
 et une conclusion initiale sans édition avec Coder 3B. Le contrat et les gardes
-ont été corrigés ; l’essai final n’a pas fourni de résultat exploitable sous des
-runtimes concurrents. Le benchmark contrôle désormais chaque écriture physique
-dans WebContainer et le `h1` compilé du premier cas. La vérification doit être
-reprise avec un seul runtime et un seul moteur GPU.
+ont été corrigés. Le 9 octobre 2026, le parcours complet a ensuite fonctionné
+sur le **déploiement Cloudflare Preview**, avec un seul WebContainer, le vrai
+Coder 3B local et le vrai dépôt téléchargé après OAuth :
+demande naturelle de remplacement du titre de la photo d’accueil,
+édition de `hero.title`, check/build/contrôle du site généré, aperçu HTTP 200,
+annulation groupée, répétition du changement et clic sur **Sauvegarder**.
+Le titre physique et le `h1` compilé/affiché étaient tous
+« Vos démarches de chasse en Vendée ».
+
+La sauvegarde réelle dans la PR temporaire [#19](https://github.com/FederationChasseVendee/site-web-fdc85/pull/19)
+a produit `eb5ff6b84b319a9ef8261424b10e9057471a5370`.
+La comparaison avec son parent confirme **un seul fichier et une seule ligne
+modifiés**, exclusivement ce titre. Le SHA-256 du fichier GitHub est identique
+à celui du fichier réellement testé dans WebContainer :
+`d3db8e8a1128a33697cccb9de81a584072c374bc89a5cb9c389e763b577a6fbc`.
+La branche `main` et la configuration Cloudflare Production sont restées
+inchangées. Les réponses de l’aperçu ont réellement fourni `noindex/nofollow`
+et le CSP interdisant les scripts tiers ; Umami n’était pas initialisé.
 
 Aucun score de 9/10 n’a été atteint et aucun ensemble de dix cas indépendants
-n’a été terminé. npm, WASI, Astro et les réponses HTTP 200 sont prouvés, mais
-le modèle local reste trop lent et peu fiable sur un GPU sans f16. Les 112 tests,
-le typecheck et le build passent. Le travail reste une pull request brouillon, la production est désactivée et la
-performance ainsi que la qualité restent à résoudre. Les corrections précédentes
-ont été poussées dans `c1766f9` et `4e2390f`.
+n’a été terminé : deux réussites du même scénario ne constituent pas cette
+mesure. Le POC est fonctionnel, mais une demande prend encore plusieurs
+minutes sur l’Intel gen-9 sans f16 testé. Les **117 tests**, le typecheck et le
+build passent. La PR d’implémentation reste brouillon ; le runtime, l’App,
+le KV et les secrets ne sont activés que sur Preview. Une licence pour
+l’utilisation commerciale et une mesure de qualité globale restent requises
+avant de considérer une mise en production.
 
 Cette procédure est documentée pour une reprise ultérieure : aucun résultat
 mesuré ne valide la qualité globale. À la fin d’une exécution, arrêter les deux
@@ -317,10 +337,11 @@ serveurs (Ctrl+C), puis supprimer précisément
 `public\editor-validation-archive.zip`. Ne pas envoyer l’archive, créer de
 pull request, fusionner ou publier pendant ce benchmark.
 
-Le runtime navigateur vient du prototype PR17. Le benchmark de cohabitation de
-cette nouvelle intégration reste bloqué sur la performance et la qualité :
-cette documentation ne revendique aucune mesure de qualité d’un nouveau modèle
-en production.
+Le runtime navigateur vient du prototype PR17. Le benchmark contrôle chaque
+écriture physique dans WebContainer et le `h1` compilé du premier cas.
+Sa campagne globale reste à terminer avec un seul runtime et un seul moteur
+GPU ; cette documentation ne revendique pas de score global ni de mesure
+de qualité en production.
 
 En développement, le runtime est activé par le mode dev. Pour un build non
 développement, `PUBLIC_EDITOR_RUNTIME_ENABLED=true` est **obligatoire** avant
