@@ -206,8 +206,38 @@ caches du navigateur conservés** (115,7–152,3 s jusqu’à Node/Astro prêt) 
 reprise dans le **même conteneur vivant** (28,3–33,9 s). Une création réelle
 a pris 48,2 s, dont 7,4 s pour la confirmation de création GitHub ; un changement
 entre deux PR aux dépendances identiques a pris 29,3 s. La première visite
-sans cache et le changement vers un verrou différent n’ont pas été mesurés ;
-ces valeurs ne promettent aucun gain après la correction.
+complète de l’éditeur sans cache et le changement vers un verrou différent
+n’ont pas été mesurés ; ces valeurs sont celles du parcours avant réutilisation
+du serveur, pas une promesse pour toutes les machines.
+
+Un essai indépendant dans un nouveau profil Chrome, sans caches navigateur,
+a mesuré **125,8 s de Node jusqu’au document Astro utilisable**. Le vrai SDK,
+npm, WASI et Astro ont exécuté les sources de main. Ce chronomètre commence
+après réception et extraction des sources : l’archive de 98,6 Mo était servie
+sur loopback, pas par la passerelle de production. L’authentification,
+le téléchargement de production, les imports initiaux de la page et le modèle
+IA sont exclus ; ce n’est pas un temps complet de première visite de `/edit/`.
+Sur cet essai unique, l’enveloppe montage/configuration faisait 59,1 s,
+npm ci 9,3 s et le démarrage Astro 20,4 s. Les frontières d’observation
+diffèrent de celles des stages UI ; ces sous-phases ne sont pas un comparatif
+causal des caches. Le profil Chrome authentifié n’a pas été touché.
+
+La réutilisation du serveur a ensuite été vérifiée sur le vrai déploiement
+avec le bundle chargé `YuLy1LGT` :
+
+| Parcours, conteneur déjà actif et sources montées identiques | Jusqu’à l’aperçu prêt |
+| --- | ---: |
+| Reprendre #20 dans la même page | 8,3 s |
+| Changer de #20 vers #21 | 9,5 s |
+| Revenir de #21 vers #20 | 9,5 s |
+
+Les trois traces confirment la réutilisation d’Astro et aucune nouvelle
+commande `npm run dev`. Un vrai HTTP 200 Astro, le titre courant et noindex
+ont été contrôlés, ainsi que les octets CSS inchangés. Le helper attendait
+volontairement quatre secondes avant ce contrôle : son temps total n’est
+pas présenté comme la latence minimale de démarrage. Ces gains concernent
+des sources identiques ; une PR modifiant le site ou ses dépendances
+conserve le redémarrage et les validations.
 Un ancien iframe pouvait retourner un HTTP 200 de placeholder après un
 redémarrage Astro à URL inchangée. Chaque signal réel de disponibilité du
 serveur consomme désormais une nouvelle révision de navigation de l’iframe,
@@ -459,8 +489,8 @@ Les changements de source, de dépendances ou de médias reprennent le parcours
 normal. Une écriture locale interdit la réutilisation jusqu’au redémarrage,
 pour ne pas confondre une notification HMR avec des sources réellement chargées.
 Les validations restent intégralement exécutées et redémarrent leur serveur.
-Cette optimisation doit être mesurée sur le déploiement avant d’annoncer
-un gain ; elle ne conserve pas Node après un rechargement de page.
+Les reprises identiques ont été mesurées sur le déploiement ci-dessus ;
+l’optimisation ne conserve pas Node après un rechargement de page.
 
 En développement, le runtime est activé par le mode dev. Pour un build non
 développement, `PUBLIC_EDITOR_RUNTIME_ENABLED=true` est **obligatoire** avant
