@@ -68,13 +68,12 @@ test("engine failures propagate and terminate the corrupted engine before anothe
   assert.equal(f.model.ready, false);
   assert.equal(f.terminated(), 1);
 });
-test("fp32 JSON mode always passes a generic schema string to the actual WebLLM compiler", async () => {
+test("fp32 generation avoids the failing GPU grammar while preserving replies and truncation errors", async () => {
   const f = fixture({ choices: [{ message: { content: '{"action":"read","path":"src/content/home.json"}' }, finish_reason: "stop" }] });
   f.model.schema = false;
   const reply = await f.model.complete("system", "request", "workspace", new AbortController().signal, noReads);
-  assert.equal(f.requests[0].response_format.type, "json_object");
-  assert.equal(typeof f.requests[0].response_format.schema,"string");
-  assert.deepEqual(JSON.parse(f.requests[0].response_format.schema),{type:"object",additionalProperties:true});
+  assert.equal("response_format" in f.requests[0],false);
+  assert.deepEqual(f.requests[0].messages.map(message=>message.role),["system","user"]);
   assert.equal(reply,'{"action":"read","path":"src/content/home.json"}');
   const truncated = fixture({ choices: [{ message: { content: '{"action":"read"}' }, finish_reason: "length" }] });
   truncated.model.schema = false;

@@ -267,11 +267,14 @@ reste soumis à la validation Astro et au rollback atomique.
 Les phases d’inspection, d’édition et de conclusion sont séparées. Aucun outil
 d’écriture n’est proposé avant une lecture réelle ; aucune conclusion initiale
 n’est acceptée. Sur les GPU f16, le schéma JSON contraint les chemins et
-références proposés. Sur le GPU Intel fp32 testé, le matcher de schéma a rejeté
-des tokens ; le même modèle utilise donc un schéma d’objet JSON générique,
-avec les mêmes contrôles indépendants dans les outils. WebLLM 0.2.85 compile
+références proposés. Sur le GPU Intel fp32 testé, le matcher a rejeté des tokens
+avec le schéma détaillé **et** avec un schéma d’objet JSON générique, y compris
+sur le déploiement. Ce profil conserve donc le même modèle local et le
+préprompt JSON, sans activer le matcher GPU. Le parseur, les références,
+les versions et les contrôles de fichiers restent obligatoires dans les outils.
+Ce mode est signalé dans le diagnostic. WebLLM 0.2.85 compile
 `response_format.type="json_object"` avec `compileJSONSchema` même sans
-schéma : une chaîne JSON explicite est donc toujours fournie. Le premier
+schéma : une chaîne JSON explicite est donc fournie lorsque le matcher est utilisé. Le premier
 essai du chat déployé a exposé ce défaut (`Cannot pass non-string to std::string`)
 avant toute lecture ou écriture ; la demande a été restaurée et rien poussé.
 Ce n’est pas un repli vers une IA
