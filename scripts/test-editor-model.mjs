@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { actionSchema, CodeModel } from "../src/editor/model.ts";
+import { actionSchema, CodeModel, gpuModelId, GpuResourcesError } from "../src/editor/model.ts";
+import { editorConfig } from "../src/editor/config.ts";
 
 const noReads = { readHashes: [], readablePaths: ["src/content/home.json"] };
 
@@ -26,7 +27,7 @@ test("generation cancellation terminates the worker and requires reload instead 
   await assert.rejects(generation, { name: "AbortError" });
   assert.equal(f.model.ready, false);
   assert.equal(f.terminated(), 1);
-  assert.ok(f.interrupted() > 0);
+  assert.equal(f.interrupted(), 0);
   assert.match(f.statuses.at(-1), /rechargez/);
   await assert.rejects(f.model.complete("system", "request", "workspace", new AbortController().signal, noReads), /chargement/);
   finish({ choices: [{ message: { content: '{"action":"done","text":"Late response"}' } }] });
@@ -78,4 +79,48 @@ test("fp32 generation avoids the failing GPU grammar while preserving replies an
   const truncated = fixture({ choices: [{ message: { content: '{"action":"read"}' }, finish_reason: "length" }] });
   truncated.model.schema = false;
   await assert.rejects(truncated.model.complete("system", "request", "workspace", new AbortController().signal, noReads), /trop longue/);
+});
+test("automatic model selection reduces Intel/fp32 load without overriding an explicit 3B choice", () => {
+  const { model, smallModel } = editorConfig;
+  assert.equal(gpuModelId(model, { shaderF16: true, vendor: "nvidia" }, smallModel), model);
+  assert.equal(gpuModelId(model, { shaderF16: true, vendor: "amd" }, smallModel), model);
+  assert.equal(gpuModelId(model, { shaderF16: true, vendor: "intel" }, smallModel), smallModel);
+  assert.equal(gpuModelId(model, { shaderF16: true, vendor: "0x8086" }, smallModel), smallModel);
+  assert.equal(gpuModelId(model, { shaderF16: false, vendor: "" }, smallModel), smallModel.replace("q4f16_1", "q4f32_1"));
+  assert.equal(gpuModelId(model, { shaderF16: false, vendor: "intel" }), model.replace("q4f16_1", "q4f32_1"));
+  assert.equal(gpuModelId(smallModel, { shaderF16: true, vendor: "intel" }), smallModel);
+});
+test("disposed GPU resources are explained, preserved as cause, and never accessed again during teardown", async () => {
+  const original = new Error("Error: Object has already been disposed");
+  const f = fixture(Promise.reject(original));
+  f.model.engine.interruptGenerate = () => { throw Error("Disposed engine must not be called"); };
+  await assert.rejects(f.model.complete("system", "request", "workspace", new AbortController().signal, noReads), error => {
+    assert.ok(error instanceof GpuResourcesError);
+    assert.equal(error.cause, original);
+    assert.match(error.message, /GPU.*modèle léger/);
+    return true;
+  });
+  assert.equal(f.model.ready, false);
+  assert.equal(f.model.gpuFailed, true);
+  assert.equal(f.terminated(), 1);
+  assert.match(f.statuses.at(-1), /pilote graphique/);
+  assert.equal(f.model.engine, null);
+});
+test("explicit device loss is recoverable, but unrelated model failures are not mislabeled as GPU loss", async () => {
+  for (const message of ["DeviceLostError: Device lost", "DXGI_ERROR_DEVICE_HUNG (0x887A0006)", "GPUDeviceLostInfo"]) {
+    const f = fixture(Promise.reject(new Error(message)));
+    await assert.rejects(f.model.complete("system", "request", "workspace", new AbortController().signal, noReads), GpuResourcesError);
+    assert.equal(f.model.gpuFailed, true);
+  }
+  const other = fixture(Promise.reject(new Error("Grammar matcher rejected the newly sampled token.")));
+  await assert.rejects(other.model.complete("system", "request", "workspace", new AbortController().signal, noReads), /Grammar matcher/);
+  assert.equal(other.model.gpuFailed, false);
+});
+test("interrupt kills the worker even if the engine can no longer process an RPC", () => {
+  const f = fixture(null);
+  f.model.engine.interruptGenerate = () => { throw Error("GPU engine is disposed"); };
+  f.model.interrupt();
+  assert.equal(f.model.ready, false);
+  assert.equal(f.terminated(), 1);
+  assert.match(f.statuses.at(-1), /rechargez/);
 });

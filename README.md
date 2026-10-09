@@ -201,13 +201,36 @@ donc ce chemin n’est pas utilisé. Les messages de navigation sont adressés
 à l’origine exacte de l’éditeur ; aucune information de session n’entre dans
 ce script, et aucun fichier public du dépôt n’est réécrit.
 
-Le modèle WebLLM sélectionné par défaut est
-`Qwen2.5-Coder-3B-Instruct-q4f16_1-MLC`, choisi pour la qualité. L’estimation
+Le profil WebLLM sélectionné par défaut est **Automatique** :
+`Qwen2.5-Coder-1.5B-Instruct-q4f16_1-MLC` sur GPU Intel ou sans f16,
+et `Qwen2.5-Coder-3B-Instruct-q4f16_1-MLC` sur les autres GPU avec f16.
+Cette règle conservatrice réduit la charge sans prétendre mesurer la VRAM
+disponible. Le choix explicite du 3B reste respecté sur tous les GPU,
+avec la variante q4f32 si nécessaire. L’estimation
 d’environ **2,5 GB de VRAM** correspond au catalogue et à l’exécution du modèle,
 pas à la taille d’un fichier téléchargé. Le choix explicite
 `Qwen2.5-Coder-1.5B-Instruct-q4f16_1-MLC` réduit l’empreinte à environ **1,6 GB
 de VRAM**. Sur un appareil sans prise en charge f16, le choix fp32 consomme
 davantage de VRAM. Il n’existe pas de repli vers un fournisseur cloud.
+
+### Perte du GPU pendant une demande
+
+`DXGI_ERROR_DEVICE_HUNG` indique que Windows a réinitialisé le périphérique
+graphique ; les seules traces ne permettent pas d’affirmer un manque de VRAM.
+WebLLM décharge alors le moteur, qui peut ensuite rejeter une génération avec
+`Object has already been disposed`. Le téléchargement terminé ne garantit donc
+pas que l’inférence soit stable sur ce GPU/pilote.
+
+Les erreurs de perte/libération du GPU arrêtent réellement le worker sans lui
+envoyer un nouvel RPC d’interruption. Le diagnostic d’origine est conservé,
+et l’interface propose **Recharger avec Coder 1,5B**. Ce bouton choisit
+explicitement le modèle léger, mais ne relance pas la demande ni une sauvegarde.
+Les écritures de la demande échouée sont restaurées ; le dépôt GitHub reste
+inchangé. Si le modèle léger échoue aussi, redémarrer Chrome et vérifier le
+pilote graphique. Ce mécanisme n’est pas une garantie contre un reset matériel.
+Le blocage CSP d’Umami est volontaire dans l’aperçu et n’explique pas cette
+perte du GPU ; les avertissements `powerPreference` et preload ne sont pas
+des échecs de chargement du modèle.
 
 Après une interruption ou un délai dépassé de l’IA, le cache local du modèle
 reste disponible. Le worker interrompu doit être arrêté ; le bouton
@@ -338,7 +361,7 @@ de modification.
 Aucun score de 9/10 n’a été atteint et aucun ensemble de dix cas indépendants
 n’a été terminé : deux réussites du même scénario ne constituent pas cette
 mesure. Le POC est fonctionnel, mais une demande prend encore plusieurs
-minutes sur l’Intel gen-9 sans f16 testé. Les **117 tests**, le typecheck et le
+minutes sur l’Intel gen-9 sans f16 testé. Les **122 tests**, le typecheck et le
 build passent. La PR d’implémentation reste brouillon ; le runtime, l’App,
 le KV et les secrets ne sont activés que sur Preview. Une licence pour
 l’utilisation commerciale et une mesure de qualité globale restent requises

@@ -24,8 +24,26 @@ export function actionSchema(options: GenerationOptions) {
 
 export type Generator = (system: string, request: string, context: string, signal: AbortSignal, options: GenerationOptions) => Promise<string>;
 
+export function gpuModelId(modelId: string, gpu: { shaderF16: boolean; vendor: string }, compatibleModelId = modelId): string {
+  const preferred = !gpu.shaderF16 || /^(intel|0x8086)$/i.test(gpu.vendor) ? compatibleModelId : modelId;
+  return gpu.shaderF16 ? preferred : preferred.replace("q4f16_1", "q4f32_1");
+}
+
+export class GpuResourcesError extends Error {
+  constructor(cause: unknown) {
+    super("Le moteur IA local a perdu ses ressources GPU. Rechargez le modèle léger pour réessayer. Si cela se reproduit, redémarrez Chrome et vérifiez le pilote graphique.", { cause });
+    this.name = "GpuResourcesError";
+  }
+}
+
+function modelFailure(error: unknown): unknown {
+  return /DeviceLostError|device (?:was |is )?lost|GPUDeviceLostInfo|DXGI_ERROR_DEVICE_(?:HUNG|REMOVED|RESET)|Object has already been disposed/i.test(errorMessage(error))
+    ? new GpuResourcesError(error) : error;
+}
+
 export class CodeModel {
   ready = false;
+  gpuFailed = false;
   private worker: Worker | null = null;
   private engine: WebWorkerMLCEngine | null = null;
   private schema = true;
@@ -37,8 +55,9 @@ export class CodeModel {
   constructor(status: (message: string) => void, changed: () => void, log: (message: string) => void) {
     this.status = status; this.changed = changed; this.log = log;
   }
-  async load(modelId: string): Promise<void> {
+  async load(modelId: string, compatibleModelId = modelId): Promise<void> {
     this.stop();
+    this.gpuFailed = false;
     const generation = ++this.generation;
     const abort = new AbortController();
     this.loading = abort;
@@ -46,11 +65,15 @@ export class CodeModel {
     const adapter = await navigator.gpu.requestAdapter();
     if (!adapter) throw new Error("Aucun GPU WebGPU disponible. Aucun service IA distant ne sera utilisé.");
     abort.signal.throwIfAborted();
-    const selected = adapter.features.has("shader-f16") ? modelId : modelId.replace("q4f16_1", "q4f32_1");
+    const shaderF16 = adapter.features.has("shader-f16");
+    const selected = gpuModelId(modelId, { shaderF16, vendor: adapter.info?.vendor ?? "" }, compatibleModelId);
+    if (selected !== (shaderF16 ? modelId : modelId.replace("q4f16_1", "q4f32_1"))) {
+      this.log("Profil automatique : Coder 1,5B sur GPU Intel ou sans f16 pour réduire la charge GPU. Coder 3B reste disponible dans le choix du modèle.");
+    }
     // The tested fp32 GPU rejects tokens even with a generic WebLLM grammar.
-    this.schema = adapter.features.has("shader-f16");
+    this.schema = shaderF16;
     if (!this.schema) this.log("GPU sans f16 : JSON demandé par le préprompt, sans matcher GPU ; format, références et versions vérifiés par les outils.");
-    if (selected !== modelId) this.log("GPU sans f16 : même modèle en q4f32, avec un besoin de mémoire supérieur.");
+    if (!shaderF16) this.log("GPU sans f16 : variante q4f32 du modèle sélectionné, avec un besoin de mémoire supérieur à sa variante f16.");
     this.status("Téléchargement et préparation du modèle local…");
     const { CreateWebWorkerMLCEngine } = await import("@mlc-ai/web-llm");
     abort.signal.throwIfAborted();
@@ -58,9 +81,12 @@ export class CodeModel {
     this.worker = worker;
     worker.onerror = (event) => {
       if (generation !== this.generation) return;
-      this.ready = false;
-      this.status(`Le worker IA a échoué : ${event.message}.`);
-      abort.abort(new Error("Le worker IA s'est arrêté."));
+      const failure = modelFailure(new Error(event.message));
+      this.log(`Le worker IA a échoué : ${event.message}.`);
+      abort.abort(failure);
+      this.stop();
+      this.gpuFailed = failure instanceof GpuResourcesError;
+      this.status(errorMessage(failure));
       this.changed();
     };
     const cancelled = new Promise<never>((_, reject) => abort.signal.addEventListener("abort", () => reject(abort.signal.reason), { once: true }));
@@ -78,7 +104,15 @@ export class CodeModel {
       this.status(`${selected.includes("-3B-") ? "Coder 3B" : "Coder 1,5B"} · prêt, calcul local`);
       this.changed();
     } catch (error) {
-      if (generation === this.generation) { this.ready = false; worker.terminate(); this.worker = null; this.changed(); }
+      if (generation === this.generation) {
+        const failure = abort.signal.aborted ? error : modelFailure(error);
+        this.log(`Chargement IA arrêté : ${errorMessage(error)}`);
+        this.stop();
+        this.gpuFailed = failure instanceof GpuResourcesError;
+        this.status(errorMessage(failure));
+        this.changed();
+        throw failure;
+      }
       throw error;
     }
   }
@@ -91,7 +125,7 @@ export class CodeModel {
     combined.throwIfAborted();
     let rejectCancelled: ((reason: unknown) => void) | undefined;
     const cancelled = new Promise<never>((_, reject) => { rejectCancelled = reject; });
-    const interrupt = () => { engine.interruptGenerate(); rejectCancelled?.(combined.reason); };
+    const interrupt = () => { rejectCancelled?.(combined.reason); };
     combined.addEventListener("abort", interrupt, { once: true });
     try {
       const response = await Promise.race([engine.chat.completions.create({
@@ -111,18 +145,24 @@ export class CodeModel {
       return content;
     } catch (error) {
       if (generation === this.generation) {
+        const failure = combined.aborted ? error : modelFailure(error);
         this.log(`IA locale arrêtée : ${errorMessage(error)}`);
         this.stop();
-        this.status("IA locale arrêtée · rechargez le modèle pour continuer (cache conservé)");
+        this.gpuFailed = failure instanceof GpuResourcesError;
+        this.status(this.gpuFailed ? errorMessage(failure) : "IA locale arrêtée · rechargez le modèle pour continuer (cache conservé)");
+        this.changed();
+        throw failure;
       }
       throw error;
     } finally { combined.removeEventListener("abort", interrupt); }
   }
-  interrupt() { this.engine?.interruptGenerate(); }
+  interrupt() {
+    this.stop();
+    this.status("IA locale arrêtée · rechargez le modèle pour continuer (cache conservé)");
+  }
   stop() {
     this.generation++;
     this.loading?.abort(new DOMException("Chargement du modèle annulé.", "AbortError"));
-    this.engine?.interruptGenerate();
     this.worker?.terminate();
     this.worker = null; this.engine = null; this.loading = null; this.ready = false;
     this.changed();

@@ -155,6 +155,7 @@ function render() {
   button("undo").disabled = busy || !writable || !controller.workspace?.history.length;
   show("stop-agent", controller.agentRunning);
   button("reload-model").disabled = controller.agentRunning || modelLoading;
+  button("reload-model").textContent = model.gpuFailed ? "Recharger avec Coder 1,5B" : "Charger / réessayer";
   button("stop-model").disabled = controller.agentRunning;
   button("pause-preload").disabled = controller.agentRunning;
   modelChoice.disabled = controller.agentRunning || modelLoading;
@@ -180,7 +181,12 @@ function render() {
 }
 async function loadModel() {
   modelLoading = true; render();
-  try { await model.load(modelChoice.value === "1.5b" ? editorConfig.smallModel : editorConfig.model); }
+  try {
+    if (modelChoice.value === "auto") await model.load(editorConfig.model, editorConfig.smallModel);
+    else if (modelChoice.value === "3b") await model.load(editorConfig.model);
+    else if (modelChoice.value === "1.5b") await model.load(editorConfig.smallModel);
+    else throw new Error("Choisissez un modèle local proposé dans la liste.");
+  }
   catch (error) {
     if (!(error instanceof DOMException && error.name === "AbortError")) {
       modelStatus = `IA locale indisponible : ${errorMessage(error)}`;
@@ -242,7 +248,13 @@ button("publish").addEventListener("click", () => {
 button("undo").addEventListener("click", () => { void act(() => controller.undo()); });
 button("stop-agent").addEventListener("click", () => { controller.cancelChat(); model.interrupt(); });
 button("retry-runtime").addEventListener("click", () => { void act(() => controller.retryRuntime()); });
-button("reload-model").addEventListener("click", () => { void loadModel(); });
+button("reload-model").addEventListener("click", () => {
+  if (model.gpuFailed) {
+    modelChoice.value = "1.5b";
+    notice("Rechargement du modèle léger. Votre demande n'est pas relancée automatiquement ; renvoyez-la une fois le modèle prêt.");
+  }
+  void loadModel();
+});
 const stopModel = () => { model.stop(); modelStatus = "Modèle arrêté · le cache est conservé"; text("model-status", modelStatus); text("background-status", modelStatus); };
 button("stop-model").addEventListener("click", stopModel);
 button("pause-preload").addEventListener("click", stopModel);

@@ -84,7 +84,7 @@ const canonical = new URL(`${base}edit/`, Astro.site);
             </form>
             <details class="model-options"><summary>Modèle et diagnostic</summary>
               <label for="model-choice">Modèle local</label>
-              <select id="model-choice"><option value="3b">Coder 3B — qualité, ≈ 2,5 Go de VRAM</option><option value="1.5b">Coder 1,5B — plus léger, ≈ 1,6 Go de VRAM</option></select>
+              <select id="model-choice"><option value="auto">Automatique — compatible avec votre GPU</option><option value="3b">Coder 3B — plus exigeant pour le GPU</option><option value="1.5b">Coder 1,5B — plus léger</option></select>
               <button id="reload-model" class="quiet">Charger / réessayer</button>
               <button id="stop-model" class="quiet">Arrêter le modèle</button>
               <button id="export-draft" class="quiet">Exporter le brouillon</button>

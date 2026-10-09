@@ -4,6 +4,7 @@ import { LocalWorkspace } from "../src/editor/workspace.ts";
 import { completionPrompt, inspectionPrompt, systemPrompt, parseAction, replaceText, runAgent } from "../src/editor/agent.ts";
 import { fileHash } from "../src/editor/policy.ts";
 import { applyTarget, replaceReadLines, sourceTargets } from "../src/editor/edits.ts";
+import { GpuResourcesError } from "../src/editor/model.ts";
 
 const bytes = value => new TextEncoder().encode(value);
 const path = "src/content/home.json";
@@ -72,6 +73,25 @@ test("fatal engine failures are not retried as malformed tool responses", async 
   await assert.rejects(runAgent(request(workspace,run,async()=>{calls++;throw Error("Engine failed");})),/Engine failed/);
   assert.equal(calls,1);
   assert.equal(workspace.dirty,false);
+});
+
+test("GPU loss after a local edit restores all workspace and preview bytes without validating or retrying the engine", async () => {
+  const workspace = createWorkspace(), run = runtime();
+  let calls = 0, validations = 0;
+  run.validate = async () => { validations++; };
+  const actions = [{ action: "read", path }, { action: "edit", target: "/title", text: "Nouveau" }];
+  const failure = new GpuResourcesError(new Error("DXGI_ERROR_DEVICE_HUNG"));
+  await assert.rejects(runAgent(request(workspace, run, async () => {
+    calls++;
+    if (actions.length) return JSON.stringify(actions.shift());
+    throw failure;
+  })), error => error === failure);
+  assert.equal(calls, 3);
+  assert.equal(validations, 0);
+  assert.equal(workspace.text(path), initial);
+  assert.equal(workspace.dirty, false);
+  assert.equal(workspace.history.length, 0);
+  assert.equal(new TextDecoder().decode(run.writes.at(-1).content), initial);
 });
 
 test("default reads include useful source context and remain bounded for later pages", () => {
