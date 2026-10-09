@@ -274,23 +274,27 @@ test("CSS value references preserve declarations, comments, important flags and 
   const file = "src/styles/theme.css";
   const source = '/* --fake: red; */\r\n:root {\r\n  --brown: #123456;\r\n  --shadow: 0 1rem rgb(1 2 3 / 20%);\r\n}\r\na { color: var(--brown) !important; content: "--fake: blue;"; }\r\n';
   const targets = sourceTargets(file, source, "hash", 1, 6, "values");
-  assert.equal(targets.has("L1/--fake"), false);
+  assert.equal(targets.has("--fake"), false);
   assert.equal(targets.has("L3"), false);
-  assert.equal(targets.get("L3/--brown").value, "#123456");
-  assert.equal(targets.get("L4/--shadow").value, "0 1rem rgb(1 2 3 / 20%)");
-  const result = applyTargets(source, [{ target: targets.get("L3/--brown"), text: "#654321" }, { target: targets.get("L6/color"), text: "rgb(4 5 6)" }]);
+  assert.equal(targets.get("--brown").value, "#123456");
+  assert.equal(targets.get("--shadow").value, "0 1rem rgb(1 2 3 / 20%)");
+  const result = applyTargets(source, [{ target: targets.get("--brown"), text: "#654321" }, { target: targets.get("color"), text: "rgb(4 5 6)" }]);
   assert.equal(result, source.replace("#123456", "#654321").replace("var(--brown)", "rgb(4 5 6)"));
   assert.match(result, / !important;/);
-  assert.deepEqual([...sourceTargets(file, source, "hash", 3, 3, "values").keys()], ["L3/--brown"]);
-  assert.throws(() => applyTarget(source, targets.get("L3/--brown"), "#654321; --injected: red"), /Unexpected|expected/i);
-  assert.throws(() => applyTarget(source, targets.get("L3/--brown"), ""), /vide/);
+  assert.deepEqual([...sourceTargets(file, source, "hash", 3, 3, "values").keys()], ["--brown"]);
+  assert.throws(() => applyTarget(source, targets.get("--brown"), "#654321; --injected: red"), /Unexpected|expected/i);
+  assert.throws(() => applyTarget(source, targets.get("--brown"), ""), /vide/);
 });
 
 test("CSS code and duplicate declarations retain explicit raw-line access without ambiguous value references", () => {
   const file = "src/styles/theme.css", source = ":root { --a: red; --a: blue; }\nbody {\n color: green;\n}\n";
   const values = sourceTargets(file, source, "hash", 1, 4, "values");
   assert.equal(values.has("L1/--a"), false);
-  assert.equal(values.get("L3/color").value, "green");
+  assert.equal(values.get("color").value, "green");
+  const repeated = sourceTargets(file, "a { color: red; }\nb { color: blue; }\n", "hash", 1, 2, "values");
+  assert.deepEqual([...repeated.keys()], ["L1/color", "L2/color"]);
+  assert.equal(repeated.has("color"), false);
+  assert.equal(applyTarget("a { color: red; }\nb { color: blue; }\n", repeated.get("L2/color"), "brown"), "a { color: red; }\nb { color: brown; }\n");
   const raw = sourceTargets(file, source, "hash", 1, 1, "lines");
   assert.deepEqual([...raw.keys()], ["L1"]);
   assert.equal(raw.get("L1").value, ":root { --a: red; --a: blue; }");
@@ -301,10 +305,10 @@ test("CSS code and duplicate declarations retain explicit raw-line access withou
 test("the value phase applies model-chosen CSS colors without reconstructing selectors or disturbing layout", async () => {
   const file = "src/styles/theme.css", source = ":root {\n  --primary: #123456;\n  --surface: #fdfcf8;\n  --radius: 1rem;\n}\n";
   const workspace = new LocalWorkspace("a".repeat(40), new Map([[file, bytes(source)]])), run = runtime(), systems = [], options = [];
-  const actions = [{ action: "read", path: file }, { action: "edits", changes: [{ target: "L2/--primary", text: "#654321" }, { target: "L3/--surface", text: "#faf1e8" }] }, { action: "done" }];
+  const actions = [{ action: "read", path: file }, { action: "edits", changes: [{ target: "--primary", text: "#654321" }, { target: "--surface", text: "#faf1e8" }] }, { action: "done" }];
   await runAgent(request(workspace, run, async (system, _request, context, _signal, permissions) => {
     systems.push(system); options.push(permissions);
-    if (systems.length === 2) assert.match(context, /L2\/--primary = #123456/);
+    if (systems.length === 2) assert.match(context, /--primary = #123456/);
     return JSON.stringify(actions.shift());
   }));
   assert.deepEqual(systems, [inspectionPrompt, valueEditPrompt, completionPrompt]);

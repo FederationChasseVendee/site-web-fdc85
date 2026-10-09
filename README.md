@@ -302,10 +302,13 @@ source et les corrections sans source visible.
 
 Le contrat actuel ne demande plus au modèle de recopier un hash ou un ancien
 texte. Une lecture expose des références vérifiées : pointeurs JSON pour les
-valeurs, références de valeurs CSS comme `L2/--forest-950` et identifiants
+valeurs, références de valeurs CSS comme `--forest-950` et identifiants
 de lignes pour Markdown et templates. Un parseur CSS expose uniquement
 les plages réelles des valeurs de déclaration, sans recopier les sélecteurs,
 accolades ou `!important`. `format:"lines"` conserve l’édition du code CSS.
+Les propriétés répétées dans une lecture sont désambiguïsées par la ligne
+(`L2/color`) ; les déclarations ambiguës sur une même ligne ne sont pas
+proposées comme valeurs.
 L’action
 `edit(target, text)` remplace uniquement la référence lue ; `lines` permet un
 passage de code dont toutes les lignes ont été consultées. Les versions restent

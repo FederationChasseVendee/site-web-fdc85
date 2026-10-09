@@ -67,10 +67,10 @@ test("write grammars expose only source references read from the real filesystem
   assert.equal(actionSchema({ ...noReads, readHashes: [hash], targets, hasChanges: true, validationFailed: true }).properties.action.enum.includes("done"), false);
   assert.equal("expectedHash" in schema.properties, false);
   assert.equal("oldText" in schema.properties, false);
-  const valueSchema = actionSchema({ ...noReads, readHashes: [hash], targets: ["L2/--primary"], valueTargetsOnly: true });
+  const valueSchema = actionSchema({ ...noReads, readHashes: [hash], targets: ["--primary"], valueTargetsOnly: true });
   assert.equal(valueSchema.properties.action.enum.includes("edits"), true);
   for (const action of ["lines", "create", "delete"]) assert.equal(valueSchema.properties.action.enum.includes(action), false);
-  assert.deepEqual(valueSchema.properties.target.enum, ["L2/--primary"]);
+  assert.deepEqual(valueSchema.properties.target.enum, ["--primary"]);
 });
 test("engine failures propagate and terminate the corrupted engine before another generation", async () => {
   const f = fixture(Promise.reject(new Error("Grammar matcher rejected the newly sampled token.")));

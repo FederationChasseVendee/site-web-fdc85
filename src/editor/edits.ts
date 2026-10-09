@@ -16,25 +16,29 @@ export function sourceTargets(path: string, source: string, hash: string, startL
   const last = Math.min(source.length, lines.slice(0, endLine).join("\n").length);
   if (path.endsWith(".css") && format === "values") {
     const ast = parse(source, { positions: true, onParseError: (error) => { throw error; } });
+    const declarations: { property: string; line: number; target: EditTarget }[] = [];
+    const counts = new Map<string, number>();
     const duplicates = new Set<string>();
     walk(ast, {
       visit: "Declaration",
       enter(node) {
         const location = node.value.loc;
         if (!location || location.start.offset < first || location.end.offset > last) return;
-        const id = `L${location.start.line}/${node.property}`;
-        if (targets.has(id) || duplicates.has(id)) {
-          targets.delete(id);
-          duplicates.add(id);
-          return;
-        }
         let start = location.start.offset, end = location.end.offset;
         while (start < end && /\s/.test(source[start]!)) start++;
         while (end > start && /\s/.test(source[end - 1]!)) end--;
         if (start === end) return;
-        targets.set(id, { path, hash, start, end, kind: "css", value: source.slice(start, end) });
+        declarations.push({ property: node.property, line: location.start.line, target: { path, hash, start, end, kind: "css", value: source.slice(start, end) } });
+        counts.set(node.property, (counts.get(node.property) ?? 0) + 1);
       },
     });
+    for (const { property, line, target } of declarations) {
+      const id = counts.get(property) === 1 ? property : `L${line}/${property}`;
+      if (targets.has(id) || duplicates.has(id)) {
+        targets.delete(id);
+        duplicates.add(id);
+      } else targets.set(id, target);
+    }
     if (targets.size) return targets;
   }
   if (!path.endsWith(".json") || format === "lines") {
