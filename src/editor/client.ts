@@ -15,7 +15,7 @@ function element<T extends HTMLElement>(id: string, kind: { new(...args: never[]
 const button = (id: string) => element(id, HTMLButtonElement);
 const text = (id: string, value: string) => { element(id, HTMLElement).textContent = value; };
 const show = (id: string, visible: boolean) => { element(id, HTMLElement).hidden = !visible; };
-const frame = element("preview", HTMLIFrameElement);
+let frame = element("preview", HTMLIFrameElement);
 const prompt = element("prompt", HTMLTextAreaElement);
 const modelChoice = element("model-choice", HTMLSelectElement);
 const dialog = element("confirmation", HTMLDialogElement);
@@ -175,8 +175,15 @@ function render() {
       : controller.workspace?.dirty ? "Brouillon local · non envoyé" : controller.checks?.message ?? "Version sauvegardée");
     if (controller.runtimeReady && controller.previewUrl) {
       const target = new URL(controller.route, controller.previewUrl).href;
-      // A restarted server needs a new iframe connection even at the same URL.
       if (frame.src !== target || renderedPreviewRevision !== previewRevision) {
+        // Discard WebContainer's previous-port bridge, not just its unchanged URL.
+        if (frame.src === target && renderedPreviewRevision !== previewRevision) {
+          const replacement = frame.cloneNode(false);
+          if (!(replacement instanceof HTMLIFrameElement)) throw new Error("Le cadre de prévisualisation n'a pas pu être recréé.");
+          replacement.removeAttribute("src");
+          frame.replaceWith(replacement);
+          frame = replacement;
+        }
         renderedPreviewRevision = previewRevision;
         frame.src = target;
       }

@@ -16,6 +16,7 @@ const script = ts.transpileModule(source.replaceAll("import.meta.env.BASE_URL", 
 async function fixture(t) {
   const nodes = new Map();
   const navigations = [];
+  const listeners = new Map();
   let controller, hooks, runtimeHooks;
   class Element {
     hidden = true;
@@ -34,6 +35,21 @@ async function fixture(t) {
     contentWindow = {};
     get src() { return this.value; }
     set src(url) { this.value = new URL(url).href; navigations.push(this.value); }
+    cloneNode(deep) {
+      assert.equal(deep, false);
+      const clone = new Frame();
+      clone.value = this.value;
+      clone.hidden = this.hidden;
+      return clone;
+    }
+    removeAttribute(name) {
+      assert.equal(name, "src");
+      this.value = "";
+    }
+    replaceWith(replacement) {
+      assert.equal(nodes.get("preview"), this);
+      nodes.set("preview", replacement);
+    }
   }
   const frame = new Frame();
   nodes.set("preview", frame);
@@ -83,7 +99,7 @@ async function fixture(t) {
       return modules[name];
     },
     document,
-    window: { addEventListener() {} },
+    window: { addEventListener(name, handler) { listeners.set(name, handler); } },
     HTMLElement: Element,
     HTMLButtonElement: Element,
     HTMLIFrameElement: Frame,
@@ -102,13 +118,14 @@ async function fixture(t) {
     url: "https://github.com/FederationChasseVendee/site-web-fdc85/pull/1",
   };
   controller.workspace = { messages: [], dirty: false, history: [] };
-  return { controller, hooks, runtimeHooks, frame, navigations };
+  return { controller, hooks, runtimeHooks, get frame() { return nodes.get("preview"); }, navigations, listeners };
 }
 
 test("each actual server-ready reconnects the same iframe URL exactly once", async t => {
   const f = await fixture(t);
   const url = "https://preview.test/site-web/";
   f.runtimeHooks.ready(url);
+  const originalFrame = f.frame;
   assert.deepEqual(f.navigations, [url]);
   f.controller.preview(url);
   f.hooks.change();
@@ -120,6 +137,11 @@ test("each actual server-ready reconnects the same iframe URL exactly once", asy
   f.controller.preview(url);
   f.hooks.change();
   assert.deepEqual(f.navigations, [url, url], "a real restart must reconnect despite an unchanged URL");
+  assert.notEqual(f.frame, originalFrame, "the previous WebContainer bridge must be discarded");
+  assert.equal(f.frame.hidden, false);
+  const reconnectedFrame = f.frame;
+  f.hooks.change();
+  assert.equal(f.frame, reconnectedFrame, "ordinary renders must retain the new browsing context");
 });
 
 test("a server restart preserves the current route and deduplicates the open confirmation", async t => {
@@ -145,4 +167,18 @@ test("a new preview origin consumes its server-ready revision without a second n
   f.controller.preview("https://second.test/site-web/");
   f.hooks.change();
   assert.deepEqual(f.navigations, ["https://first.test/site-web/", "https://second.test/site-web/"]);
+});
+
+test("after reconnection route messages must come from the new frame, not the discarded bridge", async t => {
+  const f = await fixture(t);
+  const base = "https://preview.test/site-web/";
+  f.runtimeHooks.ready(base);
+  const staleWindow = f.frame.contentWindow;
+  f.runtimeHooks.ready(base);
+  const message = f.listeners.get("message");
+  const data = { type: "editor-preview-route", pathname: "/site-web/contact/" };
+  message({ origin: "https://preview.test", source: staleWindow, data });
+  assert.equal(f.controller.route, "/site-web/");
+  message({ origin: "https://preview.test", source: f.frame.contentWindow, data });
+  assert.equal(f.controller.route, "/site-web/contact/");
 });

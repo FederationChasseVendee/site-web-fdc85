@@ -241,8 +241,12 @@ conserve le redémarrage et les validations.
 Un ancien iframe pouvait retourner un HTTP 200 de placeholder après un
 redémarrage Astro à URL inchangée. Chaque signal réel de disponibilité du
 serveur consomme désormais une nouvelle révision de navigation de l’iframe,
-en conservant la route ; les rendus et la seconde confirmation du contrôleur
-ne la rejouent pas. La vérification exige le vrai contenu Astro et ses en-têtes
+en conservant la route. À URL inchangée, le cadre et son contexte de navigation
+sont recréés : réassigner seulement `src` pouvait conserver le pont vers
+l’ancien port, notamment après une validation Astro. Les rendus et la seconde
+confirmation du contrôleur ne rejouent pas cette reconnexion ; les messages
+de route provenant du cadre détaché sont ignorés.
+La vérification exige le vrai contenu Astro et ses en-têtes
 `noindex/nofollow` et CSP, pas seulement HTTP 200 ou un ancien titre dans le DOM.
 La régression a été vérifiée sur Chrome natif avec le bundle public corrigé
 `BHf-lfIr` : un changement réel #21 → #20 a réaffecté l’URL identique de
