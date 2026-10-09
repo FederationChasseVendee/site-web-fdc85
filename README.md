@@ -326,7 +326,13 @@ Les phases d’inspection, d’édition et de conclusion sont séparées. Aucun 
 d’écriture n’est proposé avant une lecture réelle ; aucune conclusion initiale
 n’est acceptée. Une lecture de valeurs utilise un contrat court d’édition
 groupée ; les créations et changements de code demandent d’abord une lecture
-brute. Sur les GPU f16, le schéma JSON contraint les chemins et
+brute, y compris sans matcher GPU. Les paramètres non reconnus sont refusés.
+Les instructions restent génériques : découvrir les sources, lire avant
+d’écrire, préserver ce qui est hors demande et vérifier les sources liées.
+Aucune palette prédéfinie ni procédure propre à une demande de couleur
+n’est codée. Les références CSS concernent toutes les déclarations,
+par exemple les espacements ou la typographie, pas seulement les couleurs.
+Sur les GPU f16, le schéma JSON contraint les chemins et
 références proposés. Sur le GPU Intel fp32 testé, le matcher a rejeté des tokens
 avec le schéma détaillé **et** avec un schéma d’objet JSON générique, y compris
 sur le déploiement. Ce profil conserve donc le même modèle local et le
@@ -384,14 +390,32 @@ Le parseur et une compilation réussie ne prouvent donc pas le respect
 de la demande ni les contrastes. La récupération GPU, les références CSS
 et le contrat court sont couverts par les tests ; une palette marron
 déployée réellement correcte reste à établir. La requête utilisateur
-est désormais placée après les données source, pour ne pas être éclipsée
-par les anciennes couleurs ; les consignes préservent les relations
-clair/foncé, mais ne constituent pas un validateur visuel.
+est placée après les données source, pour ne pas être éclipsée par celles-ci.
+Le dernier essai 3B avec cet ordre a encore conservé certaines anciennes
+teintes. Le délai global a interrompu le build après le check ; l’arrêt
+du processus a ensuite détruit le WebContainer. Le brouillon en mémoire
+a été restauré, mais la restauration physique a nécessité un rechargement
+de l’éditeur. Aucun résultat de cet essai n’a été sauvegardé.
+
+Le budget est désormais séparé : huit minutes cumulées de génération,
+puis au plus trois minutes pour chaque validation complète, avec les mêmes
+contrôles obligatoires. Un échec de build ne réinitialise pas le budget IA.
+Annuler interrompt aussi la validation. Après une validation commencée,
+le rollback redémarre l’aperçu à partir du snapshot complet, sans dépendre
+de la capacité d’écriture de l’ancien conteneur. Une restauration impossible
+reste une erreur explicite et désactive l’aperçu.
+
+Le choix initial de Qwen2.5-Coder repose sur sa spécialisation code,
+sa disponibilité dans WebLLM et son empreinte matérielle, pas sur un
+benchmark comparatif réussi de cet éditeur. Le profil automatique 1,5B
+sur Intel/sans f16 réduit la charge, sans garantir une meilleure qualité.
+Les essais applicatifs restent nécessaires : les gardes et la compilation
+ne prouvent ni la pertinence de la modification ni la qualité visuelle.
 
 Aucun score de 9/10 n’a été atteint et aucun ensemble de dix cas indépendants
 n’a été terminé : deux réussites du même scénario ne constituent pas cette
 mesure. Le scénario de titre du POC fonctionne, mais une demande prend encore
-plusieurs minutes sur l’Intel gen-9 sans f16 testé. Les **131 tests**, le typecheck et le
+plusieurs minutes sur l’Intel gen-9 sans f16 testé. Les tests, le typecheck et le
 build passent. La PR d’implémentation reste brouillon ; le runtime, l’App,
 le KV et les secrets ne sont activés que sur Preview. Une licence pour
 l’utilisation commerciale et une mesure de qualité globale restent requises

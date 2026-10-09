@@ -5,12 +5,13 @@ import { completionPrompt, inspectionPrompt, systemPrompt, valueEditPrompt, pars
 import { fileHash } from "../src/editor/policy.ts";
 import { applyTarget, applyTargets, replaceReadLines, sourceTargets } from "../src/editor/edits.ts";
 import { GpuResourcesError } from "../src/editor/model.ts";
+import { editorConfig } from "../src/editor/config.ts";
 
 const bytes = value => new TextEncoder().encode(value);
 const path = "src/content/home.json";
 const initial = '{"title":"Accueil"}';
 const createWorkspace = () => new LocalWorkspace("a".repeat(40), new Map([[path, bytes(initial)]]));
-const runtime = () => ({ writes: [], opens: 0, open: async function() { this.opens++; return "https://preview.test/"; }, write: async function(path,content) { this.writes.push({path,content}); }, validate: async()=>{}, stop(){} });
+const runtime = () => ({ writes: [], opens: 0, open: async function(files) { this.opens++; this.openedFiles = new Map(files); return "https://preview.test/"; }, write: async function(path,content) { this.writes.push({path,content}); }, validate: async()=>{}, stop(){} });
 const generator = (actions) => async()=>JSON.stringify(actions.shift());
 const request = (workspace, runtime, generate) => ({workspace,runtime,generate,prompt:"Change le titre",title:"Titre",route:"/",signal:new AbortController().signal,progress(){}});
 
@@ -40,7 +41,7 @@ test("failed validation rolls back all files and the live preview", async () => 
   await assert.rejects(runAgent(request(workspace,run,generator(actions))),/Astro refuse/);
   assert.equal(workspace.text(path),initial);
   assert.equal(workspace.history.length,0);
-  assert.equal(new TextDecoder().decode(run.writes.at(-1).content),initial);
+  assert.equal(new TextDecoder().decode(run.openedFiles.get(path)),initial);
   assert.equal(run.opens,1);
   assert.equal(validations,1);
 });
@@ -345,4 +346,145 @@ test("a hallucinated completion cannot finish a turn without inspecting any real
   await assert.rejects(runAgent(request(workspace,run,async()=>JSON.stringify({action:"done",text:"I changed it"}))),/Aucune source consultée/);
   assert.equal(workspace.dirty,false);
   assert.equal(run.writes.length,0);
+});
+
+test("the same generic instructions cover content, structure and styles without a palette workflow", () => {
+  for (const prompt of [inspectionPrompt, systemPrompt, valueEditPrompt, completionPrompt]) {
+    assert.doesNotMatch(prompt, /palette|brown|grey|forest|gradients|footer backgrounds|--forest-/i);
+  }
+  assert.doesNotMatch(inspectionPrompt, /For appearance changes/);
+  assert.match(inspectionPrompt, /list to locate relevant sources/);
+  assert.match(valueEditPrompt, /requested result exactly/);
+});
+
+test("unrecognized parameters are rejected even without a GPU JSON grammar", () => {
+  for (const action of [
+    { action: "read", path, expectedHash: "invented" },
+    { action: "edit", target: "/title", text: "New", oldText: "invented" },
+    { action: "done", path },
+    { action: "constructor", text: "New" },
+    { action: "toString" },
+    { action: "edits", changes: [{ target: "/title", text: "New", command: "merge" }] },
+  ]) assert.throws(() => parseAction(JSON.stringify(action)), /non reconnus|uniquement/);
+});
+
+test("value-only reads cannot authorize structural writes on an unconstrained model", async () => {
+  for (const structural of [
+    { action: "create", path: "src/pages/new.astro", text: "<h1>New</h1>" },
+    { action: "delete", path },
+    { action: "lines", path, startLine: 1, endLine: 1, text: "{}" },
+  ]) {
+    const workspace = createWorkspace(), run = runtime();
+    const actions = Array.from({ length: 3 }, () => [{ action: "read", path }, structural]).flat();
+    await assert.rejects(runAgent(request(workspace, run, generator(actions))), /modification structurelle/);
+    assert.equal(run.writes.length, 0);
+    assert.equal(workspace.dirty, false);
+  }
+  const workspace = createWorkspace(), run = runtime();
+  await runAgent(request(workspace, run, generator([
+    { action: "read", path, format: "lines" },
+    { action: "create", path: "src/pages/new.astro", text: "<h1>New</h1>" },
+    { action: "done" },
+  ])));
+  assert.equal(workspace.text("src/pages/new.astro"), "<h1>New</h1>");
+});
+
+test("the generic value phase edits typography and spacing without a color-specific policy", async () => {
+  const file = "src/styles/layout.css", source = ":root {\n  --gap: 2rem;\n  --font-size: 1.2rem;\n  --accent: #123456;\n}\n";
+  const workspace = new LocalWorkspace("a".repeat(40), new Map([[file, bytes(source)]])), run = runtime();
+  const actions = [
+    { action: "read", path: file },
+    { action: "edits", changes: [{ target: "--gap", text: "1rem" }, { target: "--font-size", text: "1rem" }] },
+    { action: "done" },
+  ];
+  await runAgent({ ...request(workspace, run, generator(actions)), prompt: "Réduis les espacements et la taille du texte." });
+  assert.equal(workspace.text(file), source.replace("--gap: 2rem", "--gap: 1rem").replace("--font-size: 1.2rem", "--font-size: 1rem"));
+  assert.equal(run.writes.length, 1);
+  assert.equal(workspace.history.length, 1);
+});
+
+test("slow inference and validation have separate bounded budgets without resetting inference after a build failure", async t => {
+  let elapsed = 0;
+  const deadlines = [];
+  t.mock.method(performance, "now", () => elapsed);
+  t.mock.method(AbortSignal, "timeout", milliseconds => {
+    deadlines.push(milliseconds);
+    return new AbortController().signal;
+  });
+  const workspace = createWorkspace(), run = runtime();
+  let validations = 0;
+  run.validate = async () => {
+    elapsed += editorConfig.maxValidationMilliseconds - 1;
+    if (++validations === 1) throw Error("Invalid fixture");
+  };
+  const actions = [
+    { action: "read", path }, { action: "edit", target: "/title", text: "Invalid" }, { action: "done" },
+    { action: "read", path }, { action: "edit", target: "/title", text: "Correct" }, { action: "done" },
+  ];
+  await runAgent(request(workspace, run, async () => {
+    elapsed += 60_000;
+    return JSON.stringify(actions.shift());
+  }));
+  assert.deepEqual(deadlines, [
+    480_000, 420_000, 360_000, editorConfig.maxValidationMilliseconds,
+    300_000, 240_000, 180_000, editorConfig.maxValidationMilliseconds,
+  ]);
+  assert.equal(workspace.text(path), '{"title":"Correct"}');
+  assert.equal(workspace.history.length, 1);
+});
+
+test("an exhausted inference budget restores edits and never starts validation", async t => {
+  let elapsed = 0;
+  t.mock.method(performance, "now", () => elapsed);
+  const workspace = createWorkspace(), run = runtime();
+  let validations = 0;
+  run.validate = async () => { validations++; };
+  const actions = [{ action: "read", path }, { action: "edit", target: "/title", text: "New" }];
+  await assert.rejects(runAgent(request(workspace, run, async () => {
+    elapsed += editorConfig.maxAgentMilliseconds / 2;
+    return JSON.stringify(actions.shift());
+  })), { name: "TimeoutError" });
+  assert.equal(validations, 0);
+  assert.equal(workspace.text(path), initial);
+  assert.equal(workspace.history.length, 0);
+  assert.equal(new TextDecoder().decode(run.writes.at(-1).content), initial);
+});
+
+test("a validation deadline cannot be mislabeled as success or consume correction attempts", async t => {
+  const deadline = new AbortController();
+  let timeoutCalls = 0;
+  t.mock.method(AbortSignal, "timeout", () => ++timeoutCalls === 4 ? deadline.signal : new AbortController().signal);
+  const workspace = createWorkspace(), run = runtime();
+  const failure = new DOMException("Validation deadline", "TimeoutError");
+  run.validate = async () => { deadline.abort(failure); };
+  const actions = [{ action: "read", path }, { action: "edit", target: "/title", text: "New" }, { action: "done" }];
+  await assert.rejects(runAgent(request(workspace, run, generator(actions))), error => error === failure);
+  assert.equal(workspace.text(path), initial);
+  assert.equal(workspace.history.length, 0);
+  assert.equal(run.opens, 1);
+  assert.equal(new TextDecoder().decode(run.openedFiles.get(path)), initial);
+});
+
+test("cancellation during validation restores the full snapshot even if the old runtime cannot accept writes", async () => {
+  const workspace = createWorkspace(), run = runtime(), abort = new AbortController();
+  const failure = new DOMException("User cancellation", "AbortError");
+  let entered;
+  const started = new Promise(resolve => { entered = resolve; });
+  run.validate = async signal => {
+    entered();
+    await new Promise((resolve, reject) => signal.addEventListener("abort", () => {
+      run.write = async () => { throw Error("Old container unavailable"); };
+      reject(signal.reason);
+    }, { once: true }));
+  };
+  const actions = [{ action: "read", path }, { action: "edit", target: "/title", text: "New" }, { action: "done" }];
+  const result = runAgent({ ...request(workspace, run, generator(actions)), signal: abort.signal });
+  const rejection = assert.rejects(result, error => error === failure);
+  await started;
+  abort.abort(failure);
+  await rejection;
+  assert.equal(workspace.text(path), initial);
+  assert.equal(workspace.history.length, 0);
+  assert.equal(run.opens, 1);
+  assert.equal(new TextDecoder().decode(run.openedFiles.get(path)), initial);
 });

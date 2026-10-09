@@ -6,5 +6,6 @@ export const editorConfig = {
   maxCorrections: 2,
   maxContextCharacters: 8500,
   maxAgentMilliseconds: 8 * 60 * 1000,
+  maxValidationMilliseconds: 3 * 60 * 1000,
   runtimeEnabled: import.meta.env?.DEV || import.meta.env?.PUBLIC_EDITOR_RUNTIME_ENABLED === "true",
 };

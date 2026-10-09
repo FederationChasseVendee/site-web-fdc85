@@ -82,7 +82,7 @@ document.getElementById("start").onclick=async()=>{
      const begin=performance.now();
      let passed=false,error=null;
      try{
-       const summary=await runAgent({workspace,runtime,generate:async(...args)=>{const reply=await model.complete(...args);state.actions.push({case:index+1,reply});return reply},prompt:test[0],title:"Benchmark "+(index+1),route:index===8?"/contact/":"/",signal:AbortSignal.any([signal,AbortSignal.timeout(editorConfig.maxAgentMilliseconds)]),recoverySignal:signal,progress:status});
+       const summary=await runAgent({workspace,runtime,generate:async(...args)=>{const reply=await model.complete(...args);state.actions.push({case:index+1,reply});return reply},prompt:test[0],title:"Benchmark "+(index+1),route:index===8?"/contact/":"/",signal,recoverySignal:signal,progress:status});
        const changes=workspace.changes();
        const physical=state.proof.physicalWrites.some(proof=>proof.case===index+1&&proof.path===test[1]&&proof.matches);
        const validation=state.proof.validations.find(proof=>proof.case===index+1);

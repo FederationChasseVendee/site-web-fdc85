@@ -3,7 +3,6 @@ import { EditorApiError } from "./github.ts";
 import { BrowserStorage, DraftConflictError, LocalWorkspace, applyChanges, readArchive } from "./workspace.ts";
 import { runAgent, PreviewRestoreError } from "./agent.ts";
 import type { Generator } from "./model.ts";
-import { editorConfig } from "./config.ts";
 
 export interface StorageAdapter {
   cached(sha: string): Promise<Map<string, Uint8Array> | null>;
@@ -208,7 +207,7 @@ export class EditorController {
       const abort = new AbortController();
       this.agentAbort = abort;
       this.hooks.change();
-      const signal = AbortSignal.any([abort.signal, this.lifetime.signal, AbortSignal.timeout(editorConfig.maxAgentMilliseconds)]);
+      const signal = AbortSignal.any([abort.signal, this.lifetime.signal]);
       try {
         const result = await runAgent({ workspace, runtime: this.runtime, generate, prompt, title: pull.title, route: this.route,
           signal, recoverySignal: this.lifetime.signal, progress: (message) => this.hooks.progress(message) });
