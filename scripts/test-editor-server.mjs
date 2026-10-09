@@ -530,6 +530,32 @@ test("save recovers an accepted ref after network loss, including later descenda
   assert.equal(app.github.mutations().filter((call) => call.url.pathname.endsWith("/git/commits")).length, 2);
 });
 
+test("saving and reopening use the authoritative branch when PR metadata lags behind", async () => {
+  const app=setup();
+  await app.authenticate();
+  const stale=structuredClone(app.github.latestPull());
+  app.github.override=(call)=>{
+    if (call.url.pathname===`/repos/${repoName}/pulls/7` && call.method==="GET") return response(stale);
+  };
+  const body=saveBody([textChange]);
+  const result=await app.request("pulls/7/save",{method:"POST",body});
+  assert.equal(result.status,200,await result.clone().text());
+  const saved=await result.json();
+  assert.notEqual(saved.savedSha,initialHead);
+  assert.equal(saved.headSha,saved.savedSha);
+  const reopened=await app.request("pulls/7");
+  assert.equal((await reopened.json()).headSha,saved.savedSha);
+  const retry=await app.request("pulls/7/save",{method:"POST",body});
+  assert.equal(retry.status,200,await retry.clone().text());
+  assert.equal((await retry.json()).savedSha,saved.savedSha);
+  assert.equal(app.github.mutations().filter(call=>call.url.pathname.endsWith("/git/commits")).length,1);
+  const checks=await app.request("pulls/7/checks");
+  assert.equal((await checks.json()).mergeable,null);
+  const branch=app.github.latestPull().head.ref;
+  app.github.refs.delete(branch);
+  assert.equal((await app.request("pulls/7")).status,409);
+});
+
 test("first save success preserves our savedSha when another author advances the confirmed head", async () => {
   const app = setup();
   await app.authenticate();
@@ -790,7 +816,10 @@ test("incremental checkout rejects stale or changing selected heads, non-ancesto
   app.github.diffFiles = [];
   let reads = 0;
   app.github.override = ({ url }) => {
-    if (url.pathname.endsWith("/pulls/7") && ++reads === 2) app.github.latestPull().head.sha = main;
+    if (url.pathname.endsWith("/pulls/7") && ++reads === 2) {
+      app.github.latestPull().head.sha = main;
+      app.github.refs.set(app.github.latestPull().head.ref,main);
+    }
   };
   assert.equal((await app.request(`pulls/7/changes?from=${main}&expectedSha=${initialHead}`)).status, 409);
 });

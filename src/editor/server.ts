@@ -411,6 +411,11 @@ function parsePull(value: unknown, requireEditorBranch = true): PullData {
 async function getPull(github: GitHub, number: number): Promise<PullData> {
   const data = parsePull(await github.json(`/pulls/${number}`));
   if (data.pull.number !== number) return upstream();
+  const headSha = await refSha(github, data.pull.headRef);
+  if (!headSha) throw new HttpError(409, "La branche de cette demande n'existe plus. Rechargez la liste.");
+  if (headSha !== data.pull.headSha) {
+    return { ...data, pull: { ...data.pull, headSha }, mergeable: null, mergeableState: "unknown" };
+  }
   return data;
 }
 
@@ -499,7 +504,7 @@ function saveOperation(value: unknown): SaveOperation | null {
 }
 
 async function refSha(github: GitHub, branch: string): Promise<string | null> {
-  const data = await github.json(`/git/ref/heads/${branch}`, "GET", undefined, true);
+  const data = await github.json(`/git/ref/heads/${branch.split("/").map(encodeURIComponent).join("/")}`, "GET", undefined, true);
   return data === null ? null : sha(record(record(data).object).sha);
 }
 
