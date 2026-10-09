@@ -859,6 +859,7 @@ export function createEditorHandler(dependencies: Dependencies = {}): (request: 
       }
       const callbackUrl = `${config.origin}${config.basePath}/api/editor/callback`;
       if (request.method === "GET" && route === "login") {
+        if (url.origin !== config.origin) return redirect(`${config.origin}${config.basePath}/api/editor/login`);
         const previous = cookie(request, oauthCookie);
         if (previous) await config.kv.delete(`oauth:${previous}`);
         const id = randomToken();

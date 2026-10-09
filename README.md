@@ -271,13 +271,18 @@ en production.
 
 En développement, le runtime est activé par le mode dev. Pour un build non
 développement, `PUBLIC_EDITOR_RUNTIME_ENABLED=true` est **obligatoire** avant
-d’ouvrir l’atelier aux utilisateurs. Ne l’activer qu’après avoir confirmé avec
-StackBlitz les conditions de licence de WebContainer en production : le client
-runtime est MIT, mais la licence du service runtime est distincte. Aucun achat,
-compte fournisseur ou changement de configuration externe n’est fourni ou
-partagé par ce dépôt ; le runtime de production reste donc opt-in et bloqué
-tant que cette confirmation de licence n’a pas été obtenue. Cette campagne
-n’autorise ni n’active la production, qui reste actuellement désactivée.
+d’ouvrir l’atelier aux utilisateurs. Pour le POC déployé, définir ce flag
+**uniquement dans l’environnement Preview de Cloudflare Pages**, puis relancer
+le build de la branche : une variable publique est incorporée au JavaScript
+lors du build.
+
+La [politique officielle de WebContainer](https://webcontainers.io/enterprise)
+exempte les prototypes et POC de licence commerciale. Cette exemption permet
+la prévisualisation de test, pas une activation implicite en production.
+Le client runtime est MIT, mais la licence du service est distincte : confirmer
+les conditions applicables avant une utilisation commerciale en production.
+Aucun achat n’est effectué par ce dépôt. La configuration Production demeure
+inchangée, avec le runtime désactivé tant que son activation n’est pas approuvée.
 
 ## Configuration externe de l’authentification et des Functions
 
@@ -301,6 +306,21 @@ secrets local), puis l’enregistrer comme secret Cloudflare ; aucune valeur ré
 ne doit apparaître dans la documentation ou les exemples. `EDITOR_ORIGIN` doit
 correspondre exactement à l’origine publiée, et le callback GitHub doit être
 `<origin>/api/editor/callback` (avec le préfixe de base éventuel).
+
+Pour le POC de cette branche, utiliser l’origine stable
+`https://artymaury-local-ai-editor.fdc85.pages.dev`, pas l’URL immuable d’un
+déploiement. Les connexions provenant d’une autre origine sont redirigées vers
+`EDITOR_ORIGIN` **avant** la création du cookie OAuth, pour que le callback
+retrouve son état sur le même hôte.
+
+Limiter les secrets, `PUBLIC_EDITOR_RUNTIME_ENABLED=true` et la liaison
+`EDITOR_SESSIONS` à la configuration **Preview**. Utiliser un namespace KV
+dédié au POC et conserver intégralement les autres variables et bindings.
+Ne pas modifier la configuration Production ou fusionner `main` pour activer
+ce test. La création de l’application peut demander une confirmation GitHub
+« Confirm access » ; celle-ci et la connexion Cloudflare doivent être effectuées
+directement par l’administrateur dans son navigateur, sans communiquer ses
+identifiants ou codes de double authentification.
 
 Créer ou configurer l’application GitHub pour le dépôt
 `FederationChasseVendee/site-web-fdc85`, puis l’installer uniquement sur ce

@@ -279,6 +279,21 @@ test("Pages dispatcher and configuration fail closed with actionable status", as
   }
 });
 
+test("immutable preview URLs canonicalize login before assigning a host-bound OAuth cookie", async () => {
+  const app = setup();
+  app.env.EDITOR_BASE_PATH = "/site-web";
+  const result = await app.handle(new Request("https://deployment-hash.example/site-web/api/editor/login"), app.env);
+  assert.equal(result.status,302);
+  assert.equal(result.headers.get("Location"),`${origin}/site-web/api/editor/login`);
+  assert.equal(result.headers.getSetCookie().length,0);
+  assert.equal(app.kv.values.size,0);
+  assert.equal(app.github.calls.length,0);
+  const canonical = await app.handle(new Request(result.headers.get("Location")),app.env);
+  assert.equal(new URL(canonical.headers.get("Location")).origin,"https://github.com");
+  assert.equal(app.kv.values.size,1);
+  assert.equal(canonical.headers.getSetCookie().length,1);
+});
+
 test("OAuth uses one-time state, PKCE, encrypted TTL storage and opaque rotated cookies", async () => {
   const app = setup();
   app.env.EDITOR_BASE_PATH = "/site-web";
