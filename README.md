@@ -324,6 +324,16 @@ modifiés**, exclusivement ce titre. Le SHA-256 du fichier GitHub est identique
 La branche `main` et la configuration Cloudflare Production sont restées
 inchangées. Les réponses de l’aperçu ont réellement fourni `noindex/nofollow`
 et le CSP interdisant les scripts tiers ; Umami n’était pas initialisé.
+Le lien Contact de cet ancien site a ensuite retourné HTTP 200 et transmis
+sa route à l’éditeur ; le passage en affichage Mobile et le rendu suivant ont
+conservé cette page. Le middleware privé a aussi passé le véritable
+check/build et le contrôle généré inchangé dans WebContainer.
+
+Enfin, **Abandonner cette modification** et sa confirmation ont réellement
+fermé la PR #19, sans fusion. Une lecture GitHub indépendante confirme que
+sa branche existe toujours au commit sauvegardé ci-dessus et que `main`
+est inchangée. Le navigateur conserve les brouillons et revient au choix
+de modification.
 
 Aucun score de 9/10 n’a été atteint et aucun ensemble de dix cas indépendants
 n’a été terminé : deux réussites du même scénario ne constituent pas cette
