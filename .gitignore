@@ -3,3 +3,6 @@ dist/
 .astro/
 .DS_Store
 *.log
+public/_headers
+.wrangler/
+.dev.vars

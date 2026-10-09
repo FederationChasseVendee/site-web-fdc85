@@ -66,6 +66,15 @@ try {
   for (const file of generatedHtml) {
     const html = readFileSync(file, "utf8");
     const outputPath = relative("dist", file);
+    const normalizedOutputPath = outputPath.replaceAll("\\", "/");
+    if (normalizedOutputPath === "edit/index.html") {
+      const scripts = [...html.matchAll(/<script\b[^>]*data-website-id="[^"]+"[^>]*><\/script>/g)];
+      assert(
+        scripts.length === 0,
+        `${outputPath} ne doit contenir aucun script Umami dans l’éditeur.`,
+      );
+      continue;
+    }
     if (existsSync(join("public", outputPath))) {
       assert(
         !html.includes(scriptUrl)
