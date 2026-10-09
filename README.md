@@ -191,7 +191,14 @@ Pour un aperçu réel, utiliser Chrome ou Edge sur ordinateur dans un contexte
 HTTPS (localhost est l’exception de développement). La page `/edit/` doit
 recevoir `Cross-Origin-Opener-Policy: same-origin` et
 `Cross-Origin-Embedder-Policy: require-corp`, afin de disposer de
-`SharedArrayBuffer`; le navigateur doit aussi exposer WebGPU. Les quotas OPFS,
+`SharedArrayBuffer`. Le script du worker IA doit également recevoir
+`Cross-Origin-Embedder-Policy: require-corp` ; sans cela, Chrome refuse de le
+démarrer depuis le document isolé, même si JavaScript est servi avec HTTP 200.
+L’intégration génère une règle ciblée `/_astro/ai-worker-*` avec cette politique
+et `Cross-Origin-Resource-Policy: same-origin`, en tenant compte du préfixe de
+base. Les mêmes headers sont appliqués au worker source en développement.
+Les autres assets et pages publiques ne sont pas isolés par cette règle.
+Le navigateur doit aussi exposer WebGPU. Les quotas OPFS,
 IndexedDB et du cache du navigateur peuvent être insuffisants : ces erreurs
 restent visibles et doivent être corrigées localement (libérer de l’espace,
 réessayer ou changer de profil).

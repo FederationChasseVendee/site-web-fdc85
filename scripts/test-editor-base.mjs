@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { rebaseInternalUrl, rebaseStaticRedirect } from "../src/lib/base-links.mjs";
-import { editorDevHeadersPlugin, editorHeaders, editorDevPaths, isEditorDevPath } from "./editor-headers.mjs";
+import { editorDevHeadersPlugin, editorHeaders, editorDevPaths, isEditorDevPath, isEditorWorkerPath } from "./editor-headers.mjs";
 import { siteConfig } from "./site-config.mjs";
 
 const root = new URL("../", import.meta.url);
@@ -87,7 +87,7 @@ test("Astro config keeps base-aware Markdown and published editor headers", () =
   assert.doesNotMatch(config, /browser-snapshot/);
 });
 
-test("development isolation is limited to the editor route and includes all editor headers", () => {
+test("isolation is limited to editor documents and its dedicated worker", () => {
   assert.deepEqual(editorDevPaths("/"), ["/edit", "/edit/"]);
   assert.deepEqual(editorDevPaths("/site-web"), ["/edit", "/edit/", "/site-web/edit", "/site-web/edit/"]);
   assert.equal(isEditorDevPath("/edit/?from=chat", "/"), true);
@@ -130,6 +130,22 @@ test("development isolation is limited to the editor route and includes all edit
     "Cache-Control": "no-store",
   });
   assert.equal(nextCalls, 1);
+
+  for (const path of ["/src/editor/ai-worker.ts", "/site-web/src/editor/ai-worker.ts?worker_file&type=module", "/_astro/ai-worker-hash.js", "/site-web/_astro/ai-worker-hash.js"]) {
+    assert.equal(isEditorWorkerPath(path,"/site-web"),true,path);
+    const response={headers:{},setHeader(name,value){this.headers[name]=value;}};
+    middleware({url:path},response,()=>{});
+    assert.deepEqual(response.headers,{
+      "Cross-Origin-Embedder-Policy":"require-corp",
+      "Cross-Origin-Resource-Policy":"same-origin",
+    });
+  }
+  for(const path of ["/_astro/client-hash.js", "/other/src/editor/ai-worker.ts", "/_astro/ai-worker-folder/nested.js", "/actualites/"]) {
+    assert.equal(isEditorWorkerPath(path,"/site-web"),false,path);
+  }
+  assert.match(editorHeaders("/"),/\/_astro\/ai-worker-\*\n  Cross-Origin-Embedder-Policy: require-corp\n  Cross-Origin-Resource-Policy: same-origin/);
+  assert.match(headers,/\/site-web\/_astro\/ai-worker-\*\n/);
+  assert.doesNotMatch(headers,/\/_astro\/\*\n/);
 
   const publicResponse = {
     headers: {},
