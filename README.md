@@ -336,6 +336,12 @@ configurés par ce dépôt : l’administrateur doit les enregistrer lui-même.
 Une configuration manquante échoue avec un message actionnable ; il n’y a pas de
 fallback de preview fictif et aucun secret ne doit être commité.
 
+Le SHA d’une demande sélectionnée est lu sur sa référence Git, et non seulement
+dans les métadonnées de PR : celles-ci peuvent rester temporairement en retard
+après une sauvegarde. Le commit effectivement sauvegardé (`savedSha`) reste
+distinct du head courant. Si GitHub n’a pas encore recalculé la mergeabilité
+de ce head, la publication attend ; elle ne réutilise pas un résultat périmé.
+
 ### Site Cloudflare et chemins historiques
 
 Le projet Cloudflare Pages `fdc85` doit être connecté directement au dépôt GitHub
