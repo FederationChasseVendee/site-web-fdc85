@@ -78,6 +78,7 @@ class FakeContainer {
   automaticReady = true;
   nodeVersion = "22.12.0";
   compilerProof = true;
+  previewBase = "/";
 
   fs = {
     mkdir: async (path) => { this.mutations.push(["mkdir", path]); },
@@ -130,6 +131,9 @@ class FakeContainer {
     const process = new FakeProcess();
     const call = { command, args, options, process };
     this.calls.push(call);
+    if (command === "npm" && args[0] === "run" && args[1] === "dev") {
+      this.files.set(".editor/preview-settings.json", encode(JSON.stringify({ base: this.previewBase })));
+    }
     const outcome = this.onSpawn?.(call, this);
     if (outcome === "hold") return process;
     queueMicrotask(() => {
@@ -390,11 +394,11 @@ test("snapshot bytes cannot be mutated by callers while preparing", async (t) =>
   assert.equal(decode(container.files.get("src/content/home.json")), '{"title":"Vendée"}');
 });
 
-test("wrapper rebases all local sources and preserves the proven Astro content-store watcher without remote asset fallback", async (t) => {
+test("wrapper preserves the site's base and content-store watcher while fencing preview indexing and remote scripts", async (t) => {
   const { runtime, container } = setup(t);
   await runtime.prepare(sources(), signal());
   const wrapper = decode(container.files.get("editor.browser.config.mjs"));
-  assert.doesNotMatch(wrapper, /middlewares|publicBase|Location:|federationchassevendee\.github/);
+  assert.doesNotMatch(wrapper, /publicBase|Location:|federationchassevendee\.github/);
   let watchCallback;
   let errorCallback;
   let closeCallback;
@@ -402,10 +406,15 @@ test("wrapper rebases all local sources and preserves the proven Astro content-s
   let invalidations = 0;
   let cleared = 0;
   const sent = [];
+  let previewHeaders;
   const context = {
     process: { env: { ASTRO_SITE: "https://test-draft.invalid" }, cwd: () => "/project" },
     console: { log() {}, error() {} },
     mkdirSync: (path, options) => { assert.equal(path, ".astro"); assert.equal(options.recursive, true); },
+    writeFileSync: (path, value) => {
+      assert.equal(path, ".editor/preview-settings.json");
+      assert.equal(JSON.parse(value).base, "/site-web");
+    },
     watch: (path, options, callback) => {
       assert.equal(path, ".astro");
       assert.equal(options.persistent, false);
@@ -418,10 +427,10 @@ test("wrapper rebases all local sources and preserves the proven Astro content-s
   };
   const executable = wrapper
     .replace('import original from "./astro.config.mjs";', 'const original = { base: "/site-web", vite: { plugins: [{ name: "kept" }] } };')
-    .replace('import { watch, mkdirSync } from "node:fs";', "")
+    .replace('import { watch, mkdirSync, writeFileSync } from "node:fs";', "")
     .replace("export default", "globalThis.config =");
   runInNewContext(executable, context);
-  assert.equal(context.config.base, "/");
+  assert.equal(context.config.base, "/site-web");
   assert.equal(context.config.site, "https://test-draft.invalid");
   assert.equal(context.config.devToolbar.enabled, false);
   assert.equal(context.config.server.host, "0.0.0.0");
@@ -429,12 +438,19 @@ test("wrapper rebases all local sources and preserves the proven Astro content-s
   assert.equal(context.config.vite.server.allowedHosts, true);
   assert.equal(context.config.vite.plugins[0].name, "kept");
   context.config.vite.plugins[1].configureServer({
+    middlewares: { use: callback => { previewHeaders = callback; } },
     environments: {
       client: { moduleGraph: { invalidateAll: () => { ++invalidations; } }, hot: { send: (event) => sent.push(event) } },
       ssr: { moduleGraph: { invalidateAll: () => { ++invalidations; } }, runner: { clearCache: () => { ++cleared; } } },
     },
     httpServer: { once: (event, callback) => { assert.equal(event, "close"); closeCallback = callback; } },
   });
+  const headers = new Map();
+  let next = false;
+  previewHeaders({}, { setHeader: (key, value) => headers.set(key, value) }, () => { next = true; });
+  assert.equal(headers.get("X-Robots-Tag"), "noindex, nofollow");
+  assert.equal(headers.get("Content-Security-Policy"), "script-src 'self' 'unsafe-inline'");
+  assert.equal(next, true);
   watchCallback("change", "unrelated.json");
   assert.equal(invalidations, 0);
   watchCallback("rename", "data-store.json");
@@ -463,12 +479,26 @@ test("validate actually invokes Astro check, wrapper build and generated-site ch
   ]);
   for (const { options } of validation) {
     assert.equal(options.env.ASTRO_SITE, "https://browser-draft.invalid");
-    assert.equal(options.env.ASTRO_BASE_PATH, "/");
+    assert.equal(Object.hasOwn(options.env, "ASTRO_BASE_PATH"), false);
     assert.equal(options.env.PUBLIC_BROWSER_DRAFT, "true");
     assert.equal(options.env.NAPI_RS_FORCE_WASI, "true");
     assert.equal(Object.hasOwn(options.env, "PUBLIC_EDITOR_PARENT_ORIGIN"), false);
   }
   assert.equal(container.installs, 1);
+});
+
+test("preview opens the repository's actual prefix instead of breaking its existing local links", async (t) => {
+  const { runtime, container, observed } = setup(t);
+  container.previewBase = "/site-web";
+  assert.equal(await runtime.open(sources(), signal()), "https://runtime.test/site-web/");
+  assert.equal(observed.urls.at(-1), "https://runtime.test/site-web/");
+});
+
+test("invalid preview base evidence fails explicitly before exposing an iframe", async (t) => {
+  const { runtime, container, observed } = setup(t);
+  container.previewBase = "//foreign.test";
+  await assert.rejects(runtime.open(sources(), signal()), /base de l’aperçu Astro est invalide/);
+  assert.deepEqual(observed.urls, []);
 });
 
 test("browser validators exit only after official SDK results and diagnostics, never after printed success", async (t) => {

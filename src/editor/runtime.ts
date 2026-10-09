@@ -29,7 +29,6 @@ const configPath = "editor.browser.config.mjs";
 const internalPath = ".editor";
 const validationPath = `${internalPath}/validate.mjs`;
 const environment = {
-  ASTRO_BASE_PATH: "/",
   ASTRO_SITE: "https://browser-draft.invalid",
   PUBLIC_BROWSER_DRAFT: "true",
   ASTRO_TELEMETRY_DISABLED: "1",
@@ -169,10 +168,15 @@ async function dependencyFingerprint(files: Map<string, Uint8Array>): Promise<st
 
 function browserConfig(): string {
   return `import original from "./astro.config.mjs";
-import { watch, mkdirSync } from "node:fs";
+import { watch, mkdirSync, writeFileSync } from "node:fs";
+const base = original.base ?? "/";
+if (typeof base !== "string" || !base.startsWith("/") || base.startsWith("//") || /[?#\\\\]/.test(base)) {
+  throw new Error("La base Astro doit être un chemin local absolu.");
+}
+writeFileSync("${internalPath}/preview-settings.json", JSON.stringify({ base }));
 export default {
   ...original,
-  base: "/",
+  base,
   site: process.env.ASTRO_SITE ?? "https://browser-draft.invalid",
   server: { ...original.server, host: "0.0.0.0", port: 4321 },
   devToolbar: { enabled: false },
@@ -182,6 +186,11 @@ export default {
     plugins: [...(original.vite?.plugins ?? []), {
       name: "editor-astro-content-store",
       configureServer(server) {
+        server.middlewares.use((_request, response, next) => {
+          response.setHeader("X-Robots-Tag", "noindex, nofollow");
+          response.setHeader("Content-Security-Policy", "script-src 'self' 'unsafe-inline'");
+          next();
+        });
         const reloadContent = (file) => {
           const path = file.replaceAll(String.fromCharCode(92), "/");
           if (!path.endsWith("/.astro/data-store.json") && !path.endsWith("/data-store/manifest.json")) return;
@@ -687,10 +696,17 @@ fs.writeFileSync("${internalPath}/compiler-proof.json", JSON.stringify({ ready: 
       const url = await this.wait(Promise.race([ready, failure]), "Disponibilité du port 4321", job);
       this.guard(job);
       if (server.exited || server.outputError) throw this.serverFailure(server);
+      const settings: unknown = JSON.parse(await this.io(job, () => container.fs.readFile(`${internalPath}/preview-settings.json`, "utf8"), "Base de l’aperçu Astro"));
+      if (!isRecord(settings) || typeof settings.base !== "string" || !settings.base.startsWith("/")
+        || settings.base.startsWith("//") || /[?#\\]/.test(settings.base)
+        || settings.base.split("/").some((part) => part === "." || part === "..")) {
+        throw new Error("La base de l’aperçu Astro est invalide.");
+      }
+      const previewUrl = settings.base === "/" ? url : new URL(`${settings.base.replace(/\/+$/, "")}/`, url).href;
       server.ready = true;
-      this.hooks.ready(url);
+      this.hooks.ready(previewUrl);
       this.hooks.stage("Aperçu prêt");
-      return url;
+      return previewUrl;
     } catch (error) {
       if (record && this.server === record) {
         this.server = null;

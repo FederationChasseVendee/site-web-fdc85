@@ -186,6 +186,13 @@ pour se vider, puis ferme explicitement son lecteur si le flux reste ouvert
 (événement consigné). Un code non nul ou une erreur de lecture reste un échec.
 Il ne modifie aucun paquet fournisseur et n’infère jamais une réussite depuis
 le texte du journal. Le contrôle du site généré reste une étape obligatoire.
+L’aperçu et sa validation conservent la base déclarée par le dépôt, au lieu
+de forcer `/` : les anciennes branches contiennent encore des liens
+`/site-web/`, et leur validateur distingue mal une base racine explicite.
+Le serveur transmet sa base effective dans une preuve locale vérifiée avant
+de construire l’URL de l’iframe. Ses réponses sont toujours `noindex/nofollow`
+et bloquent les scripts tiers, même si une ancienne branche ne possède pas
+encore le garde `PUBLIC_BROWSER_DRAFT` dans son layout.
 
 Le modèle WebLLM sélectionné par défaut est
 `Qwen2.5-Coder-3B-Instruct-q4f16_1-MLC`, choisi pour la qualité. L’estimation
