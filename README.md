@@ -222,22 +222,36 @@ npm ci 9,3 s et le démarrage Astro 20,4 s. Les frontières d’observation
 diffèrent de celles des stages UI ; ces sous-phases ne sont pas un comparatif
 causal des caches. Le profil Chrome authentifié n’a pas été touché.
 
-La réutilisation du serveur a ensuite été vérifiée sur le vrai déploiement
-avec le bundle chargé `YuLy1LGT` :
+La réutilisation du serveur a ensuite été vérifiée sur le vrai déploiement :
+premier passage `YuLy1LGT` (8,3 s pour une reprise, 9,5 s pour un changement),
+puis reprise des mesures sur le bundle final chargé `CmICTTHB` :
 
 | Parcours, conteneur déjà actif et sources montées identiques | Jusqu’à l’aperçu prêt |
 | --- | ---: |
-| Reprendre #20 dans la même page | 8,3 s |
-| Changer de #20 vers #21 | 9,5 s |
-| Revenir de #21 vers #20 | 9,5 s |
+| Reprendre #20 dans la même page | 9,4 s |
+| Changer de #20 vers #21 | 8,2 s |
+| Revenir de #21 vers #20 | 8,4 s |
+| Créer réellement #22 depuis le conteneur chaud | 26,0 s, dont API GitHub 6,7 s |
+| Revenir de #22 vers #20 | 8,2 s |
 
-Les trois traces confirment la réutilisation d’Astro et aucune nouvelle
-commande `npm run dev`. Un vrai HTTP 200 Astro, le titre courant et noindex
-ont été contrôlés, ainsi que les octets CSS inchangés. Le helper attendait
+Les traces confirment la réutilisation d’Astro et aucune nouvelle
+commande `npm run dev`, npm ci ou installation WASI. La preuve finale associe
+le cadre actuel, identifié par son propriétaire DOM plutôt que le premier
+target de même origine, à un nouveau HTTP réel dans Node : son HTML Astro,
+son titre identique au titre visible, noindex et CSP sont contrôlés, ainsi que
+les octets CSS inchangés. Les documents d’amorçage du SDK et les réponses
+d’un fetch d’inspecteur isolé ne constituent pas cette preuve. Le helper attendait
 volontairement quatre secondes avant ce contrôle : son temps total n’est
 pas présenté comme la latence minimale de démarrage. Ces gains concernent
 des sources identiques ; une PR modifiant le site ou ses dépendances
 conserve le redémarrage et les validations.
+
+#22 ne contient que six lignes de métadonnées de demande, sans modification
+du site ni fusion. Son unique création a été chronométrée continûment ;
+la vérification HTTP a ensuite été refaite après correction d’une erreur
+de regexp dans le helper d’observation, sans recréer la PR ni remplacer
+son intervalle mesuré. Les manifestes de dépendances sont identiques.
+
 Un ancien iframe pouvait retourner un HTTP 200 de placeholder après un
 redémarrage Astro à URL inchangée. Chaque signal réel de disponibilité du
 serveur consomme désormais une nouvelle révision de navigation de l’iframe,
@@ -253,6 +267,10 @@ La régression a été vérifiée sur Chrome natif avec le bundle public corrig�
 l’iframe une seule fois, malgré les confirmations/rendus suivants. Le vrai
 contenu Astro, HTTP 200, `X-Robots-Tag: noindex, nofollow` et la CSP ont été
 confirmés sans reconnexion manuelle ; la CSS physique est restée inchangée.
+Sur `CmICTTHB`, l’annulation réelle d’une modification IA persistée a aussi
+exécuté les validateurs, remplacé le cadre une seule fois et restauré exactement
+les octets CSS originaux, sans reconnexion manuelle. Une navigation Contact
+non mise en cache a ensuite reçu le vrai document HTTP 200 avec noindex et CSP.
 
 Le profil WebLLM sélectionné par défaut est **Automatique** :
 `Qwen2.5-Coder-1.5B-Instruct-q4f16_1-MLC` sur GPU Intel ou sans f16,
@@ -450,6 +468,17 @@ du processus a ensuite détruit le WebContainer. Le brouillon en mémoire
 a été restauré, mais la restauration physique a nécessité un rechargement
 de l’éditeur. Aucun résultat de cet essai n’a été sauvegardé.
 
+Un cas indépendant, sans palette, a ensuite réussi avec le véritable 1,5B
+local : « réduire de moitié le rayon global des coins arrondis », sans autre
+changement de style ou de texte. Seule la ligne `--radius` est passée de
+`1rem` à `0.5rem` (le modèle a aussi retiré son indentation), avec le vrai
+check/build/contrôle généré et la valeur calculée dans l’aperçu. Deux propositions
+d’outils invalides ont été refusées avant une conclusion correcte ; aucune perte
+GPU n’a été observée. Le résultat est resté local, a survécu au rechargement
+et a été annulé par l’UI. Le SHA-256 physique final est identique à l’original :
+`8e1878fb29e00934059b49f0b0a4c67b5ec65a5f1fc6f5ba1564a96f85f1c869`.
+Ce succès supplémentaire ne prouve pas la qualité générale du modèle.
+
 Le budget est désormais séparé : huit minutes cumulées de génération,
 puis au plus trois minutes pour chaque validation complète, avec les mêmes
 contrôles obligatoires. Un échec de build ne réinitialise pas le budget IA.
@@ -467,7 +496,7 @@ ne prouvent ni la pertinence de la modification ni la qualité visuelle.
 
 Aucun score de 9/10 n’a été atteint et aucun ensemble de dix cas indépendants
 n’a été terminé : deux réussites du même scénario ne constituent pas cette
-mesure. Le scénario de titre du POC fonctionne, mais une demande prend encore
+mesure. Les scénarios de titre et de rayon du POC fonctionnent, mais une demande prend encore
 plusieurs minutes sur l’Intel gen-9 sans f16 testé. Les tests, le typecheck et le
 build passent. La PR d’implémentation reste brouillon ; le runtime, l’App,
 le KV et les secrets ne sont activés que sur Preview. Une licence pour
