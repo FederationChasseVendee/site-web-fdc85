@@ -240,6 +240,38 @@ summary {
   padding-block: 6rem;
 }
 
+.home-hero-actions {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+
+.button-member {
+  justify-self: start;
+  background: #facc15;
+  color: var(--forest-950);
+  animation: member-blink 2s steps(1, end) infinite;
+}
+
+.button-member:hover,
+.button-member:focus-visible {
+  animation-play-state: paused;
+}
+
+@keyframes member-blink {
+  50% {
+    background: #b91c1c;
+    color: var(--white);
+  }
+}
+
+@media (max-width: 60rem) {
+  .home-hero-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
 .home-hero h1,
 .page-hero h1,
 .article-header h1,
@@ -980,6 +1012,10 @@ summary {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .button-member {
+    animation: none;
+  }
+
   *,
   *::before,
   *::after {

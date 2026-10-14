@@ -75,6 +75,12 @@ L’architecture reste volontairement limitée. Il n’y a pas de constructeur d
 | Formation | `src/content/trainings/` | Objectifs, public, prérequis, programme, informations pratiques, dates et inscription |
 | Index générique | `src/content/indexes/` | Liste ou cartes provenant d’une collection choisie explicitement |
 
+La bannière d’accueil propose aussi un bouton **Espace adhérent** vers
+`https://fdc85-2.retriever-ea.fr/html/`, ouvert dans un nouvel onglet. Sur grand
+écran, il se situe vers les trois quarts de la largeur, aligné avec Contact ;
+sur mobile, il passe sous les autres actions. Il alterne entre jaune et rouge,
+avec une pause au survol ou au focus et sans animation en mode mouvement réduit.
+
 L’Index générique affiche les actualités, espèces, formations, documents, questions
 fréquentes, termes du glossaire ou entrées d’annuaire. Ces quatre dernières sources
 sont de simples collections de données dans `src/content/documents/`, `faqs/`,
