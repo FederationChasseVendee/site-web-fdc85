@@ -1,9 +1,11 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { extname, join, relative } from "node:path";
+import { siteConfig } from "../src/lib/site-config.mjs";
+import { normalizeBase } from "../src/lib/preview.mjs";
 
-const configuredBase = process.env.ASTRO_BASE_PATH?.replace(/^\/+|\/+$/g, "");
-const base = configuredBase ? `/${configuredBase}/` : "/site-web/";
-const siteUrl = process.env.ASTRO_SITE ?? "https://federationchassevendee.github.io";
+const config = siteConfig(process.env);
+const base = normalizeBase(config.base);
+const siteUrl = config.site;
 const siteRoot = new URL(base, `${siteUrl.replace(/\/+$/, "")}/`).href;
 const absoluteRoot = siteRoot.endsWith("/") ? siteRoot : `${siteRoot}/`;
 const basePath = new URL(base, `${siteUrl.replace(/\/+$/, "")}/`).pathname;
@@ -162,8 +164,10 @@ if (sitemap.includes("📢") || sitemap.includes("🟢") || sitemap.includes("�
 }
 
 const robots = readFileSync(join(distDirectory, "robots.txt"), "utf8");
-if (!robots.includes(`Allow: ${new URL(base, siteUrl).pathname}`)
-  || !robots.includes(`Sitemap: ${new URL("sitemap.xml", absoluteRoot).href}`)) {
+const { buildIdentity } = await import("../src/lib/preview-identity.mjs");
+if (buildIdentity.preview ? !robots.includes("Disallow: /")
+  : (!robots.includes(`Allow: ${new URL(base, siteUrl).pathname}`)
+    || !robots.includes(`Sitemap: ${new URL("sitemap.xml", absoluteRoot).href}`))) {
   throw new Error("robots.txt ne référence pas correctement la base de production et le sitemap.");
 }
 

@@ -1,4 +1,6 @@
 import { getCollection, type CollectionEntry } from "astro:content";
+import { normalizeSlug } from "./slug.mjs";
+export { normalizeSlug } from "./slug.mjs";
 
 export type TemplateEntry =
   | { template: "standard"; entry: CollectionEntry<"standardPages"> }
@@ -9,15 +11,7 @@ export type TemplateEntry =
   | { template: "index"; entry: CollectionEntry<"indexes"> }
   | { template: "redirect"; entry: CollectionEntry<"redirects"> };
 
-const reservedSlugs = new Set(["404", "index"]);
-
-export function normalizeSlug(id: string): string {
-  return id
-    .replace(/\\/g, "/")
-    .replace(/\.(md|mdx)$/i, "")
-    .replace(/^\/+|\/+$/g, "")
-    .toLowerCase();
-}
+const reservedSlugs = new Set(["404", "index", "admin"]);
 
 export async function getTemplateEntries(): Promise<Array<TemplateEntry & { slug: string }>> {
   const [standardPages, crossroads, articles, species, trainings, indexes, redirects] = await Promise.all([

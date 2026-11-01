@@ -24,10 +24,10 @@ function writeAnalytics(analytics) {
   );
 }
 
-function build() {
+function build(extraEnv = {}) {
   return spawnSync(process.execPath, [astroCli, "build"], {
     encoding: "utf8",
-    env: { ...process.env, NO_COLOR: "1" },
+    env: { ...process.env, ...extraEnv, NO_COLOR: "1" },
   });
 }
 
@@ -66,6 +66,11 @@ try {
   for (const file of generatedHtml) {
     const html = readFileSync(file, "utf8");
     const outputPath = relative("dist", file);
+    if (outputPath.startsWith(`admin${process.platform === "win32" ? "\\" : "/"}`)) {
+      assert(!html.includes(scriptUrl) && html.includes('content="noindex, nofollow"'),
+        `L’espace de prévisualisation ne doit pas charger Umami ni être indexable : ${outputPath}`);
+      continue;
+    }
     if (existsSync(join("public", outputPath))) {
       assert(
         !html.includes(scriptUrl)
@@ -75,16 +80,23 @@ try {
       );
       continue;
     }
-    const scripts = [...html.matchAll(/<script\b[^>]*data-website-id="[^"]+"[^>]*><\/script>/g)];
+    const scripts = [...html.matchAll(/<script\b[^>]*data-website-id="[^"]+"[^>]*>[\s\S]*?<\/script>/g)];
     assert(
       scripts.length === 1,
       `${outputPath} doit contenir exactement un script Umami (trouvé : ${scripts.length}).`,
     );
     const script = scripts[0][0];
-    assert(script.includes(" defer"), `Attribut defer absent dans ${outputPath}.`);
-    assert(script.includes(`src="${scriptUrl}"`), `URL Umami incorrecte dans ${outputPath}.`);
+    assert(script.includes("script.defer = true"), `Chargement defer absent dans ${outputPath}.`);
+    assert(script.includes(`data-script-url="${scriptUrl}"`), `URL Umami incorrecte dans ${outputPath}.`);
     assert(script.includes(`data-website-id="${websiteId}"`), `Website ID incorrect dans ${outputPath}.`);
     assert(script.includes('data-do-not-track="true"'), `Respect DNT absent dans ${outputPath}.`);
+    assert(script.includes("window.self === window.top"), `Exclusion des comparaisons intégrées absente dans ${outputPath}.`);
+  }
+
+  const previewBuild = build({ PREVIEW_BUILD: "true" });
+  assert(previewBuild.status === 0, `Le build de prévisualisation a échoué.\n${previewBuild.stdout}\n${previewBuild.stderr}`);
+  for (const file of htmlFiles()) {
+    assert(!readFileSync(file, "utf8").includes(scriptUrl), `Umami présent dans un aperçu : ${file}`);
   }
 
   writeAnalytics({ enabled: true, websiteId: "" });

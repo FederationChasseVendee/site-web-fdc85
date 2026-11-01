@@ -1,11 +1,11 @@
 {
   "seo": {
     "title": "Accueil",
-    "description": "Démarches, actualités, formations et informations de la Fédération Départementale des Chasseurs de la Vendée."
+    "description": "Démarches, actualités, formations et informations de la Fédération Départementale des Chasseurs de la Vendée"
   },
   "hero": {
     "eyebrow": "Fédération des chasseurs de la Vendée",
-    "title": "Vos démarches de chasse, simplement",
+    "title": "Vos démarches de chasse, tout simplement",
     "text": "Accédez aux services essentiels, aux dates de chasse et aux informations de la Fédération.",
     "image": "/assets/hero-faune.jpg",
     "imageAlt": "Sanglier dans un sous-bois"
