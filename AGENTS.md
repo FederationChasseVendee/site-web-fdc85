@@ -19,6 +19,8 @@ La demande de copie propre concerne la prochaine implémentation. Celle-ci devra
 - Partir d'une action ou d'une question réelle du visiteur.
 - Distinguer « Passer mon permis », « Valider mon permis » et les formations des chasseurs déjà titulaires.
 - Regrouper toutes les démarches dans « Mes démarches », y compris passer le permis et se former. Les autres rubriques informent et renvoient aux mêmes pages de démarche, sans deuxième parcours d'inscription.
+- Dans « Devenir chasseur », donner directement accès à « Passer mon permis » et « Valider mon permis en Vendée » : ce sont des liens vers les démarches existantes, pas des copies.
+- Sous « Se connecter à mon espace », distinguer « Espace adhérent » (chasseurs et responsables de territoire) et « Espace maître d'équipage ». Préserver les deux accès externes et vérifier leurs destinations avant publication.
 - Conserver les huit entrées demandées et les distinctions dégâts grand gibier / DECLADOM et perte de permis / perte d'arme. Ne pas promettre une indemnisation ni inventer de procédure de déclaration ; vérifier les modalités officielles avant publication.
 - Donner à chaque contenu une destination principale et autoriser des raccourcis depuis d'autres parcours ; ne pas dupliquer les pages.
 - Rattacher documents, formulaires et tutoriels au sujet concerné. Un index transversal peut compléter les parcours, jamais les remplacer.

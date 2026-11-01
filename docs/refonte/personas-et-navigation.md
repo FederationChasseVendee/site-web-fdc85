@@ -1,12 +1,12 @@
 # Refonte FDC 85 — Personas et navigation
 
-**Version 2 · 1 novembre 2026 · Mes démarches regroupées · Proposition à valider avec la cliente**
+**Version 2 révisée · 1 novembre 2026 · Mes démarches regroupées · Proposition à valider avec la cliente**
 
 Cette première étape décide de ce que les visiteurs doivent pouvoir trouver et de la façon de les y conduire. Elle ne décide pas encore du graphisme ni du framework de la copie propre.
 
 **Recommandation : conserver les six entrées principales et regrouper toutes les actions dans « Mes démarches ».** Les autres rubriques servent à comprendre, découvrir et consulter ; elles renvoient aux démarches quand le visiteur est prêt à agir. L'accueil garde les accès rapides avant les actualités. Les personas servent à concevoir et tester les parcours ; le visiteur n'a pas à sélectionner un profil pour entrer.
 
-**Ce qui change depuis la version 1 :** Passer mon permis et Se former rejoignent Mes démarches comme entrées d'action. Les dégâts distinguent grand gibier et DECLADOM ; les pertes distinguent permis et arme. L'espace adhérent reste une entrée explicite, et non une rubrique générale de gestion du territoire.
+**Ce qui change depuis la version 1 :** Passer mon permis et Se former rejoignent Mes démarches comme entrées d'action. Les dégâts distinguent grand gibier et DECLADOM ; les pertes distinguent permis et arme. « Se connecter à mon espace » distingue l'espace adhérent de l'espace maître d'équipage. « Devenir chasseur » propose aussi des liens directs pour passer et valider le permis.
 
 ## 1. Ce qui est confirmé et ce qui reste proposé
 
@@ -18,8 +18,9 @@ Cette première étape décide de ce que les visiteurs doivent pouvoir trouver e
 | Confirmé | La cliente apprécie les accès rapides suivis des actualités sur l'accueil FDC 41. |
 | Confirmé pendant le cadrage | Garder le site actuel intact pendant cette étape. |
 | Confirmé par la révision utilisateur | Regrouper toutes les démarches, y compris passer le permis et se former, et les séparer des rubriques de prise d'information. Conserver les huit entrées demandées, avec les sous-entrées dégâts et pertes. |
+| Confirmé par l'utilisateur | Intituler l'entrée « Se connecter à mon espace » et distinguer « Espace adhérent » et « Espace maître d'équipage ». Proposer aussi « Passer mon permis » et « Valider mon permis en Vendée » dans Devenir chasseur ; les liens peuvent apparaître à plusieurs endroits. |
 | Accueil favorable de l'utilisateur | Les autres sections conviennent dans leur principe ; leurs frontières sont précisées dans cette version. |
-| Proposé | Les ajustements de libellés, l'ordre des six rubriques, l'organisation interne des démarches et les raccourcis présentés ci-dessous. |
+| Proposé | Les autres ajustements de libellés, l'ordre des six rubriques, l'organisation interne des démarches et les raccourcis d'accueil présentés ci-dessous. |
 | À préciser | Le personnel administratif visé est-il un agent de collectivité, un partenaire, un salarié de la Fédération ou plusieurs de ces publics ? |
 | À vérifier | Catalogue actuel des formations, liens officiels, contacts, tarifs, dates, documents en vigueur et contenus cités seulement dans le PDF. |
 
@@ -47,7 +48,7 @@ Les personas ci-dessous sont des **hypothèses de conception**, pas les résulta
 
 **Freins.** Une liste de formations techniques sans point de départ ; des sigles ; une inscription proposée avant les conditions et le déroulement ; la confusion entre obtenir un permis et le valider.
 
-**Parcours attendu.** « Devenir chasseur » → comprendre le parcours et le déroulement → « Passer mon permis » dans Mes démarches → préparer l'examen → après réussite, « Valider mon permis » dans Mes démarches et « Où chasser ? » dans Chasser en Vendée. Une personne déjà décidée accède directement à Passer mon permis sans lire tout le parcours de découverte.
+**Parcours attendu.** « Devenir chasseur » → comprendre le parcours → lien direct « Passer mon permis » → préparer l'examen → après réussite, lien direct « Valider mon permis en Vendée », puis « Où chasser ? ». Les deux liens sont aussi disponibles dans Mes démarches et mènent aux mêmes pages. Une personne déjà décidée accède directement à Passer mon permis sans lire tout le parcours de découverte.
 
 **Réussite.** Elle peut expliquer sa prochaine étape, les documents à préparer et l'interlocuteur à contacter. La chasse accompagnée est présentée comme un parcours distinct, pas comme une étape obligatoire pour tous.
 
@@ -67,7 +68,7 @@ Les personas ci-dessous sont des **hypothèses de conception**, pas les résulta
 
 | Persona | Besoin et actions | Entrée naturelle | Priorité proposée |
 | --- | --- | --- | --- |
-| Responsable d'association ou de territoire de chasse | Accéder à son espace, demander un plan de chasse, déclarer des prélèvements, préparer les documents de gestion et trouver les formations adaptées. | Mes démarches → « Se connecter à mon espace adhérent » → accès responsable de territoire ; ou Déclarer mes prélèvements. | Élevée : ses tâches et son espace ne sont pas ceux du chasseur individuel. |
+| Responsable d'association ou de territoire de chasse | Accéder à son espace, demander un plan de chasse, déclarer des prélèvements, préparer les documents de gestion et trouver les formations adaptées. | Mes démarches → « Se connecter à mon espace » → « Espace adhérent » ; ou Déclarer mes prélèvements. | Élevée : ses tâches diffèrent de celles du chasseur individuel, même si les deux utilisent le même accès adhérent. |
 | Agriculteur ou propriétaire | Comprendre la procédure relative aux dégâts, distinguer les dispositifs, trouver le bon contact ; se renseigner sur une plantation de haies. | Mes démarches → « Déclarer un dégât » → grand gibier ou DECLADOM ; Nature et biodiversité → plantations. | Élevée pour la lisibilité : ne pas supposer qu'il est chasseur. |
 | Enseignant, famille ou visiteur nature | Trouver une animation, découvrir un espace naturel et comprendre les actions de la Fédération. | Nature et biodiversité → animations ou espaces naturels. | Secondaire sur l'accueil, mais parcours complet. |
 
@@ -81,7 +82,7 @@ Le PDF est une image d'arborescence à huit entrées : **La Fédération**, **To
 
 | Difficulté de repérage | Arbitrage proposé |
 | --- | --- |
-| « Passer son permis » se trouve dans les démarches, mais les débutants doivent aussi comprendre un parcours. | Conserver l'action dans Mes démarches ; Devenir chasseur explique le parcours et y renvoie. La séparation porte sur l'intention, pas sur le profil du visiteur. |
+| « Passer son permis » se trouve dans les démarches, mais les débutants doivent aussi comprendre un parcours. | Conserver l'action dans Mes démarches et afficher le même lien dans Devenir chasseur, avec celui de validation. La séparation porte sur l'intention, pas sur le profil du visiteur. |
 | Formulaires, arrêtés et guides vivent dans « Toute la documentation », séparés de l'action concernée. | Les présenter sur la page de démarche ou de réglementation correspondante ; conserver un index documentaire secondaire. |
 | « Vos territoires et leur gestion » mêle gestion de chasse, aménagement et sanitaire. | Les opérations de gestion vont dans Mes démarches ; les règles et conseils dans Chasser en Vendée ; les projets écologiques dans Nature et biodiversité. |
 | « Nos sites » sous La Fédération et « Nos espaces naturels » peuvent désigner deux choses proches. | Les lieux administratifs et de formation restent dans La Fédération ; les espaces naturels ont leur destination dans Nature et biodiversité. |
@@ -98,7 +99,7 @@ Les détails du PDF ne prouvent pas qu'une prestation ou une formation est actue
 | Ordre | Rubrique | La question à laquelle elle répond | Ne doit pas devenir… |
 | --- | --- | --- | --- |
 | 1 | **Mes démarches** | « Je veux passer ou valider mon permis, m'inscrire, déclarer ou me connecter. » | Un dossier général sur la chasse qui cache les actions. |
-| 2 | **Devenir chasseur** | « Comment se passe le parcours, l'examen et le début de la pratique ? » | Un second parcours d'inscription au permis. |
+| 2 | **Devenir chasseur** | « Comment se passe le parcours, l'examen et le début de la pratique ? » | Un second dossier d'inscription : ses liens mènent aux mêmes démarches que Mes démarches. |
 | 3 | **Formations** | « Quelles formations existent, pour qui et avec quel programme ? » | Un second espace de démarches ou un catalogue sans explications. |
 | 4 | **Chasser en Vendée** | « Quand, où et selon quelles règles puis-je pratiquer ? » | Une seconde rubrique Mes démarches. |
 | 5 | **Nature et biodiversité** | « Que fait la Fédération pour les milieux, la faune et la découverte de la nature ? » | Une seconde rubrique de gestion administrative des territoires. |
@@ -112,7 +113,7 @@ Ne pas ajouter de champ de recherche décoratif ou sans moteur fonctionnel. Une 
 
 ### Mes démarches : le bloc complet
 
-Les huit entrées demandées restent visibles sur la page carrefour, dans l'ordre proposé par l'utilisateur. Les sous-choix dégâts et pertes sont nommés dès cette page pour éviter un clic exploratoire. Sur mobile, ils restent des liens textuels lisibles, pas des informations réservées au survol.
+Les huit entrées demandées restent visibles sur la page carrefour, dans l'ordre proposé par l'utilisateur. Les sous-choix dégâts, pertes et espaces sont nommés dès cette page pour éviter un clic exploratoire. Sur mobile, ils restent des liens textuels lisibles, pas des informations réservées au survol.
 
 | Entrée | Sous-choix ou précision | Rôle de la page |
 | --- | --- | --- |
@@ -123,25 +124,27 @@ Les huit entrées demandées restent visibles sur la page carrefour, dans l'ordr
 | **Déclarer une arme** | Système d'information sur les armes (SIA). | Guider vers les démarches officielles correspondantes ; ne pas assimiler toute démarche sur une arme à la seule création d'un compte. |
 | **Déclarer un dégât** | **Dégâts de grand gibier** ; **Autres dégâts — DECLADOM (non indemnisables)**. | Orienter vers la bonne procédure. Le volet grand gibier vérifie les conditions applicables et ne promet pas une indemnisation automatique. |
 | **Déclarer une perte** | **Perte de mon permis** ; **Perte d'une arme**. | Deux démarches distinctes. Le permis peut nécessiter une demande de duplicata ; pour une arme, modalités et interlocuteurs officiels à vérifier, sans extrapoler la procédure du permis. |
-| **Se connecter à mon espace adhérent** | Chasseur, responsable de territoire ou maître d'équipage. | Identifier le bon espace externe et les opérations disponibles, notamment les plans de chasse pour les responsables. |
+| **Se connecter à mon espace** | **Espace adhérent** ; **Espace maître d'équipage**. | Deux accès externes distincts : l'espace adhérent concerne les chasseurs et responsables de territoire ; l'autre concerne les maîtres d'équipage. Indiquer à qui s'adresse chaque accès. |
 
 **Ajustements de libellés proposés, sans changer les actions :** garder « Mes démarches » et « Se former » ; développer « Grand Gibier » en « Dégâts de grand gibier » ; accompagner DECLADOM de « Autres dégâts » pour ne pas exiger de connaître l'outil ; nommer directement les deux types de pertes. L'orthographe et les accents sont harmonisés.
 
 **Important :** « non indemnisables » reprend le classement demandé par l'utilisateur, pas une vérification juridique nouvelle. Le périmètre exact de DECLADOM et les conditions du grand gibier sont à faire confirmer par la Fédération avant publication. Ne pas orienter uniquement sur l'espèce responsable sans vérifier le type de dommage et la procédure applicable.
 
-Pour faciliter le balayage, les huit liens peuvent être présentés sous des repères non cliquables (« Permis et formation », « Déclarations », « Pertes », « Espace adhérent »). Ce sont des titres visuels facultatifs, pas quatre nouvelles pages ni des sous-menus qui cachent les actions.
+Pour faciliter le balayage, les huit liens peuvent être présentés sous des repères non cliquables (« Permis et formation », « Déclarations », « Pertes », « Connexion »). Ce sont des titres visuels facultatifs, pas quatre nouvelles pages ni des sous-menus qui cachent les actions.
 
 ### Séparer l'action de l'information, sans couper les parcours
 
 | Je veux comprendre… | Je veux agir… |
 | --- | --- |
-| Devenir chasseur → parcours, conditions, déroulement de l'examen, préparation. | Mes démarches → Passer mon permis. |
+| Devenir chasseur → parcours, conditions, déroulement de l'examen, préparation. | Liens directs « Passer mon permis » et « Valider mon permis en Vendée », également accessibles depuis Mes démarches. |
 | Formations → catalogue, publics, objectifs, programmes et prérequis. | Mes démarches → Se former → inscription à la formation choisie. |
 | Chasser en Vendée → règles, sécurité, dates, armes, gestion et dégâts. | Mes démarches → déclaration ou service correspondant. |
 | Nature et biodiversité → projets, sites, faune et animations. | Liens contextualisés vers une démarche existante ou le contact compétent, sans inventer un téléservice. |
 | La Fédération → missions, organisation et publications. | Contact utilitaire ou démarche correspondante, sans ajouter une seconde administration du site. |
 
-Les pages de démarche gardent les explications indispensables pour agir : public, prérequis, pièces, étapes, service externe et aide. « Séparer » ne veut pas dire proposer une page vide avec un bouton. Les rubriques d'information peuvent porter un lien « Passer mon permis » ou « M'inscrire à cette formation » vers la démarche unique ; elles ne réimplémentent pas l'inscription.
+Les pages de démarche gardent les explications indispensables pour agir : public, prérequis, pièces, étapes, service externe et aide. « Séparer » ne veut pas dire proposer une page vide avec un bouton. Les rubriques d'information peuvent reprendre directement les liens utiles vers la démarche unique ; elles ne réimplémentent pas l'inscription.
+
+Dans **Devenir chasseur**, les liens « Passer mon permis » et « Valider mon permis en Vendée » figurent explicitement dans la navigation de la rubrique. Ils pointent respectivement vers les mêmes destinations que « Passer mon permis » et « Valider mon permis » dans Mes démarches : aucun passage intermédiaire obligatoire par le carrefour Mes démarches.
 
 La sélection d'une formation doit être conservée lorsqu'on suit son lien d'inscription, sans obliger à la choisir à nouveau dans un catalogue général. Le moyen technique reste à décider lors de l'implémentation.
 
@@ -163,12 +166,15 @@ Accueil
 │   ├── Déclarer une perte
 │   │   ├── Perte de mon permis
 │   │   └── Perte d'une arme
-│   └── Se connecter à mon espace adhérent
-│       └── Choisir l'accès adapté, dont responsable de territoire
+│   └── Se connecter à mon espace
+│       ├── Espace adhérent (chasseurs et responsables de territoire)
+│       └── Espace maître d'équipage
 ├── Devenir chasseur
 │   ├── Comprendre le parcours
 │   ├── Conditions et déroulement du permis
+│   ├── Passer mon permis → même démarche que dans Mes démarches
 │   ├── Préparer l'examen
+│   ├── Valider mon permis en Vendée → même démarche que dans Mes démarches
 │   ├── Découvrir la chasse accompagnée
 │   └── Mes premiers pas après le permis
 ├── Formations
@@ -204,7 +210,7 @@ Accès transversaux : Actualités · Contact · Tous les documents
                     Questions fréquentes · Glossaire · Plan du site
 ```
 
-**Frontière importante :** Mes démarches rassemble les opérations ; les cinq autres rubriques expliquent les sujets. Une même démarche peut être atteinte depuis plusieurs rubriques, mais elle conserve une seule adresse et son emplacement principal dans Mes démarches. Les fiches d'information restent dans leur rubrique thématique.
+**Frontière importante :** Mes démarches rassemble les opérations ; les cinq autres rubriques expliquent les sujets et peuvent reprendre des liens d'action. Une même démarche peut être atteinte directement depuis plusieurs rubriques, mais elle conserve une seule adresse et son emplacement principal dans Mes démarches. Les fiches d'information restent dans leur rubrique thématique.
 
 ## 6. Accueil : accès rapides, puis actualités
 
@@ -218,7 +224,7 @@ TITRE COURT : identification de la Fédération et du territoire
 ACCÈS RAPIDES : « Que souhaitez-vous faire ? »
   Valider mon permis                Voir les dates de chasse
   Se former                         Passer mon permis
-  Se connecter à mon espace adhérent Déclarer un dégât
+  Se connecter à mon espace         Déclarer un dégât
 LIEN COMPLÉMENTAIRE : « Toutes mes démarches »
 
 ALERTE PRATIQUE, seulement si une information active le justifie
@@ -243,15 +249,15 @@ Cette table couvre les pages standard, index et formations repérées dans le d�
 
 | Destination principale proposée | Contenus du dépôt à récupérer ou à réunir | Décision de classement |
 | --- | --- | --- |
-| Mes démarches → Valider mon permis | `chasser-en-vendee/validation-du-permis` ; guide et lien de validation dans les documents. | Explication puis service externe. Raccourci depuis Devenir chasseur après l'examen. |
-| Mes démarches → Se connecter à mon espace adhérent | `chasser-en-vendee/espace-adherent`. | Distinguer chasseur, responsable de territoire et maître d'équipage par la tâche et le public, pas seulement par le nom RETRIEVER. |
-| Mes démarches → Espace responsable / Déclarer mes prélèvements | Formulaires de plans de chasse, bilans, prélèvements, mutualisation, battue et documents de gestion. | Rattacher chaque opération au service réellement utilisé, sans ajouter automatiquement une neuvième entrée « Gérer mon territoire ». Les documents publics restent accessibles sans connexion ; les explications de gestion restent dans Chasser en Vendée. |
+| Mes démarches → Valider mon permis | `chasser-en-vendee/validation-du-permis` ; guide et lien de validation dans les documents. | Explication puis service externe. Lien « Valider mon permis en Vendée » également visible dans Devenir chasseur. |
+| Mes démarches → Se connecter à mon espace | `chasser-en-vendee/espace-adherent`. | Deux liens distincts : « Espace adhérent » pour chasseurs et responsables de territoire, et « Espace maître d'équipage ». Les deux plateformes sont externes ; destinations à revérifier. |
+| Mes démarches → Espace adhérent / Déclarer mes prélèvements | Formulaires de plans de chasse, bilans, prélèvements, mutualisation, battue et documents de gestion. | Rattacher chaque opération au service réellement utilisé, sans ajouter automatiquement une neuvième entrée « Gérer mon territoire ». Les documents publics restent accessibles sans connexion ; les explications de gestion restent dans Chasser en Vendée. |
 | Mes démarches → Déclarer mes prélèvements | `nature-et-territoires/chassadapt` et documents associés. | Le carnet numérique sert une action ; il ne relève pas d'abord de la découverte de la nature. |
 | Mes démarches → Déclarer un dégât | `chasser-en-vendee/degats-causes-par-la-faune`, `decladom`, formulaires associés. | Séparer grand gibier et DECLADOM (non indemnisables, selon le classement demandé). La présentation générale des dégâts reste dans Chasser en Vendée ; les conditions d'indemnisation doivent être vérifiées. |
 | Mes démarches → Déclarer une perte → permis | Documents de duplicata et attestation. | Préparer une page de démarche de perte et remplacement du permis après vérification officielle. |
 | Mes démarches → Déclarer une perte → arme | Pas de page permanente dédiée repérée dans le cadrage initial. | Contenu à obtenir et vérifier : interlocuteur, déclaration et suites. Ne pas copier la procédure du permis ni assimiler perte et déclaration initiale d'une arme. |
 | Mes démarches → Déclarer une arme | Articles et tutoriels SIA. | Préparer une page de démarche officielle après vérification ; conserver les articles dans les archives et les explications réglementaires dans Chasser en Vendée. |
-| Mes démarches → Passer mon permis / Devenir chasseur → comprendre le permis | `permis-et-formations/passer-son-permis` et `devenir-chasseur`. | Répartir le contenu entre démarche d'inscription et explications de parcours, sans dupliquer le dossier ni le service d'inscription. |
+| Mes démarches → Passer mon permis / Devenir chasseur → comprendre le permis | `permis-et-formations/passer-son-permis` et `devenir-chasseur`. | Répartir le contenu entre démarche d'inscription et explications de parcours ; afficher le lien direct vers la même démarche dans les deux rubriques, sans dupliquer le dossier. |
 | Devenir chasseur → préparation et découverte | `entrainement-examen`, `chasse-accompagnee`. | Pages d'information ; accès à la démarche correspondante lorsqu'une inscription est nécessaire. « Premiers pas » à rédiger avec des faits validés et des liens vers validation, sécurité et lieux de pratique. |
 | Formations / Mes démarches → Se former | Index `permis-et-formations/formations` ; fiches piégeage, corvidés, arc, vol, hygiène de la venaison, garde-chasse particulier. | Un catalogue et une fiche d'information par formation dans Formations ; accès aux inscriptions regroupé dans Se former, avec liens directs conservant le choix. Aucun second catalogue complet. |
 | Formations → Sécurité décennale | Article `formation-securite-decennale` et document d'inscription délocalisée. | Une destination permanente à préparer après vérification des modalités ; ne pas faire d'un article ancien la fiche de référence. |
@@ -288,7 +294,7 @@ Pour chaque élément non couvert par une page permanente actuelle : vérifier l
 
 ## 8. Règles de navigation et de rédaction
 
-**Une destination principale, plusieurs chemins d'accès.** Formations → Sécurité décennale est la fiche d'information ; Mes démarches → Se former donne accès à sa démarche d'inscription. Passer mon permis appartient à Mes démarches ; Devenir chasseur explique le parcours et renvoie à cette page. Ne pas proposer deux dossiers d'inscription ni deux pages de démarche équivalentes.
+**Une destination principale, plusieurs chemins d'accès.** Formations → Sécurité décennale est la fiche d'information ; Mes démarches → Se former donne accès à sa démarche d'inscription. Devenir chasseur affiche directement « Passer mon permis » et « Valider mon permis en Vendée », qui mènent aux mêmes destinations que les liens de Mes démarches. Répéter un lien est souhaitable quand il aide le visiteur ; ne pas créer deux dossiers d'inscription ni deux pages de démarche équivalentes.
 
 **La page parle avant le PDF.** Résumer à qui s'adresse une démarche, ce qu'il faut préparer, comment continuer et qui contacter. Le document complète l'explication. Afficher format, taille disponible, date et portée des documents ; ne pas inventer une taille inconnue.
 
@@ -323,13 +329,14 @@ Présenter uniquement les libellés et l'arborescence, sans expliquer où clique
 
 | Consigne de test | Destination attendue |
 | --- | --- |
-| « Je veux renouveler ma validation pour la prochaine saison. » | Mes démarches → Valider mon permis. |
+| « Je veux renouveler ma validation pour la prochaine saison. » | Mes démarches → Valider mon permis ; Devenir chasseur → Valider mon permis en Vendée mène à la même page. |
 | « Je n'ai jamais chassé et je veux comprendre comment se passe le permis. » | Devenir chasseur → Conditions et déroulement du permis. |
-| « J'ai décidé de passer le permis et je veux m'inscrire. » | Mes démarches → Passer mon permis. |
+| « J'ai décidé de passer le permis et je veux m'inscrire. » | Mes démarches → Passer mon permis ou Devenir chasseur → Passer mon permis : même page. |
 | « Je veux connaître le programme de la formation sécurité décennale. » | Formations → Sécurité décennale. |
 | « Je veux m'inscrire à la formation sécurité décennale. » | Mes démarches → Se former → inscription concernée ; lien depuis la fiche également accepté. |
 | « Je veux connaître les dates d'ouverture et de fermeture. » | Chasser en Vendée → Dates. |
-| « Je gère une association et je cherche mon espace pour les plans de chasse. » | Mes démarches → Se connecter à mon espace adhérent → responsable de territoire. |
+| « Je gère une association et je cherche mon espace pour les plans de chasse. » | Mes démarches → Se connecter à mon espace → Espace adhérent (chasseurs et responsables de territoire). |
+| « Je suis maître d'équipage et cherche mon espace. » | Mes démarches → Se connecter à mon espace → Espace maître d'équipage. |
 | « Je dois déclarer des prélèvements. » | Mes démarches → Déclarer mes prélèvements → service adapté. |
 | « Je cherche la démarche de déclaration d'une arme. » | Mes démarches → Déclarer une arme. |
 | « Une parcelle a subi des dégâts et je cherche quoi faire. » | Mes démarches → Déclarer un dégât → orientation selon les conditions vérifiées. |
@@ -344,14 +351,14 @@ Critère de décision : les tâches prioritaires ne doivent pas nécessiter une 
 ## 11. Brief pour la prochaine étape
 
 - **Travail du visiteur :** accéder aux démarches, comprendre un parcours d'entrée ou consulter une information de référence. Accueil orienté action ; pages d'explication orientées lecture.
-- **Structure proposée :** accès rapides → actualités → découverte et aide ; six rubriques dont Mes démarches avec les huit actions demandées. Cinq rubriques d'information reliées aux démarches uniques.
+- **Structure proposée :** accès rapides → actualités → découverte et aide ; six rubriques dont Mes démarches avec les huit actions demandées. Devenir chasseur comporte des liens directs pour passer et valider le permis vers les mêmes démarches.
 - **Périmètre futur :** site public statique et code propre ; aucune édition sur le site, aucun compte local, aucun téléservice recréé. Contenus et URL historiques à auditer et migrer.
 - **Direction visuelle :** non choisie. Ne pas confondre cette proposition de navigation avec une maquette validée, ni imposer les tokens du site actuel.
 - **À faire valider :** libellés et ordre du menu, raccourcis de l'accueil, publics complémentaires et périmètre du persona administratif. Ensuite seulement : direction visuelle, maquette et implémentation de la copie propre.
 
 ## Sources
 
-- Brief, confirmation initiale et révision utilisateur du bloc Mes démarches dans cette session, le 1 novembre 2026.
+- Brief, confirmation initiale et révisions utilisateur du bloc Mes démarches et des liens dans Devenir chasseur, le 1 novembre 2026.
 - PDF joint « Mon premier tableau » : image d'arborescence sur une page, consultée après extraction de son image intégrée. Le fichier source n'est pas copié dans le dépôt.
 - `src/content/site.json`, `src/content/home.json`, `src/content/standard-pages/`, `src/content/indexes/`, `src/content/trainings/` et inventaire des collections.
 - `docs/migration-wordpress.md` et `README.md` pour le périmètre historique.

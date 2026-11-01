@@ -24,7 +24,7 @@ Le site de la Fédération Départementale des Chasseurs de la Vendée informe s
 
 La refonte doit partir des besoins des visiteurs, et non de l'organisation interne des services. La première étape est le cadrage des personas, des parcours et de la navigation.
 
-L'utilisateur demande de regrouper toutes les démarches dans « Mes démarches », pour les distinguer du reste du site consacré à la prise d'information. Les rubriques d'information peuvent conduire aux démarches correspondantes, sans en dupliquer les pages.
+L'utilisateur demande de regrouper toutes les démarches dans « Mes démarches », pour les distinguer du reste du site consacré à la prise d'information. Les mêmes liens peuvent aussi être proposés dans les rubriques d'information, sans dupliquer les pages : « Devenir chasseur » doit notamment donner accès à « Passer mon permis » et « Valider mon permis en Vendée ».
 
 ## Operating Context
 
@@ -39,7 +39,8 @@ Le futur site doit rester statique. L'utilisateur a confirmé que les inscriptio
 - Retirer les fonctionnalités d'édition et l'administration du site lors de cette implémentation.
 - Ne pas confondre suppression de l'édition du site et suppression des accès aux espaces adhérents externes.
 - Pendant le cadrage, conserver le site actuel intact.
-- « Mes démarches » doit donner accès à : passer le permis, le valider, se former, déclarer ses prélèvements, une arme, un dégât ou une perte, et se connecter à son espace adhérent.
+- « Mes démarches » doit donner accès à : passer le permis, le valider, se former, déclarer ses prélèvements, une arme, un dégât ou une perte, et « Se connecter à mon espace ».
+- Sous « Se connecter à mon espace », distinguer « Espace adhérent » pour les chasseurs et responsables de territoire et « Espace maître d'équipage ». Le site actuel indique deux services externes distincts, à revérifier avant publication.
 - Pour les dégâts, distinguer grand gibier et DECLADOM (non indemnisable, selon la demande utilisateur) ; pour les pertes, distinguer permis et arme. Les modalités et l'éligibilité restent à vérifier auprès des sources officielles avant publication.
 - Ne pas inventer de dates, tarifs, conditions d'inscription, obligations réglementaires ou disponibilités de formation.
 - Le framework et le dispositif de publication de la future copie propre ne sont pas encore arrêtés.
