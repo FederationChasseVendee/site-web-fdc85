@@ -377,6 +377,8 @@ La [fiche officielle de chasse à l’arc](https://chasseur-vendeen.fr/58035-2/)
 
 **Accès adhérent vérifié le 1 novembre 2026 :** la page d’accueil officielle de la Fédération renvoie vers RETRIEVER, dont la [page de connexion](https://fdc85-2.retriever-ea.fr/html/Connexion.aspx) précise les publics concernés et les identifiants. L’ancienne adresse `https://fdc85.retriever-ea.fr/` redirige vers une page de maintenance et n’est pas proposée comme accès.
 
+**Contrôles du site généré — 1 novembre 2026, commit `df5de30` :** `npm run build` réussit avec la base par défaut `/site-web/` et avec `ASTRO_BASE_PATH=/` ; `astro check` et `check-generated-site.mjs` valident dans les deux cas 327 routes, 85 articles, 141 redirections, 59 PDF, liens, médias, sitemap, flux et repères d’accessibilité. `npm run test:routes` réussit (3 tests). Dans le HTML généré, aucune page ne contient « TODO », « reste à confirmer », « à confirmer avant » ou « à vérifier avant », ni l’ancienne adresse `fdc85.retriever-ea.fr`, ni d’accès « Espace maître d’équipage ». Les 11 liens qui renvoyaient à leur propre page ont été retirés ; la ressource utile de la page restauration bocagère est conservée.
+
 La note sur les droits photographiques de l’atelier concerne les images utilisées dans des maquettes de discussion, pas le site public. Ces maquettes ne sont pas intégrées à l’implémentation ; aucune nouvelle image de l’atelier n’est publiée par ce chantier.
 
 La piste 8 reste une **direction de travail provisoire** : prune `#39365e`, lilas par dossier et fond ivoire `#f5f2f8`, caractères système lisibles, liens exposés, dossiers empilés sur mobile. La validation cliente demeure ouverte ; aucun `DESIGN.md` n’est créé.
