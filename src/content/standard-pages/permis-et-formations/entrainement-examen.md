@@ -7,7 +7,7 @@ navigation:
   order: 100
 links:
   - label: Accéder à l’entraînement officiel
-    url: /permis-et-formations/entrainement-examen/
+    url: https://www.chasseurdefrance.com/pratiquer/sentrainer-au-permis/
   - label: Passer son permis
     url: /permis-et-formations/passer-son-permis/
 ---

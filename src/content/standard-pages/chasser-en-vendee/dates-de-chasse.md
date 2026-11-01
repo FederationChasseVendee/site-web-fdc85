@@ -7,7 +7,7 @@ navigation:
   order: 100
 links:
   - label: Consulter la page officielle des dates
-    url: /chasser-en-vendee/dates-de-chasse/
+    url: https://chasse85.fr/connaitre-la-reglementation/les-dates-de-chasse/
   - label: Textes réglementaires
     url: /ressources/reglementation/
 cta:
@@ -21,3 +21,5 @@ cta:
 Pour la saison **2026-2027**, l’ouverture générale en Vendée est fixée au **dimanche 20 septembre 2026** et la fermeture générale au **dimanche 28 février 2027**. À compter du 1er octobre, l’heure générale de début est fixée à **9 heures**.
 
 Ces dates générales ne dispensent pas de vérifier les dispositions particulières à une espèce, un territoire ou un mode de chasse, ni les éventuelles modifications de l’arrêté préfectoral avant chaque sortie.
+
+Ces repères ont été recoupés avec la page de la Fédération le **1 novembre 2026**. Ils ne remplacent pas les arrêtés et peuvent évoluer ; ouvrez la source officielle avant votre sortie.

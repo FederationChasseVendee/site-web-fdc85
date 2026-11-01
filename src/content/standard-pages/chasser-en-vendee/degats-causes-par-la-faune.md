@@ -6,6 +6,8 @@ navigation:
   show: false
   order: 100
 links:
+  - label: Déclarer un dégât — choisir le dispositif
+    url: /mes-demarches/declarer-un-degat/
   - label: Déclarer un dommage avec DECLADOM
     url: /chasser-en-vendee/decladom/
   - label: Contacter la Fédération

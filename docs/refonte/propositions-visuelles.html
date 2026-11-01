@@ -1,0 +1,1800 @@
+<!doctype html>
+<!--
+THESIS: Compare deux series de directions d'accueil sans faire passer une maquette pour le site publie.
+OWN-WORLD: Atelier sobre et lisible autour de compositions distinctes, avec une navigation de comparaison persistante.
+STORY: On parcourt, garde ou ecarte chaque piste, puis on consigne les retours des deux lectrices.
+FIRST VIEWPORT: Liste des pistes a gauche, apercu du site au centre, avis et commentaires sous la piste active.
+FORM: Prototype HTML autonome, hors du site public, sans requete distante ni contenu factuel ajoute.
+-->
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Atelier visuel — FDC 85</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #17241f;
+        --muted: #53625a;
+        --line: #d3ddd6;
+        --paper: #f3f6f2;
+        --panel: #fff;
+        --pine: #173f35;
+        --focus: #e3a72f;
+        --good: #1c694c;
+        --bad: #a63d30;
+        --maybe: #745a15;
+        --shadow: 0 16px 38px rgb(22 39 31 / 12%);
+        font-family: "Segoe UI", Arial, sans-serif;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      * { box-sizing: border-box; }
+
+      html { scroll-behavior: smooth; }
+
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-size: 16px;
+        line-height: 1.5;
+      }
+
+      button, textarea { font: inherit; }
+
+      button, a, textarea { -webkit-tap-highlight-color: transparent; }
+
+      button:focus-visible, a:focus-visible, textarea:focus-visible {
+        outline: 3px solid var(--focus);
+        outline-offset: 3px;
+      }
+
+      .skip-link {
+        position: fixed;
+        z-index: 20;
+        top: 8px;
+        left: 8px;
+        padding: 12px 16px;
+        transform: translateY(-160%);
+        background: #fff;
+        color: var(--pine);
+        font-weight: 700;
+      }
+
+      .skip-link:focus { transform: translateY(0); }
+
+      .topbar {
+        position: sticky;
+        z-index: 10;
+        top: 0;
+        display: flex;
+        min-height: 62px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 10px clamp(16px, 3vw, 42px);
+        border-bottom: 1px solid var(--line);
+        background: rgb(255 255 255 / 96%);
+      }
+
+      .wordmark {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--pine);
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: .01em;
+      }
+
+      .wordmark-mark {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        background: var(--pine);
+        color: #fff;
+        font-size: 13px;
+        letter-spacing: -.04em;
+      }
+
+      .topbar-meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .privacy-note {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .privacy-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #2f8059;
+      }
+
+      .layout {
+        display: grid;
+        width: min(1540px, 100%);
+        min-height: calc(100vh - 62px);
+        grid-template-columns: 276px minmax(0, 1fr);
+        margin-inline: auto;
+      }
+
+      .rail {
+        position: sticky;
+        top: 62px;
+        height: calc(100vh - 62px);
+        overflow: auto;
+        padding: 26px 18px 22px;
+        border-right: 1px solid var(--line);
+        background: #e9efe9;
+      }
+
+      .rail-heading {
+        margin: 0 0 5px;
+        font-size: 15px;
+        line-height: 1.35;
+      }
+
+      .rail-copy {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .proposal-list {
+        display: grid;
+        gap: 5px;
+      }
+
+      .proposal-choice {
+        display: grid;
+        width: 100%;
+        min-height: 48px;
+        grid-template-columns: 31px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 9px;
+        padding: 7px 9px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--ink);
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .proposal-choice:hover { background: rgb(255 255 255 / 70%); }
+
+      .proposal-choice[aria-current="true"] {
+        border-color: #b6c8bc;
+        background: #fff;
+        box-shadow: 0 2px 6px rgb(22 39 31 / 5%);
+      }
+
+      .proposal-number {
+        display: grid;
+        width: 29px;
+        height: 29px;
+        place-items: center;
+        border: 1px solid #c8d4cb;
+        background: #fff;
+        color: var(--pine);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .proposal-choice[aria-current="true"] .proposal-number {
+        border-color: var(--pine);
+        background: var(--pine);
+        color: #fff;
+      }
+
+      .proposal-name {
+        overflow: hidden;
+        font-size: 13px;
+        font-weight: 700;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .choice-mark {
+        width: 9px;
+        height: 9px;
+        border: 1px solid #8a9a8f;
+        border-radius: 50%;
+      }
+
+      .choice-mark[data-status="keep"] { border-color: var(--good); background: var(--good); }
+      .choice-mark[data-status="discard"] { border-color: var(--bad); background: var(--bad); }
+      .choice-mark[data-status="revisit"] { border-color: #aa851d; background: #e6c45b; }
+
+      .rail-summary {
+        margin-top: 20px;
+        padding-top: 14px;
+        border-top: 1px solid #cbd6ce;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .rail-summary strong { color: var(--ink); }
+
+      .main {
+        min-width: 0;
+        padding: clamp(20px, 3.2vw, 44px);
+      }
+
+      .intro {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: end;
+        gap: 20px;
+        margin-bottom: 24px;
+      }
+
+      h1 {
+        max-width: 720px;
+        margin: 0;
+        font-size: clamp(27px, 3vw, 39px);
+        letter-spacing: -.035em;
+        line-height: 1.1;
+      }
+
+      .intro-copy {
+        max-width: 720px;
+        margin: 10px 0 0;
+        color: var(--muted);
+      }
+
+      .export-button, .mode-button, .pager-button, .status-button {
+        display: inline-flex;
+        min-height: 44px;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border: 1px solid #9cad9f;
+        background: #fff;
+        color: var(--ink);
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .export-button {
+        border-color: var(--pine);
+        background: var(--pine);
+        color: #fff;
+      }
+
+      .export-button:hover { background: #245849; }
+      .mode-button:hover, .pager-button:hover, .status-button:hover { background: #edf2ed; }
+      button:disabled { cursor: not-allowed; opacity: .48; }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 16px;
+        padding: 11px 12px;
+        border: 1px solid var(--line);
+        background: #fff;
+      }
+
+      .toolbar-group {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 7px;
+      }
+
+      .toolbar-label {
+        margin-right: 2px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .mode-button[aria-pressed="true"] {
+        border-color: var(--pine);
+        background: #e7efe9;
+        color: var(--pine);
+      }
+
+      .series-switch {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 8px;
+      }
+
+      .series-switch .toolbar-label { margin-right: 5px; }
+
+      .view[hidden] { display: none; }
+
+      .proposal-heading {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 18px;
+        margin: 0 0 14px;
+      }
+
+      .proposal-kicker {
+        margin: 0 0 3px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: clamp(23px, 2.4vw, 31px);
+        letter-spacing: -.025em;
+        line-height: 1.15;
+      }
+
+      .proposal-description {
+        max-width: 760px;
+        margin: 8px 0 0;
+        color: var(--muted);
+      }
+
+      .proposal-status {
+        display: inline-flex;
+        min-height: 30px;
+        align-items: center;
+        padding: 5px 10px;
+        border: 1px solid #cbd6ce;
+        background: #f3f6f2;
+        color: #435249;
+        font-size: 12px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+
+      .proposal-status[data-status="keep"] { border-color: #a7ccb8; background: #e9f4ed; color: #19553d; }
+      .proposal-status[data-status="discard"] { border-color: #e1b4ac; background: #fbefed; color: #873126; }
+      .proposal-status[data-status="revisit"] { border-color: #dec875; background: #faf4db; color: #705810; }
+
+      .concept-facts {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1px;
+        margin: 0 0 12px;
+        border: 1px solid var(--line);
+        background: var(--line);
+      }
+
+      .concept-facts[data-facts="four"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+      .fact {
+        min-width: 0;
+        padding: 10px 12px;
+        background: #fff;
+      }
+
+      .fact-label {
+        display: block;
+        margin-bottom: 2px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: .035em;
+        text-transform: uppercase;
+      }
+
+      .fact-value { font-size: 14px; font-weight: 650; }
+
+      .preview-tools {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 9px;
+      }
+
+      .preview-tools p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .device-switch {
+        display: inline-flex;
+        gap: 2px;
+        padding: 3px;
+        border: 1px solid var(--line);
+        background: #fff;
+      }
+
+      .device-switch .mode-button {
+        min-height: 34px;
+        padding: 6px 10px;
+        border-color: transparent;
+        font-size: 12px;
+      }
+
+      .preview-wrap {
+        min-height: 350px;
+        overflow: auto;
+        border: 1px solid #cbd5ce;
+        background: #dce4dd;
+        box-shadow: var(--shadow);
+      }
+
+      .preview-wrap.is-mobile {
+        display: flex;
+        min-height: 710px;
+        justify-content: flex-start;
+        padding: 18px 12px;
+      }
+
+      .preview-wrap.is-mobile #sitePreview { margin-inline: auto; }
+
+      .site-preview {
+        width: 100%;
+        min-width: 680px;
+        min-height: 740px;
+        overflow: hidden;
+        background: var(--site-paper);
+        color: var(--site-ink);
+        font-family: "Segoe UI", Arial, sans-serif;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      #sitePreview { scroll-margin-top: 74px; }
+
+      .preview-wrap.is-mobile .site-preview {
+        width: 390px;
+        min-width: 390px;
+        min-height: 670px;
+        box-shadow: 0 8px 30px rgb(18 27 21 / 22%);
+      }
+
+      .site-preview[data-layout="ledger"] {
+        --site-ink: #1f2c38;
+        --site-paper: #fbfaf6;
+        --site-field: #214f75;
+        --site-accent: #f0ad3c;
+        --site-soft: #e7edf1;
+      }
+
+      .site-preview[data-layout="coast"] {
+        --site-ink: #14283b;
+        --site-paper: #f7f5ed;
+        --site-field: #102a45;
+        --site-accent: #f47e45;
+        --site-soft: #ffda65;
+      }
+
+      .site-preview[data-layout="atlas"] {
+        --site-ink: #18244a;
+        --site-paper: #f5f8ff;
+        --site-field: #334ee8;
+        --site-accent: #cbf255;
+        --site-soft: #ff7b78;
+      }
+
+      .site-preview[data-layout="bulletin"] {
+        --site-ink: #242424;
+        --site-paper: #fffdf6;
+        --site-field: #c63d35;
+        --site-accent: #f5c548;
+        --site-soft: #e8ebee;
+      }
+
+      .site-preview[data-layout="guide"] {
+        --site-ink: #172d35;
+        --site-paper: #eff8f5;
+        --site-field: #12645a;
+        --site-accent: #ffca43;
+        --site-soft: #bce6e1;
+      }
+
+      .site-preview[data-layout="kiosk"] {
+        --site-ink: #1a1b1b;
+        --site-paper: #f7f8f2;
+        --site-field: #c9ef33;
+        --site-accent: #fd6a42;
+        --site-soft: #e8ebde;
+      }
+
+      .site-preview[data-layout="season"] {
+        --site-ink: #25203d;
+        --site-paper: #f8f6ff;
+        --site-field: #493782;
+        --site-accent: #83e4ef;
+        --site-soft: #f4d94c;
+      }
+
+      .site-preview[data-layout="route"] {
+        --site-ink: #203047;
+        --site-paper: #f7f9fb;
+        --site-field: #245cbb;
+        --site-accent: #ff914c;
+        --site-soft: #dbe8f9;
+      }
+
+      .site-preview[data-layout="index"] {
+        --site-ink: #172b3b;
+        --site-paper: #fff8f4;
+        --site-field: #176f85;
+        --site-accent: #f58b68;
+        --site-soft: #c7ece4;
+      }
+
+      .site-preview[data-layout="poster"] {
+        --site-ink: #142d1d;
+        --site-paper: #f7f9ef;
+        --site-field: #267231;
+        --site-accent: #f34f9a;
+        --site-soft: #d8f16c;
+      }
+
+      .site-header {
+        display: flex;
+        min-height: 63px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 11px 24px;
+        background: var(--site-paper);
+        color: var(--site-ink);
+      }
+
+      .site-brand {
+        display: flex;
+        flex: none;
+        align-items: center;
+        gap: 9px;
+        font-size: 15px;
+        font-weight: 850;
+        letter-spacing: .015em;
+      }
+
+      .site-brand-mark {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border: 2px solid currentColor;
+        font-size: 10px;
+        letter-spacing: -.04em;
+      }
+
+      .site-nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 4px;
+      }
+
+      .site-nav-item {
+        display: inline-flex;
+        min-height: 38px;
+        align-items: center;
+        padding: 6px 8px;
+        color: inherit;
+        font-size: 12px;
+        font-weight: 750;
+        white-space: nowrap;
+      }
+
+      .site-main { padding: 0 24px 24px; }
+
+      .site-hero {
+        position: relative;
+        display: grid;
+        min-height: 152px;
+        grid-template-columns: 1.2fr .8fr;
+        align-items: center;
+        gap: 20px;
+        overflow: hidden;
+        padding: 26px 30px;
+        background: var(--site-field);
+        color: #fff;
+      }
+
+      .site-hero-copy { position: relative; z-index: 1; }
+
+      .site-hero h3 {
+        max-width: 540px;
+        margin: 0;
+        font-size: clamp(27px, 3vw, 37px);
+        letter-spacing: -.035em;
+        line-height: 1.06;
+      }
+
+      .site-hero p {
+        max-width: 530px;
+        margin: 8px 0 0;
+        color: rgb(255 255 255 / 90%);
+        font-size: 15px;
+      }
+
+      .site-hero-visual {
+        position: relative;
+        min-height: 84px;
+        overflow: hidden;
+        background: var(--site-soft);
+      }
+
+      .site-hero-visual::before,
+      .site-hero-visual::after {
+        position: absolute;
+        content: "";
+      }
+
+      .site-hero-visual::before {
+        inset: auto -6% -31% 12%;
+        height: 70%;
+        background: var(--site-accent);
+        transform: skewY(-9deg);
+      }
+
+      .site-hero-visual::after {
+        right: 12%;
+        bottom: 17%;
+        width: 32%;
+        height: 54%;
+        background: var(--site-field);
+        clip-path: polygon(50% 0, 100% 100%, 0 100%);
+      }
+
+      .site-section { margin-top: 26px; }
+
+      .site-section-heading {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 9px;
+      }
+
+      .site-section-heading h4 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: -.025em;
+        line-height: 1.1;
+      }
+
+      .site-section-heading span {
+        color: var(--site-ink);
+        font-size: 13px;
+        font-weight: 700;
+        opacity: .78;
+      }
+
+      .action-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 5px;
+      }
+
+      .action-item {
+        display: flex;
+        min-height: 72px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 7px;
+        padding: 11px 12px;
+        background: var(--site-soft);
+        color: var(--site-ink);
+        font-size: 14px;
+        font-weight: 750;
+        line-height: 1.25;
+      }
+
+      .action-item small {
+        display: block;
+        margin-top: 3px;
+        font-size: 12px;
+        font-weight: 600;
+        opacity: .82;
+      }
+
+      .action-arrow { flex: none; color: var(--site-field); font-size: 17px; }
+
+      .news-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 7px;
+      }
+
+      .news-item {
+        min-height: 70px;
+        padding: 12px 14px;
+        border: 1px solid var(--site-soft);
+        background: transparent;
+      }
+
+      .news-item strong {
+        display: block;
+        font-size: 14px;
+        line-height: 1.3;
+      }
+
+      .news-item span {
+        display: block;
+        margin-top: 4px;
+        color: var(--site-field);
+        font-size: 12px;
+        font-weight: 750;
+      }
+
+      .site-footer {
+        margin-top: 24px;
+        padding: 12px 15px;
+        background: var(--site-ink);
+        color: #fff;
+        font-size: 12px;
+      }
+
+      .site-footer span + span::before { content: "  ·  "; color: var(--site-accent); }
+
+      .preview-wrap.is-mobile .site-header {
+        min-height: 62px;
+        align-items: flex-start;
+        padding: 10px 12px;
+      }
+
+      .preview-wrap.is-mobile .site-nav {
+        max-width: 178px;
+        gap: 1px;
+      }
+
+      .preview-wrap.is-mobile .site-nav-item {
+        min-height: 29px;
+        padding: 4px 5px;
+        font-size: 10px;
+      }
+
+      .preview-wrap.is-mobile .site-main { padding: 0 12px 18px; }
+      .preview-wrap.is-mobile .site-hero { min-height: 155px; grid-template-columns: 1fr; padding: 20px 16px; }
+      .preview-wrap.is-mobile .site-hero-visual { position: absolute; inset: auto 0 0 52%; height: 40%; opacity: .5; }
+      .preview-wrap.is-mobile .site-hero h3 { max-width: 270px; font-size: 27px; }
+      .preview-wrap.is-mobile .site-hero p { max-width: 260px; font-size: 13px; }
+      .preview-wrap.is-mobile .site-section { margin-top: 17px; }
+      .preview-wrap.is-mobile .site-section-heading h4 { font-size: 18px; }
+      .preview-wrap.is-mobile .action-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; }
+      .preview-wrap.is-mobile .action-item { min-height: 66px; padding: 9px; font-size: 12px; }
+      .preview-wrap.is-mobile .news-row { grid-template-columns: 1fr; gap: 5px; }
+      .preview-wrap.is-mobile .news-item strong { font-size: 13px; }
+      .preview-wrap.is-mobile .site-footer { margin-top: 16px; }
+
+      .site-preview[data-layout="ledger"] .site-header { border-bottom: 3px solid var(--site-field); }
+      .site-preview[data-layout="ledger"] .site-brand-mark { border: 0; background: var(--site-accent); }
+      .site-preview[data-layout="ledger"] .site-nav-item { border-bottom: 2px solid transparent; }
+      .site-preview[data-layout="ledger"] .site-nav-item:first-child { border-color: var(--site-accent); }
+      .site-preview[data-layout="ledger"] .action-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .site-preview[data-layout="ledger"] .action-item { background: transparent; border-bottom: 1px solid #cbd5dc; }
+      .site-preview[data-layout="ledger"] .site-hero-visual { clip-path: polygon(0 0, 100% 0, 91% 100%, 0 100%); }
+
+      .site-preview[data-layout="coast"] .site-header { display: block; padding: 11px 24px 0; background: var(--site-field); color: #fff; }
+      .site-preview[data-layout="coast"] .site-brand { min-height: 38px; }
+      .site-preview[data-layout="coast"] .site-brand-mark { border-color: var(--site-accent); color: var(--site-accent); }
+      .site-preview[data-layout="coast"] .site-nav { justify-content: flex-start; margin: 7px -24px 0; padding: 4px 24px; background: var(--site-accent); color: #17243b; }
+      .site-preview[data-layout="coast"] .site-nav-item { font-size: 11px; }
+      .site-preview[data-layout="coast"] .site-hero { grid-template-columns: 1fr 1fr; }
+      .site-preview[data-layout="coast"] .site-hero-visual { border-radius: 50% 0 0 0; }
+      .site-preview[data-layout="coast"] .action-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .site-preview[data-layout="coast"] .action-item:nth-child(odd) { background: var(--site-accent); color: #182c3f; }
+
+      .site-preview[data-layout="atlas"] .site-header { align-items: flex-start; padding-inline: 16px; }
+      .site-preview[data-layout="atlas"] .site-brand-mark { border: 0; background: var(--site-field); color: #fff; }
+      .site-preview[data-layout="atlas"] .site-nav { max-width: 640px; justify-content: flex-start; gap: 4px; }
+      .site-preview[data-layout="atlas"] .site-nav-item { min-height: 26px; border-radius: 14px; background: var(--site-soft); }
+      .site-preview[data-layout="atlas"] .site-nav-item:first-child { background: var(--site-accent); color: #172044; }
+      .site-preview[data-layout="atlas"] .site-hero { background: var(--site-accent); color: #172044; }
+      .site-preview[data-layout="atlas"] .site-hero p { color: #172044; }
+      .site-preview[data-layout="atlas"] .site-hero-visual { background: var(--site-field); clip-path: polygon(5% 0, 100% 0, 93% 100%, 0 76%); }
+      .site-preview[data-layout="atlas"] .action-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .site-preview[data-layout="atlas"] .action-item:nth-child(4n + 1) { background: var(--site-field); color: #fff; }
+      .site-preview[data-layout="atlas"] .action-item:nth-child(4n + 1) .action-arrow { color: var(--site-accent); }
+      .site-preview[data-layout="atlas"] .action-item:nth-child(4n + 3) { background: var(--site-accent); }
+
+      .site-preview[data-layout="bulletin"] .site-header { border-bottom: 1px solid var(--site-ink); }
+      .site-preview[data-layout="bulletin"] .site-brand-mark { background: var(--site-field); color: #fff; }
+      .site-preview[data-layout="bulletin"] .site-nav-item { border-right: 1px solid var(--site-soft); }
+      .site-preview[data-layout="bulletin"] .site-hero { grid-template-columns: 1fr .4fr; background: var(--site-field); }
+      .site-preview[data-layout="bulletin"] .site-hero-visual { background: var(--site-accent); }
+      .site-preview[data-layout="bulletin"] .site-hero-visual::after { background: var(--site-ink); }
+      .site-preview[data-layout="bulletin"] .action-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; }
+      .site-preview[data-layout="bulletin"] .action-item { min-height: 65px; border: 1px solid var(--site-paper); }
+      .site-preview[data-layout="bulletin"] .action-item:nth-child(even) { background: #f2e4d7; }
+      .site-preview[data-layout="bulletin"] .news-item { border: 0; border-top: 2px solid var(--site-field); }
+
+      .site-preview[data-layout="guide"] .site-header { background: var(--site-field); color: #fff; }
+      .site-preview[data-layout="guide"] .site-brand-mark { border-color: var(--site-accent); color: var(--site-accent); }
+      .site-preview[data-layout="guide"] .site-nav-item:first-child { background: var(--site-soft); color: var(--site-ink); }
+      .site-preview[data-layout="guide"] .site-hero { grid-template-columns: 1fr .65fr; background: var(--site-soft); color: var(--site-ink); }
+      .site-preview[data-layout="guide"] .site-hero p { color: var(--site-ink); }
+      .site-preview[data-layout="guide"] .site-hero-visual { background: var(--site-field); clip-path: polygon(16% 0, 100% 0, 100% 100%, 0 100%); }
+      .site-preview[data-layout="guide"] .action-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .site-preview[data-layout="guide"] .action-item { background: var(--site-field); color: #fff; }
+      .site-preview[data-layout="guide"] .action-arrow { color: var(--site-accent); }
+      .site-preview[data-layout="guide"] .news-item { border: 0; background: var(--site-soft); }
+
+      .site-preview[data-layout="kiosk"] .site-header { border-bottom: 5px solid var(--site-field); }
+      .site-preview[data-layout="kiosk"] .site-brand-mark { background: var(--site-field); }
+      .site-preview[data-layout="kiosk"] .site-nav-item { font-size: 11px; }
+      .site-preview[data-layout="kiosk"] .site-hero { grid-template-columns: 1fr; min-height: 106px; background: var(--site-field); color: #181d16; }
+      .site-preview[data-layout="kiosk"] .site-hero p { color: #293018; }
+      .site-preview[data-layout="kiosk"] .site-hero-visual { position: absolute; top: 0; right: 0; width: 28%; height: 100%; background: var(--site-accent); }
+      .site-preview[data-layout="kiosk"] .site-hero-visual::before { background: #1a1b1b; }
+      .site-preview[data-layout="kiosk"] .site-hero-visual::after { background: var(--site-field); }
+      .site-preview[data-layout="kiosk"] .action-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+      .site-preview[data-layout="kiosk"] .action-item { min-height: 58px; background: var(--site-ink); color: #fff; }
+      .site-preview[data-layout="kiosk"] .action-arrow { color: var(--site-field); }
+      .site-preview[data-layout="kiosk"] .news-item { border: 0; background: var(--site-soft); }
+
+      .site-preview[data-layout="season"] .site-header { background: var(--site-ink); color: #fff; }
+      .site-preview[data-layout="season"] .site-brand-mark { border: 0; background: var(--site-accent); color: var(--site-ink); }
+      .site-preview[data-layout="season"] .site-hero { grid-template-columns: .9fr 1.1fr; background: var(--site-field); }
+      .site-preview[data-layout="season"] .site-hero-visual { background: var(--site-accent); }
+      .site-preview[data-layout="season"] .site-hero-visual::before { height: 44%; background: var(--site-soft); }
+      .site-preview[data-layout="season"] .site-hero-visual::after { background: var(--site-ink); }
+      .site-preview[data-layout="season"] .action-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .site-preview[data-layout="season"] .action-item:nth-child(odd) { background: var(--site-field); color: #fff; }
+      .site-preview[data-layout="season"] .action-item:nth-child(even) { background: var(--site-soft); }
+      .site-preview[data-layout="season"] .action-item:nth-child(odd) .action-arrow { color: var(--site-accent); }
+      .site-preview[data-layout="season"] .news-row { grid-template-columns: 1fr 1fr; }
+
+      .site-preview[data-layout="route"] { display: grid; grid-template-columns: 126px minmax(0, 1fr); }
+      .site-preview[data-layout="route"] .site-header { display: contents; }
+      .site-preview[data-layout="route"] .site-brand { grid-column: 1; grid-row: 1; align-items: start; padding: 18px 12px 10px; background: var(--site-field); color: #fff; }
+      .site-preview[data-layout="route"] .site-brand-mark { border-color: var(--site-accent); color: var(--site-accent); }
+      .site-preview[data-layout="route"] .site-nav { grid-column: 1; grid-row: 2 / span 3; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; padding: 0 7px 14px; background: var(--site-field); color: #fff; }
+      .site-preview[data-layout="route"] .site-nav-item { justify-content: flex-start; white-space: normal; }
+      .site-preview[data-layout="route"] .site-nav-item:first-child { background: var(--site-accent); color: #182238; }
+      .site-preview[data-layout="route"] .site-main { grid-column: 2; grid-row: 1 / span 4; padding: 14px; }
+      .site-preview[data-layout="route"] .site-hero { grid-template-columns: 1fr; min-height: 105px; padding: 17px; background: var(--site-soft); color: var(--site-ink); }
+      .site-preview[data-layout="route"] .site-hero p { color: var(--site-ink); }
+      .site-preview[data-layout="route"] .site-hero-visual { position: absolute; right: 0; bottom: 0; width: 31%; height: 43%; background: var(--site-accent); }
+      .site-preview[data-layout="route"] .site-hero-visual::before { background: var(--site-field); }
+      .site-preview[data-layout="route"] .action-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .site-preview[data-layout="route"] .action-item { min-height: 52px; border: 1px solid var(--site-soft); background: transparent; }
+      .site-preview[data-layout="route"] .news-row { grid-template-columns: 1fr; }
+      .preview-wrap.is-mobile .site-preview[data-layout="route"] { display: block; }
+      .preview-wrap.is-mobile .site-preview[data-layout="route"] .site-header {
+        display: flex;
+        align-items: flex-start;
+        padding: 10px 12px 0;
+        background: var(--site-field);
+        color: #fff;
+      }
+      .preview-wrap.is-mobile .site-preview[data-layout="route"] .site-brand {
+        padding: 0;
+        background: transparent;
+        color: #fff;
+      }
+      .preview-wrap.is-mobile .site-preview[data-layout="route"] .site-nav {
+        display: flex;
+        max-width: 178px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 0 0 6px;
+        background: transparent;
+        color: #fff;
+      }
+      .preview-wrap.is-mobile .site-preview[data-layout="route"] .site-nav-item {
+        min-height: 29px;
+        padding: 4px 5px;
+      }
+      .preview-wrap.is-mobile .site-preview[data-layout="route"] .site-main {
+        padding: 0 12px 18px;
+      }
+
+      .site-preview[data-layout="index"] .site-header { border-bottom: 1px solid var(--site-ink); }
+      .site-preview[data-layout="index"] .site-brand-mark { background: var(--site-field); color: #fff; }
+      .site-preview[data-layout="index"] .site-nav-item { border-bottom: 1px solid var(--site-field); }
+      .site-preview[data-layout="index"] .site-hero { grid-template-columns: 1fr .5fr; background: var(--site-soft); color: var(--site-ink); }
+      .site-preview[data-layout="index"] .site-hero p { color: var(--site-ink); }
+      .site-preview[data-layout="index"] .site-hero-visual { background: var(--site-accent); }
+      .site-preview[data-layout="index"] .site-hero-visual::before { background: var(--site-field); }
+      .site-preview[data-layout="index"] .action-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 12px; }
+      .site-preview[data-layout="index"] .action-item { min-height: 53px; padding-inline: 3px; border-bottom: 1px solid var(--site-soft); background: transparent; }
+      .site-preview[data-layout="index"] .action-arrow { color: var(--site-accent); }
+      .site-preview[data-layout="index"] .news-item { border: 0; background: var(--site-soft); }
+
+      .site-preview[data-layout="poster"] .site-header { background: var(--site-field); color: #fff; }
+      .site-preview[data-layout="poster"] .site-brand-mark { border-color: var(--site-accent); color: var(--site-accent); }
+      .site-preview[data-layout="poster"] .site-nav-item:first-child { background: var(--site-accent); color: #172719; }
+      .site-preview[data-layout="poster"] .site-hero { grid-template-columns: 1fr .45fr; min-height: 144px; background: var(--site-field); }
+      .site-preview[data-layout="poster"] .site-hero h3 { max-width: 420px; font-size: 38px; text-transform: uppercase; }
+      .site-preview[data-layout="poster"] .site-hero-visual { background: var(--site-accent); clip-path: polygon(0 0, 100% 12%, 90% 100%, 8% 84%); }
+      .site-preview[data-layout="poster"] .action-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px; }
+      .site-preview[data-layout="poster"] .action-item { min-height: 66px; background: var(--site-soft); }
+      .site-preview[data-layout="poster"] .action-item:nth-child(3n) { background: var(--site-accent); }
+      .site-preview[data-layout="poster"] .news-item { border: 0; background: var(--site-field); color: #fff; }
+      .site-preview[data-layout="poster"] .news-item span { color: var(--site-accent); }
+
+      .review-panel {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(260px, .85fr);
+        gap: 14px;
+        margin-top: 16px;
+      }
+
+      .review-card {
+        min-width: 0;
+        padding: 17px;
+        border: 1px solid var(--line);
+        background: #fff;
+      }
+
+      .review-card h3 {
+        margin: 0 0 4px;
+        font-size: 17px;
+        letter-spacing: -.015em;
+      }
+
+      .review-card > p {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .status-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+      }
+
+      .status-button[aria-pressed="true"][data-choice="keep"] { border-color: var(--good); background: #e9f4ed; color: #19553d; }
+      .status-button[aria-pressed="true"][data-choice="discard"] { border-color: var(--bad); background: #fbefed; color: #873126; }
+      .status-button[aria-pressed="true"][data-choice="revisit"] { border-color: #aa851d; background: #faf4db; color: #705810; }
+
+      .notes-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .note-field { display: grid; gap: 6px; }
+
+      .note-field label {
+        font-size: 13px;
+        font-weight: 750;
+      }
+
+      .note-field textarea {
+        width: 100%;
+        min-height: 102px;
+        resize: vertical;
+        padding: 10px 11px;
+        border: 1px solid #9cad9f;
+        border-radius: 0;
+        background: #fff;
+        color: var(--ink);
+        line-height: 1.45;
+      }
+
+      .note-field textarea::placeholder { color: #67766c; }
+
+      .storage-status {
+        min-height: 22px;
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .storage-status[data-state="error"] {
+        padding: 10px 12px;
+        border: 1px solid #dbb2a9;
+        background: #fbefed;
+        color: #772a20;
+        font-weight: 650;
+      }
+
+      .overview-heading {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+        margin: 20px 0 12px;
+      }
+
+      .overview-heading h2 { font-size: 23px; }
+      .overview-heading p { margin: 0; color: var(--muted); font-size: 13px; }
+
+      .overview-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .overview-card {
+        min-width: 0;
+        padding: 12px;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--ink);
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .overview-card:hover { border-color: #78907e; box-shadow: 0 4px 15px rgb(22 39 31 / 9%); }
+      .overview-card:focus-visible { outline-offset: 2px; }
+
+      .overview-card-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 9px;
+      }
+
+      .overview-card-head h3 { margin: 0; font-size: 15px; }
+
+      .mini-preview {
+        display: flex;
+        height: 230px;
+        justify-content: center;
+        overflow: hidden;
+        background: #dce4dd;
+      }
+
+      .mini-preview .site-preview {
+        width: 1000px;
+        min-width: 1000px;
+        min-height: 740px;
+        flex: 0 0 1000px;
+        transform: scale(.31);
+        transform-origin: top center;
+        pointer-events: none;
+      }
+
+      .overview-meta {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 7px;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .overview-comment {
+        max-width: 100%;
+        overflow: hidden;
+        margin-top: 6px;
+        color: var(--ink);
+        font-size: 12px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .empty-comment { color: #657369; font-style: italic; }
+
+      .notice {
+        margin: 22px 0 0;
+        padding: 13px 15px;
+        border: 1px solid #cfdbd0;
+        background: #e9efe9;
+        color: #36453c;
+        font-size: 13px;
+      }
+
+      .notice strong { color: var(--ink); }
+
+      .pager {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      @media (min-width: 1300px) {
+        .overview-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      }
+
+      @media (max-width: 920px) {
+        .layout { grid-template-columns: 1fr; }
+        .rail {
+          position: static;
+          height: auto;
+          overflow: hidden;
+          padding: 16px 18px;
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+        .proposal-list {
+          display: flex;
+          overflow-x: auto;
+          padding-bottom: 5px;
+          scrollbar-color: #9cad9f transparent;
+        }
+        .proposal-choice { flex: 0 0 270px; }
+        .rail-summary { margin-top: 5px; padding-top: 8px; }
+        .main { padding: 24px 18px 36px; }
+        .concept-facts[data-facts="four"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+
+      @media (max-width: 620px) {
+        .topbar { align-items: flex-start; }
+        .topbar-meta { align-items: flex-end; flex-direction: column; gap: 2px; font-size: 12px; }
+        .layout { min-height: 0; }
+        .proposal-choice { min-width: 0; min-height: 43px; flex-basis: min(78vw, 260px); }
+        .main { padding: 21px 13px 30px; }
+        .intro { grid-template-columns: 1fr; align-items: start; gap: 14px; }
+        .intro .export-button { justify-self: start; }
+        .toolbar { align-items: stretch; }
+        .toolbar-group { width: 100%; }
+        .toolbar-group:last-child { justify-content: space-between; }
+        .concept-facts, .concept-facts[data-facts="four"] { grid-template-columns: 1fr; }
+        .review-panel, .notes-grid { grid-template-columns: 1fr; }
+        .overview-grid { grid-template-columns: 1fr; }
+        .preview-wrap { min-height: 380px; }
+        .site-preview { min-width: 680px; }
+        .preview-wrap.is-mobile .site-preview { min-width: 390px; }
+      }
+
+      @media (max-width: 350px) {
+        .mini-preview { height: 193px; }
+        .mini-preview .site-preview { transform: scale(.26); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+      }
+    </style>
+    <link rel="stylesheet" href="pistes-v2.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Aller aux propositions</a>
+    <header class="topbar">
+      <div class="wordmark">
+        <span class="wordmark-mark" aria-hidden="true">85</span>
+        <span>Atelier visuel · FDC 85</span>
+      </div>
+      <div class="topbar-meta">
+        <span id="progressSummary">0 piste examinée sur 10</span>
+        <span class="privacy-note"><span class="privacy-dot" aria-hidden="true"></span>Retours conservés sur cet appareil</span>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="rail" aria-label="Choisir une piste">
+        <h2 class="rail-heading" id="railHeading">Les nouvelles pistes</h2>
+        <p class="rail-copy">Même contenu, organisations visuelles différentes.</p>
+        <nav class="proposal-list" id="proposalList" aria-label="Propositions visuelles"></nav>
+        <p class="rail-summary" id="railSummary"></p>
+      </aside>
+
+      <main class="main" id="main">
+        <div class="intro">
+          <div>
+            <h1>Quelle forme pour le futur site&nbsp;?</h1>
+            <p class="intro-copy">Comparez les nouvelles compositions, puis retrouvez la première série et ses retours. Gardez les pistes qui vous parlent, écartez les autres et notez vos avis et ceux de votre cliente.</p>
+          </div>
+          <button class="export-button" id="exportButton" type="button">Télécharger tous les retours .md</button>
+        </div>
+
+        <div class="series-switch" role="group" aria-label="Série de propositions">
+          <span class="toolbar-label">Série :</span>
+          <button class="mode-button" id="seriesV2" type="button" aria-pressed="true">Nouvelles pistes</button>
+          <button class="mode-button" id="seriesV1" type="button" aria-pressed="false">Première série et ses retours</button>
+        </div>
+        <p class="storage-status" id="storageStatus" role="status" aria-live="polite"></p>
+
+        <div class="toolbar" aria-label="Commandes de l’atelier">
+          <div class="toolbar-group">
+            <span class="toolbar-label">Affichage :</span>
+            <button class="mode-button" id="singleMode" type="button" aria-pressed="true">Une piste</button>
+            <button class="mode-button" id="overviewMode" type="button" aria-pressed="false">Voir les 10</button>
+          </div>
+          <div class="toolbar-group" id="pagerControls">
+            <button class="pager-button" id="previousButton" type="button" aria-label="Piste précédente">← Précédente</button>
+            <span class="toolbar-label" id="currentCount">Piste 1 sur 10</span>
+            <button class="pager-button" id="nextButton" type="button" aria-label="Piste suivante">Suivante →</button>
+          </div>
+        </div>
+
+        <section class="view" id="singleView" aria-label="Piste sélectionnée">
+          <header class="proposal-heading">
+            <div>
+              <p class="proposal-kicker" id="proposalIndex"></p>
+              <h2 id="proposalTitle" tabindex="-1"></h2>
+              <p class="proposal-description" id="proposalDescription"></p>
+            </div>
+            <span class="proposal-status" id="proposalStatus"></span>
+          </header>
+
+          <div class="concept-facts" id="conceptFacts"></div>
+          <div class="preview-tools">
+            <p>Aperçu de structure — les liens ci-dessous ne sont pas actifs.</p>
+            <div class="device-switch" aria-label="Format de l’aperçu">
+              <button class="mode-button" id="desktopMode" type="button" aria-pressed="true">Grand écran</button>
+              <button class="mode-button" id="mobileMode" type="button" aria-pressed="false">Mobile</button>
+            </div>
+          </div>
+          <div class="preview-wrap" id="previewWrap">
+            <div id="sitePreview"></div>
+          </div>
+
+          <div class="review-panel">
+            <section class="review-card">
+              <h3>Votre décision</h3>
+              <p>Vous pourrez modifier ce choix à tout moment.</p>
+              <div class="status-actions" role="group" aria-label="Statut de la piste">
+                <button class="status-button" type="button" data-choice="keep" aria-pressed="false">✓ À garder</button>
+                <button class="status-button" type="button" data-choice="revisit" aria-pressed="false">À revoir</button>
+                <button class="status-button" type="button" data-choice="discard" aria-pressed="false">× À écarter</button>
+              </div>
+            </section>
+            <section class="review-card">
+              <h3>Vos retours</h3>
+              <p>Un détail, une hésitation ou une idée à conserver.</p>
+              <label class="note-field">
+                <span class="sr-only">Vos retours sur cette piste</span>
+                <textarea id="userNote" maxlength="4000" placeholder="Ce qui vous plaît, gêne ou manque…"></textarea>
+              </label>
+            </section>
+            <section class="review-card">
+              <h3>Retours de la cliente</h3>
+              <p>À compléter pendant ou après votre échange.</p>
+              <label class="note-field">
+                <span class="sr-only">Retours de la cliente sur cette piste</span>
+                <textarea id="clientNote" maxlength="4000" placeholder="Ses préférences et commentaires…"></textarea>
+              </label>
+            </section>
+          </div>
+          <div class="pager">
+            <button class="pager-button" id="previousButtonBottom" type="button">← Piste précédente</button>
+            <button class="pager-button" id="nextButtonBottom" type="button">Piste suivante →</button>
+          </div>
+        </section>
+
+        <section class="view" id="overviewView" aria-label="Vue d’ensemble des pistes" hidden>
+          <div class="overview-heading">
+            <h2 id="overviewTitle" tabindex="-1">Vue d’ensemble</h2>
+            <p>Choisissez une piste pour l’ouvrir et commenter.</p>
+          </div>
+          <div class="overview-grid" id="overviewGrid"></div>
+        </section>
+
+        <p class="notice"><strong>À retenir :</strong> ce sont des hypothèses visuelles, pas des choix validés. Chaque aperçu reprend les rubriques et les démarches du cadrage ; les actualités sont des titres existants utilisés comme exemples. Les nouvelles pistes photographiques utilisent des images locales du dépôt, dont les droits restent à vérifier. Aucune coordonnée n’est affichée sur l’accueil simulé.</p>
+      </main>
+    </div>
+
+    <script src="pistes-v2.js"></script>
+    <script>
+      const legacyConcepts = [
+        {
+          id: "ledger",
+          title: "Le carnet des démarches",
+          short: "Un accueil pensé comme un registre clair : les actions sont des lignes, pas des cases à déchiffrer.",
+          palette: "Bleu ardoise · orange · blanc cassé",
+          navigation: "Six rubriques en barre haute ; accès rapides en lignes regroupées.",
+          composition: "Grand titre sobre, puis registre de démarches avant les actualités.",
+          layout: "ledger"
+        },
+        {
+          id: "coast",
+          title: "Le panneau du littoral",
+          short: "Une signalétique franche inspirée des panneaux de côte, avec une bande de navigation très visible.",
+          palette: "Bleu profond · orange balise · jaune",
+          navigation: "Menu horizontal contrasté, détaché du bandeau d’accueil.",
+          composition: "Bandeau coloré, accès rapides en grille, actualités en second plan.",
+          layout: "coast"
+        },
+        {
+          id: "atlas",
+          title: "Le plan des chemins",
+          short: "Une page qui donne des repères comme une carte : les rubriques sont des zones, les actions des points d’entrée.",
+          palette: "Bleu électrique · vert citron · corail",
+          navigation: "Rubriques en pastilles repérables, avec une couleur par groupe.",
+          composition: "Titre en aplat coloré, puis accès répartis comme une légende.",
+          layout: "atlas"
+        },
+        {
+          id: "bulletin",
+          title: "Le bulletin fédéral",
+          short: "Une composition de bulletin public : titres hiérarchisés, règles nettes et informations rangées.",
+          palette: "Rouge signal · jaune · noir · blanc",
+          navigation: "Menu compact en ligne, séparé par des repères typographiques.",
+          composition: "Titre d’accueil éditorial, démarches en répertoire, actualités en brèves.",
+          layout: "bulletin"
+        },
+        {
+          id: "guide",
+          title: "Le guide de terrain",
+          short: "Une entrée accueillante et illustrée, qui relie les démarches à la découverte des milieux vendéens.",
+          palette: "Vert profond · turquoise · jaune",
+          navigation: "Rubriques en haut, premier accès mis en évidence sans cacher les autres.",
+          composition: "Bandeau illustré, actions sur fond coloré, actualités en aperçus simples.",
+          layout: "guide"
+        },
+        {
+          id: "kiosk",
+          title: "Le kiosque direct",
+          short: "Une interface très repérable, avec des mots d’action courts et une forte visibilité des démarches.",
+          palette: "Vert acide · noir · orange",
+          navigation: "Menu sobre en haut ; les actions dominent la page.",
+          composition: "Titre compact, grille de démarches à fort contraste, actualités en dessous.",
+          layout: "kiosk"
+        },
+        {
+          id: "season",
+          title: "Le calendrier de saison",
+          short: "Une direction rythmée par le temps de la pratique, sans afficher de date non vérifiée.",
+          palette: "Violet · bleu clair · jaune",
+          navigation: "Menu intégré à un bandeau sombre, actions présentées en deux temps.",
+          composition: "Accueil en deux panneaux, démarches prioritaires, puis actualités.",
+          layout: "season"
+        },
+        {
+          id: "route",
+          title: "Le chemin balisé",
+          short: "Une navigation latérale persistante, inspirée du repérage sur un itinéraire.",
+          palette: "Bleu franc · orange · bleu pâle",
+          navigation: "Six rubriques dans une colonne latérale toujours visible.",
+          composition: "Colonne de repères, titre et démarches dans le panneau principal.",
+          layout: "route"
+        },
+        {
+          id: "index",
+          title: "Le grand répertoire",
+          short: "Une page d’index structurée pour les visiteurs qui savent déjà ce qu’ils cherchent.",
+          palette: "Bleu canard · corail · menthe",
+          navigation: "Rubriques en ligne ; liens d’action rangés en colonnes ouvertes.",
+          composition: "Titre éditorial, grand répertoire de liens, puis dernières actualités.",
+          layout: "index"
+        },
+        {
+          id: "poster",
+          title: "L’affiche signalétique",
+          short: "Une identité plus expressive qui assume de grands aplats et des titres puissants, sans sacrifier les libellés.",
+          palette: "Vert vif · rose vif · citron",
+          navigation: "Menu en haut ; grandes zones de couleur pour séparer les intentions.",
+          composition: "Titre d’accueil monumental, démarches visibles, actualités en contraste.",
+          layout: "poster"
+        }
+      ];
+
+      const actions = [
+        ["Passer mon permis", "Inscription au permis"],
+        ["Valider mon permis", "Première validation ou renouvellement"],
+        ["Se former", "Choisir une formation"],
+        ["Déclarer mes prélèvements", "Outil adapté à la déclaration"],
+        ["Déclarer une arme", "Démarche officielle"],
+        ["Déclarer un dégât", "Grand gibier · DECLADOM"],
+        ["Déclarer une perte", "Permis · arme"],
+        ["Se connecter à mon espace", "Espace adhérent · Espace maître d’équipage"]
+      ];
+
+      const navigation = [
+        "Mes démarches",
+        "Devenir chasseur",
+        "Formations",
+        "Chasser en Vendée",
+        "Nature et biodiversité",
+        "La Fédération"
+      ];
+
+      const news = [
+        ["L’arrêté ESOD 2026-2029 est paru !", "Actualité"],
+        ["J’aime la Nature Propre revient en 2026 !", "Actualité"]
+      ];
+
+      const newBundle = window.fdcVisualV2;
+      const newSeriesAvailable = Boolean(
+        newBundle && Array.isArray(newBundle.concepts) &&
+        newBundle.concepts.length >= 10 && typeof newBundle.render === "function"
+      );
+      const series = {
+        v2: {
+          id: "v2",
+          title: "Nouvelles pistes",
+          storageKey: "fdc85-atelier-visuel-v2",
+          concepts: newSeriesAvailable ? newBundle.concepts : [],
+          available: newSeriesAvailable
+        },
+        v1: {
+          id: "v1",
+          title: "Première série",
+          storageKey: "fdc85-atelier-visuel-v1",
+          concepts: legacyConcepts,
+          available: true
+        }
+      };
+      const seriesOrder = [series.v2, series.v1];
+      const defaultState = (seriesConcepts) => ({
+        current: 0,
+        mode: "single",
+        device: "desktop",
+        reviews: Object.fromEntries(seriesConcepts.map((concept) => [concept.id, {
+          status: "unreviewed",
+          userNote: "",
+          clientNote: ""
+        }]))
+      });
+
+      const proposalList = document.getElementById("proposalList");
+      const singleView = document.getElementById("singleView");
+      const overviewView = document.getElementById("overviewView");
+      const previewWrap = document.getElementById("previewWrap");
+
+      function isRecord(value) {
+        return value !== null && typeof value === "object" && !Array.isArray(value);
+      }
+
+      function isCompatibleState(value, seriesConcepts) {
+        if (!isRecord(value) || !isRecord(value.reviews)) return false;
+        if (!Number.isInteger(value.current) || value.current < 0 || value.current >= seriesConcepts.length) return false;
+        if (!["single", "overview"].includes(value.mode) || !["desktop", "mobile"].includes(value.device)) return false;
+        return seriesConcepts.every((concept) => {
+          const review = value.reviews[concept.id];
+          if (review === undefined && concept.addedLater) return true;
+          return isRecord(review) &&
+            ["unreviewed", "keep", "revisit", "discard"].includes(review.status) &&
+            typeof review.userNote === "string" && typeof review.clientNote === "string";
+        });
+      }
+
+      function readState(item) {
+        item.state = defaultState(item.concepts);
+        item.readError = "";
+        item.writeError = "";
+        if (!item.available) {
+          item.readError = "Les nouvelles pistes n’ont pas pu être chargées. Ouvrez l’atelier depuis le dossier complet du dépôt ; leurs éventuels retours enregistrés ne seront pas modifiés.";
+          return;
+        }
+        let saved;
+        try {
+          saved = localStorage.getItem(item.storageKey);
+        } catch {
+          item.readError = `Le stockage local est inaccessible pour « ${item.title} ». Les éventuelles données existantes ne seront pas écrasées ; téléchargez les nouveaux retours avant de fermer.`;
+          return;
+        }
+        if (saved === null) return;
+        try {
+          const parsed = JSON.parse(saved);
+          if (!isCompatibleState(parsed, item.concepts)) throw new Error("Format de retours incompatible");
+          for (const concept of item.concepts) {
+            if (parsed.reviews[concept.id] === undefined) {
+              parsed.reviews[concept.id] = item.state.reviews[concept.id];
+            }
+          }
+          item.state = parsed;
+        } catch {
+          item.readError = `Les retours de « ${item.title} » ne sont pas lisibles. Les données d’origine restent intactes et ne seront pas écrasées ; les nouveaux retours sont temporaires et doivent être téléchargés avant de fermer.`;
+        }
+      }
+
+      seriesOrder.forEach(readState);
+      let currentSeries = series.v2.available ? series.v2 : series.v1;
+      let concepts = currentSeries.concepts;
+      let state = currentSeries.state;
+
+      function showStorageStatus(message = "Les retours des deux séries sont conservés séparément sur cet appareil.") {
+        const status = document.getElementById("storageStatus");
+        const problems = seriesOrder.flatMap((item) => [item.readError, item.writeError].filter(Boolean));
+        status.textContent = problems.length ? problems.join(" ") : message;
+        status.dataset.state = problems.length ? "error" : "ok";
+        document.querySelector(".privacy-note").lastChild.textContent = problems.length
+          ? "Vérifiez l’avertissement de sauvegarde"
+          : "Retours conservés sur cet appareil";
+      }
+
+      function saveState(message = "Modifications enregistrées sur cet appareil.") {
+        if (currentSeries.readError) {
+          showStorageStatus();
+          return;
+        }
+        try {
+          localStorage.setItem(currentSeries.storageKey, JSON.stringify(state));
+          currentSeries.writeError = "";
+        } catch {
+          currentSeries.writeError = `Le navigateur n’a pas pu enregistrer les retours de « ${currentSeries.title} ». Téléchargez le fichier Markdown avant de fermer cette page.`;
+        }
+        showStorageStatus(message);
+      }
+
+      function statusLabel(status) {
+        return {
+          unreviewed: "À examiner",
+          keep: "À garder",
+          revisit: "À revoir",
+          discard: "À écarter"
+        }[status] || "À examiner";
+      }
+
+      function legacySiteMarkup(concept) {
+        const nav = navigation.map((label) => `<span class="site-nav-item">${label}</span>`).join("");
+        const actionItems = actions.map(([label, detail]) =>
+          `<div class="action-item"><span>${label}<small>${detail}</small></span><span class="action-arrow" aria-hidden="true">›</span></div>`
+        ).join("");
+        const newsItems = news.map(([title, label]) =>
+          `<article class="news-item"><strong>${title}</strong><span>${label}</span></article>`
+        ).join("");
+        return `
+          <div class="site-preview" data-layout="${concept.layout}">
+            <header class="site-header">
+              <div class="site-brand"><span class="site-brand-mark" aria-hidden="true">85</span><span>Fédération des chasseurs<br />de la Vendée</span></div>
+              <nav class="site-nav" aria-label="Rubriques simulées">${nav}</nav>
+            </header>
+            <div class="site-main">
+              <section class="site-hero">
+                <div class="site-hero-copy"><h3>La chasse en Vendée, simplement.</h3><p>Vos démarches, des repères pour pratiquer et les actualités de la Fédération.</p></div>
+                <div class="site-hero-visual" aria-hidden="true"></div>
+              </section>
+              <section class="site-section">
+                <div class="site-section-heading"><h4>Mes démarches</h4><span>Accès rapides</span></div>
+                <div class="action-grid">${actionItems}</div>
+              </section>
+              <section class="site-section">
+                <div class="site-section-heading"><h4>Actualités</h4><span>Toute l’actualité</span></div>
+                <div class="news-row">${newsItems}</div>
+              </section>
+              <footer class="site-footer"><span>Nous contacter</span><span>Coordonnées en pied de page</span><span>Mentions légales</span></footer>
+            </div>
+          </div>`;
+      }
+
+      function siteMarkup(concept) {
+        return currentSeries.id === "v2" ? newBundle.render(concept) : legacySiteMarkup(concept);
+      }
+
+      function renderList() {
+        proposalList.innerHTML = concepts.map((concept, index) => {
+          const review = state.reviews[concept.id];
+          return `<button class="proposal-choice" type="button" data-index="${index}" aria-current="${index === state.current}">
+            <span class="proposal-number">${String(index + 1).padStart(2, "0")}</span>
+            <span class="proposal-name">${concept.title}</span>
+            <span class="choice-mark" data-status="${review.status}" aria-label="${statusLabel(review.status)}"></span>
+          </button>`;
+        }).join("");
+        proposalList.querySelectorAll(".proposal-choice").forEach((button) => {
+          button.addEventListener("click", () => selectConcept(Number(button.dataset.index)));
+        });
+      }
+
+      function renderFacts(concept) {
+        const facts = [
+          ["Palette", concept.palette],
+          ["Navigation", concept.navigation],
+          ["Composition", concept.composition]
+        ];
+        if (concept.tradeoff) facts.push(["Point de vigilance", concept.tradeoff]);
+        const container = document.getElementById("conceptFacts");
+        container.dataset.facts = facts.length === 4 ? "four" : "three";
+        container.innerHTML = facts.map(([label, value]) => `<div class="fact"><span class="fact-label">${label}</span><span class="fact-value">${value}</span></div>`).join("");
+      }
+
+      function renderStatusControls(review) {
+        document.querySelectorAll(".status-button").forEach((button) => {
+          button.setAttribute("aria-pressed", String(button.dataset.choice === review.status));
+        });
+      }
+
+      function renderOverview() {
+        const grid = document.getElementById("overviewGrid");
+        grid.innerHTML = concepts.map((concept, index) => {
+          const review = state.reviews[concept.id];
+          const note = review.userNote.trim() || review.clientNote.trim();
+          return `<button class="overview-card" type="button" data-index="${index}" aria-label="Ouvrir la piste ${index + 1} : ${concept.title}">
+            <div class="overview-card-head"><h3>${String(index + 1).padStart(2, "0")} · ${concept.title}</h3><span class="proposal-status" data-status="${review.status}">${statusLabel(review.status)}</span></div>
+            <div class="mini-preview" aria-hidden="true">${siteMarkup(concept)}</div>
+            <div class="overview-meta"><span>${concept.palette}</span><span>${review.userNote || review.clientNote ? "Commentée" : "Sans commentaire"}</span></div>
+            <div class="overview-comment ${note ? "" : "empty-comment"}">${note ? escapeHtml(note.replace(/\s+/g, " ")) : "Aucun commentaire pour le moment."}</div>
+          </button>`;
+        }).join("");
+        grid.querySelectorAll(".overview-card").forEach((button) => {
+          button.addEventListener("click", () => selectConcept(Number(button.dataset.index)));
+        });
+      }
+
+      function escapeHtml(value) {
+        return value.replace(/[&<>"']/g, (character) => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        })[character]);
+      }
+
+      function renderSummary() {
+        const values = concepts.map((concept) => state.reviews[concept.id]);
+        const reviewed = values.filter((review) => review.status !== "unreviewed").length;
+        const kept = values.filter((review) => review.status === "keep").length;
+        const discarded = values.filter((review) => review.status === "discard").length;
+        document.getElementById("progressSummary").textContent = `${currentSeries.title} : ${reviewed} piste${reviewed > 1 ? "s" : ""} examinée${reviewed > 1 ? "s" : ""} sur ${concepts.length}`;
+        document.getElementById("railSummary").innerHTML = `<strong>${kept}</strong> à garder · <strong>${discarded}</strong> écartée${discarded > 1 ? "s" : ""}`;
+      }
+
+      function render() {
+        const concept = concepts[state.current];
+        const review = state.reviews[concept.id];
+        document.getElementById("railHeading").textContent = currentSeries.title;
+        document.getElementById("seriesV2").setAttribute("aria-pressed", String(currentSeries.id === "v2"));
+        document.getElementById("seriesV1").setAttribute("aria-pressed", String(currentSeries.id === "v1"));
+        document.getElementById("proposalIndex").textContent = `${currentSeries.title} · Piste ${String(state.current + 1).padStart(2, "0")} / ${concepts.length}`;
+        document.getElementById("proposalTitle").textContent = concept.title;
+        document.getElementById("proposalDescription").textContent = concept.short;
+        const status = document.getElementById("proposalStatus");
+        status.textContent = statusLabel(review.status);
+        status.dataset.status = review.status;
+        document.getElementById("currentCount").textContent = `Piste ${state.current + 1} sur ${concepts.length}`;
+        document.getElementById("sitePreview").innerHTML = siteMarkup(concept);
+        document.getElementById("userNote").value = review.userNote;
+        document.getElementById("clientNote").value = review.clientNote;
+        singleView.hidden = state.mode !== "single";
+        overviewView.hidden = state.mode !== "overview";
+        document.getElementById("singleMode").setAttribute("aria-pressed", String(state.mode === "single"));
+        document.getElementById("overviewMode").setAttribute("aria-pressed", String(state.mode === "overview"));
+        document.getElementById("overviewMode").textContent = `Voir les ${concepts.length}`;
+        overviewView.setAttribute("aria-label", `Vue d’ensemble des ${concepts.length} pistes`);
+        document.getElementById("pagerControls").hidden = state.mode !== "single";
+        previewWrap.classList.toggle("is-mobile", state.device === "mobile");
+        document.getElementById("desktopMode").setAttribute("aria-pressed", String(state.device === "desktop"));
+        document.getElementById("mobileMode").setAttribute("aria-pressed", String(state.device === "mobile"));
+        renderFacts(concept);
+        renderStatusControls(review);
+        renderList();
+        renderOverview();
+        renderSummary();
+        document.getElementById("previousButton").disabled = state.current === 0;
+        document.getElementById("previousButtonBottom").disabled = state.current === 0;
+        document.getElementById("nextButton").disabled = state.current === concepts.length - 1;
+        document.getElementById("nextButtonBottom").disabled = state.current === concepts.length - 1;
+      }
+
+      function selectSeries(item) {
+        if (!item.available) return;
+        currentSeries = item;
+        concepts = item.concepts;
+        state = item.state;
+        render();
+        showStorageStatus();
+        document.getElementById(state.mode === "single" ? "proposalTitle" : "overviewTitle").focus();
+      }
+
+      function selectConcept(index) {
+        state.current = Math.max(0, Math.min(concepts.length - 1, index));
+        state.mode = "single";
+        saveState("Votre sélection est enregistrée sur cet appareil.");
+        render();
+        document.getElementById("proposalTitle").focus();
+      }
+
+      function changeConcept(delta) {
+        selectConcept(state.current + delta);
+      }
+
+      function markdownQuote(value) {
+        const text = value.trim();
+        return text ? text.split(/\r?\n/).map((line) => `> ${line}`).join("\n") : "_Aucun commentaire._";
+      }
+
+      function buildMarkdown() {
+        const today = new Date().toLocaleDateString("fr-FR");
+        const sections = seriesOrder.flatMap((item) => {
+          const reviewed = item.concepts.filter((concept) => item.state.reviews[concept.id].status !== "unreviewed").length;
+          const heading = [
+            `## ${item.title}`,
+            item.available ? `**Pistes examinées :** ${reviewed} sur ${item.concepts.length}` : "",
+            item.readError ? `**Attention :** ${item.readError}` : "",
+            item.writeError ? `**Attention :** ${item.writeError}` : ""
+          ].filter(Boolean).join("\n\n");
+          const reviews = item.concepts.map((concept, index) => {
+            const review = item.state.reviews[concept.id];
+            return [
+              `### ${String(index + 1).padStart(2, "0")} — ${concept.title}`,
+              `- **Décision :** ${statusLabel(review.status)}`,
+              `- **Palette :** ${concept.palette}`,
+              `- **Navigation :** ${concept.navigation}`,
+              `- **Composition :** ${concept.composition}`,
+              ...(concept.tradeoff ? [`- **Point de vigilance :** ${concept.tradeoff}`] : []),
+              "",
+              "#### Vos retours",
+              markdownQuote(review.userNote),
+              "",
+              "#### Retours de la cliente",
+              markdownQuote(review.clientNote)
+            ].join("\n");
+          });
+          return [heading, ...reviews];
+        });
+        return [
+          "# Retours — pistes visuelles FDC 85",
+          "",
+          `- **Date d’export :** ${today}`,
+          "- **Note :** les deux séries sont des pistes à discuter ; aucune n’est validée par défaut.",
+          "",
+          ...sections
+        ].join("\n\n");
+      }
+
+      function exportMarkdown() {
+        const markdown = buildMarkdown();
+        const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `retours-pistes-visuelles-fdc85-${new Date().toISOString().slice(0, 10)}.md`;
+        document.body.append(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showStorageStatus("Le fichier Markdown des deux séries a été téléchargé. Vos retours restent enregistrés sur cet appareil.");
+      }
+
+      document.getElementById("seriesV2").disabled = !series.v2.available;
+      render();
+      showStorageStatus();
+
+      document.getElementById("seriesV2").addEventListener("click", () => selectSeries(series.v2));
+      document.getElementById("seriesV1").addEventListener("click", () => selectSeries(series.v1));
+      document.getElementById("singleMode").addEventListener("click", () => {
+        state.mode = "single";
+        saveState();
+        render();
+      });
+      document.getElementById("overviewMode").addEventListener("click", () => {
+        state.mode = "overview";
+        saveState();
+        render();
+      });
+      document.getElementById("previousButton").addEventListener("click", () => changeConcept(-1));
+      document.getElementById("previousButtonBottom").addEventListener("click", () => changeConcept(-1));
+      document.getElementById("nextButton").addEventListener("click", () => changeConcept(1));
+      document.getElementById("nextButtonBottom").addEventListener("click", () => changeConcept(1));
+      document.getElementById("desktopMode").addEventListener("click", () => {
+        state.device = "desktop";
+        saveState();
+        render();
+      });
+      document.getElementById("mobileMode").addEventListener("click", () => {
+        state.device = "mobile";
+        saveState();
+        render();
+      });
+      document.querySelectorAll(".status-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.reviews[concepts[state.current].id].status = button.dataset.choice;
+          saveState("Votre décision est enregistrée sur cet appareil.");
+          render();
+        });
+      });
+      document.getElementById("userNote").addEventListener("input", (event) => {
+        state.reviews[concepts[state.current].id].userNote = event.currentTarget.value;
+        saveState();
+        renderList();
+        renderOverview();
+        renderSummary();
+      });
+      document.getElementById("clientNote").addEventListener("input", (event) => {
+        state.reviews[concepts[state.current].id].clientNote = event.currentTarget.value;
+        saveState();
+        renderList();
+        renderOverview();
+        renderSummary();
+      });
+      document.getElementById("exportButton").addEventListener("click", exportMarkdown);
+    </script>
+  </body>
+</html>

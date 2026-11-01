@@ -22,7 +22,9 @@ Autres publics proposés, non encore validés : responsables d'associations ou d
 
 Le site de la Fédération Départementale des Chasseurs de la Vendée informe ses visiteurs et les oriente vers les démarches et formations qui les concernent.
 
-La refonte doit partir des besoins des visiteurs, et non de l'organisation interne des services. La première étape est le cadrage des personas, des parcours et de la navigation.
+La refonte doit partir des besoins des visiteurs, et non de l'organisation interne des services. Après le cadrage, l’utilisateur a explicitement demandé le 1 novembre 2026 l’implémentation du site complet avec la piste 8 « dossiers ouverts », en parallèle de la validation du design par la cliente.
+
+L'utilisateur demande de regrouper toutes les démarches dans « Mes démarches », pour les distinguer du reste du site consacré à la prise d'information. Les mêmes liens peuvent aussi être proposés dans les rubriques d'information, sans dupliquer les pages : « Devenir chasseur » doit notamment donner accès à « Passer mon permis » et « Valider mon permis en Vendée ».
 
 ## Operating Context
 
@@ -36,9 +38,13 @@ Le futur site doit rester statique. L'utilisateur a confirmé que les inscriptio
 - Récupérer le contenu utile du site existant, sans considérer son classement ou ses composants comme des décisions à conserver.
 - Retirer les fonctionnalités d'édition et l'administration du site lors de cette implémentation.
 - Ne pas confondre suppression de l'édition du site et suppression des accès aux espaces adhérents externes.
-- Pendant le cadrage, conserver le site actuel intact.
+- Le cadrage reste la source des parcours ; la demande explicite autorise désormais le remplacement de l’implémentation, sans perte des contenus et accès utiles.
+- « Mes démarches » doit donner accès à : passer le permis, le valider, se former, déclarer ses prélèvements, une arme, un dégât ou une perte, et « Se connecter à mon espace ».
+- Sous « Se connecter à mon espace », distinguer « Espace adhérent » pour les chasseurs et responsables de territoire et « Espace maître d'équipage ». Le site actuel indique deux services externes distincts, à revérifier avant publication.
+- Pour les dégâts, distinguer grand gibier et DECLADOM (non indemnisable, selon la demande utilisateur) ; pour les pertes, distinguer permis et arme. Les modalités et l'éligibilité restent à vérifier auprès des sources officielles avant publication.
+- Placer les coordonnées, dont le numéro de téléphone, dans le pied de page commun et sur une page « Nous contacter », pas dans l'en-tête ni dans le contenu principal de l'accueil. Le pied de page reste présent sur l'accueil.
 - Ne pas inventer de dates, tarifs, conditions d'inscription, obligations réglementaires ou disponibilités de formation.
-- Le framework et le dispositif de publication de la future copie propre ne sont pas encore arrêtés.
+- L’implémentation conserve Astro en génération statique et les paramètres de déploiement existants. Aucun serveur applicatif ni compte local n’est ajouté.
 
 ## Brand Commitments
 
@@ -46,7 +52,7 @@ Conserver l'identité de l'organisme : Fédération Départementale des Chasseur
 
 La cliente apprécie l'accueil de <https://fdc41.com/>, en particulier la succession accès rapides puis actualités. Cette référence porte sur la hiérarchie de l'accueil ; elle ne constitue pas une demande de copie graphique.
 
-Palette, typographie, traitement des images et direction artistique restent ouverts.
+La piste 8 `v2-folders` (prune, lilas, ivoire ; trois dossiers ouverts) est la direction de travail demandée pour cette implémentation. Elle reste provisoire : la cliente n’a pas validé l’identité visuelle et `DESIGN.md` ne doit pas encore être créé.
 
 ## Evidence on Hand
 
@@ -63,7 +69,7 @@ Palette, typographie, traitement des images et direction artistique restent ouve
 2. Distinguer obtenir le permis, valider le permis et se former.
 3. Expliquer un service externe avant de demander au visiteur de l'ouvrir.
 4. Classer les documents par besoin plutôt que par format de fichier.
-5. Séparer les contenus pratiques permanents des actualités datées.
+5. Regrouper les démarches et distinguer leur accès des rubriques d'information et des actualités datées.
 
 ## Accessibility & Inclusion
 

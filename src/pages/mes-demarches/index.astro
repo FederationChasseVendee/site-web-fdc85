@@ -1,0 +1,10 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHeader from "../../components/PageHeader.astro";
+import ProcedureFolders from "../../components/ProcedureFolders.astro";
+---
+
+<BaseLayout title="Mes démarches" description="Passer ou valider le permis, se former, déclarer et choisir son espace en ligne.">
+  <PageHeader slug="mes-demarches" title="Mes démarches" intro="Les huit actions, au même endroit. Choisissez votre besoin ; les inscriptions et les déclarations restent sur les services externes." />
+  <div class="container procedure-index"><ProcedureFolders /></div>
+</BaseLayout>

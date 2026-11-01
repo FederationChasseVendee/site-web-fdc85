@@ -1,4 +1,5 @@
 import { getCollection, type CollectionEntry } from "astro:content";
+import { canonicalSlug } from "./routes.mjs";
 
 export type TemplateEntry =
   | { template: "standard"; entry: CollectionEntry<"standardPages"> }
@@ -12,6 +13,10 @@ export type TemplateEntry =
 const reservedSlugs = new Set(["404", "index"]);
 
 export function normalizeSlug(id: string): string {
+  return canonicalSlug(originalSlug(id));
+}
+
+export function originalSlug(id: string): string {
   return id
     .replace(/\\/g, "/")
     .replace(/\.(md|mdx)$/i, "")
@@ -42,7 +47,7 @@ export async function getTemplateEntries(): Promise<Array<TemplateEntry & { slug
   const seen = new Set<string>();
 
   return entries.map((item) => {
-    const slug = normalizeSlug(item.entry.id);
+    const slug = item.template === "redirect" ? originalSlug(item.entry.id) : normalizeSlug(item.entry.id);
     if (!slug || slug.split("/").some((segment) => reservedSlugs.has(segment))) {
       throw new Error(`Le fichier "${item.entry.id}" utilise un segment d’URL réservé.`);
     }

@@ -1,0 +1,28 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHeader from "../../components/PageHeader.astro";
+import SmartLink from "../../components/SmartLink.astro";
+import { normalizeSlug } from "../../lib/content";
+const trainings = await getCollection("trainings");
+---
+
+<BaseLayout title="Se former" description="Trouver les informations et les accès d’inscription aux formations des chasseurs en Vendée.">
+  <PageHeader slug="mes-demarches/se-former" title="Se former" intro="Vous connaissez la formation recherchée ? Retrouvez sa fiche et son accès d’inscription. Les disponibilités doivent être confirmées auprès de la Fédération." />
+  <div class="container content-layout">
+    <section class="prose">
+      <h2>Choisir avant de s’inscrire</h2>
+      <p><SmartLink href="formations/">Consulter les objectifs et les publics de toutes les formations</SmartLink>. Pour préparer l’examen initial, utilisez la démarche <SmartLink href="mes-demarches/passer-mon-permis/">Passer mon permis</SmartLink>.</p>
+    </section>
+    <ul class="resource-list">
+      {trainings.map((training) => (
+        <li><SmartLink href={`${normalizeSlug(training.id)}/#inscription`}>{training.data.title}<span>Informations et inscription</span></SmartLink></li>
+      ))}
+    </ul>
+    <section class="prose">
+      <h2>Sécurité décennale</h2>
+      <p>L’accès d’inscription conservé dans le site existant mène à un espace externe. Il ne permet pas de déduire les sessions actuellement disponibles.</p>
+      <SmartLink class="button button-dark" href="https://fdc85-2.retriever-ea.fr/html/Connexion.aspx">Ouvrir l’accès d’inscription à la sécurité décennale</SmartLink>
+    </section>
+  </div>
+</BaseLayout>

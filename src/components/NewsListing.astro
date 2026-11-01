@@ -28,7 +28,7 @@ const pageUrl = (number: number) => number === 1 ? root : `${root}page/${number}
     <h1>{title}</h1>
     <p>{intro}</p>
     <SmartLink class="button button-outline" href={archived ? "actualites/" : "actualites/archives/"}>
-      {archived ? "Voir les actualités en cours" : "Consulter les archives"}
+      {archived ? "Voir les actualités" : "Consulter les archives"}
     </SmartLink>
   </div>
 </header>

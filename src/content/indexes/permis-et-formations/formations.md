@@ -8,9 +8,9 @@ navigation:
 source: trainings
 display: cards
 links:
-  - label: Formation sécurité décennale — espace adhérent
-    url: https://fdc85-2.retriever-ea.fr/html/Connexion.aspx
+  - label: Se former — trouver mon inscription
+    url: /mes-demarches/se-former/
 emptyMessage: Aucune formation n’est publiée pour le moment.
 ---
 
-Les dates affichées dans les fiches sont mises à jour à mesure de leur programmation.
+Les fiches expliquent les objectifs et les publics des formations. La démarche **Se former** donne accès aux inscriptions, sans recréer un deuxième catalogue. Les dates, lieux et tarifs issus du site existant doivent être confirmés auprès de la Fédération avant inscription.

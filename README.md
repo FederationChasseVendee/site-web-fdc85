@@ -1,161 +1,74 @@
-# Site web — Fédération des Chasseurs de la Vendée
+# Site public — Fédération des Chasseurs de la Vendée
 
-## Refonte en préparation
+Site Astro entièrement statique, sans serveur applicatif, compte local, formulaire de collecte ni administration. Les inscriptions, validations et espaces externes sont conservés ; Pages CMS, sa configuration, son workflow et les accès `/admin` sont retirés.
 
-Le [cadrage personas et navigation](docs/refonte/personas-et-navigation.md) propose
-l'arborescence de la future copie propre. [PRODUCT.md](PRODUCT.md) conserve les contraintes
-confirmées et [AGENTS.md](AGENTS.md) guide les prochaines interventions. Ce cadrage ne modifie
-pas encore le site actuel : le retrait de l'édition et la nouvelle navigation interviendront
-après validation. Les services externes d'inscription, de validation et les espaces adhérents
-resteront accessibles.
+## Refonte provisoire « dossiers ouverts »
 
-Site statique [Astro](https://astro.build/) administrable dans [Pages CMS](https://pagescms.org/). Il fonctionne sans serveur ni base de données. La mesure d’audience Umami Cloud est prête mais désactivée par défaut : sans configuration, aucun script de suivi ni aucune requête vers Umami n’est généré.
+L’utilisateur a demandé le 1 novembre 2026 l’implémentation complète avec la piste 8 `v2-folders`. **La direction visuelle n’est pas validée par la cliente.** Ce travail est une version de revue, pas une autorisation de publication ou de fusion. [PRODUCT.md](PRODUCT.md) porte les décisions confirmées et [le cadrage de navigation](docs/refonte/personas-et-navigation.md) conserve les propositions et points à vérifier. Aucun `DESIGN.md` ne fige prématurément l’identité.
 
-## Développement et validation
+Le menu expose six rubriques : Mes démarches, Devenir chasseur, Formations, Chasser en Vendée, Nature et biodiversité, La Fédération. Les huit actions sont regroupées dans trois dossiers ouverts ; les sous-choix dégâts de grand gibier/DECLADOM, permis/arme et adhérent/maître d’équipage restent explicites. Devenir chasseur renvoie directement aux mêmes démarches de permis. L’accueil expose les actions avant les actualités, puis les parcours de découverte. Les coordonnées restent dans le pied de page et Nous contacter.
 
-Prérequis : Node.js 22 et npm.
+L’atelier `docs/refonte/propositions-visuelles.html`, ses pistes et ses avis sont conservés. Ses variantes circulaires ne sont pas utilisées dans cette implémentation.
 
-```bash
+## Développement
+
+Prérequis : Node.js 22.12 ou plus récent et npm.
+
+```sh
 npm ci
 npm run dev
-```
-
-Le build de production exécute le contrôle TypeScript, génère le site puis vérifie les routes, les liens internes, les médias et plusieurs repères d’accessibilité :
-
-```bash
 npm run build
 npm run preview
 ```
 
-L’URL de production est `https://federationchassevendee.github.io/site-web/`. Astro génère donc tous les liens et médias sous le préfixe `/site-web/`.
+Sous Windows, utiliser `npm.cmd` si la politique PowerShell bloque `npm.ps1`.
 
-## Migration WordPress
+Le build exécute le contrôle Astro/TypeScript, génère toutes les pages et vérifie leurs liens, médias, documents PDF, redirections, métadonnées, sitemap, flux et repères d’accessibilité. Il contrôle aussi les huit démarches, les liens de permis partagés avec Devenir chasseur, les deux accès externes et l’absence du téléphone dans le contenu principal de l’accueil.
 
-Les couches 2 et 3 reprennent les contenus publiés inventoriés dans les sitemaps publics WordPress :
+```sh
+npm run test:visual
+npm run test:analytics
+npm run test:routes
+```
 
-- **89 pages permanentes**, chacune migrée, fusionnée, remplacée ou redirigée ;
-- **86 URL dans `post-sitemap.xml`** : la vraie archive `/actualites/` et **85 articles importés** ;
-- les contenus de démonstration des types `dt_portfolio`, `dt_gallery`, `dt_testimonials` et `dt_slideshow` restent exclus.
+Les contrôles automatiques ne constituent pas une certification WCAG. Vérifier également la navigation clavier, le menu mobile, le zoom et les annonces avec un lecteur d’écran.
 
-Contenus structurés importés :
+## Contenus et anciennes adresses
 
-- 16 fiches espèces et 16 images optimisées ;
-- 6 formations internes, sans date périmée ;
-- 47 ressources documentaires, dont le SDGC 2024-2030 et 2 guides sanitaires IAHP ;
-- 15 questions fréquentes et 116 termes de glossaire ;
-- 92 entrées d’annuaire : équipe, conseil d’administration, associations et partenaires ;
-- 42 pages éditoriales, 4 carrefours et 17 index automatiques ;
-- 90 redirections HTML statiques pour les anciennes adresses modifiées, dont trois slugs d’article avec emoji.
+Les collections typées dans `src/content.config.ts` conservent les 85 articles migrés, 16 fiches espèces, 6 formations, 47 ressources documentaires, 15 questions fréquentes, 116 termes de glossaire et 92 entrées d’annuaire. Les [inventaires WordPress](docs/migration-wordpress.md) et [actualités](docs/migration-actualites.md) décrivent la migration historique, pas l’arborescence future.
 
-La [matrice des pages permanentes](docs/migration-wordpress.md), la
-[matrice des 85 articles](docs/migration-actualites.md) et son
-[rapport machine](docs/migration-actualites.json) documentent chaque décision, média, catégorie et destination.
+Les composants partagés et les templates de lecture sont publics. Les contenus se modifient dans le dépôt par branche et pull request, sans éditeur sur le site.
 
-## Les 7 templates
+`src/lib/routes.mjs` associe les adresses historiques aux destinations principales de la refonte. Les templates et liens structurés utilisent ces adresses canoniques ; les anciennes URL génèrent une redirection HTML avec lien de secours et `noindex, follow`. Le plugin `src/lib/markdown-links.mjs`, exécuté avec le processeur officiel `@astrojs/markdown-remark`, adapte également les liens et médias Markdown historiques à la base de publication et aux adresses canoniques. Les trois anciennes URL à emoji sont générées par Astro pour fonctionner à la racine comme sous `/site-web/`. Articles, archives, documents publics et flux restent disponibles.
 
-L’architecture reste volontairement limitée. Il n’y a pas de constructeur de page universel.
+La compacité équilibrée approuvée conserve les textes d’action à 18 px et les cibles d’au moins 44 px. Les contrôles sur 1280 × 800 placent tous les choix des dossiers au-dessus de la ligne de flottaison ; sur 1440 × 900, le bloc suivant commence dans le premier écran. Ces mesures portent sur la version de revue, pas sur toutes les tailles de fenêtre possibles.
 
-| Template | Collection | Usage |
-| --- | --- | --- |
-| Accueil | `src/content/home.json` | Démarches prioritaires, informations importantes, présentation et contact |
-| Page carrefour | `src/content/crossroads/` | Entrée de rubrique avec cartes ordonnées ou contenus enfants générés |
-| Page standard | `src/content/standard-pages/` | Contenu courant, contact et pages légales, avec documents, liens et appel à l’action facultatifs |
-| Article | `src/content/articles/` | Actualité datée, catégorisée et éventuellement archivée |
-| Fiche espèce | `src/content/species/` | Identification, habitat, alimentation, reproduction, répartition, statut et galerie |
-| Formation | `src/content/trainings/` | Objectifs, public, prérequis, programme, informations pratiques, dates et inscription |
-| Index générique | `src/content/indexes/` | Liste ou cartes provenant d’une collection choisie explicitement |
+Une fiche formation est l’unique dossier d’information et d’inscription : Mes démarches → Se former renvoie à son ancre d’inscription, sans recopier le catalogue. Les documents sont également rattachés aux pages concernées (prélèvements, permis, pertes, gestion, formations, sanitaire). L’index Ressources, accessible dans le pied de page, complète ces parcours.
 
-L’Index générique affiche les actualités, espèces, formations, documents, questions fréquentes, termes du glossaire ou entrées d’annuaire. Ces quatre dernières sources sont de simples collections de données dans `src/content/documents/`, `faqs/`, `glossary/` et `directories/` : elles ne créent pas de nouveaux templates.
+## Vérifications éditoriales avant publication
 
-Les schémas typés et leurs valeurs par défaut sont définis dans `src/content.config.ts`. La route statique `src/pages/[...slug].astro` associe chaque collection à son template. Deux contenus ne peuvent pas produire la même URL.
+Les contenus historiques sont préservés sans être présentés comme une validation réglementaire nouvelle. Les pages affichent les limites lorsqu’une destination ou une procédure reste inconnue.
 
-## Modifier le site avec Pages CMS
+| Sujet | État |
+| --- | --- |
+| Inscription au permis | Portail de l’Office français de la biodiversité conservé depuis un article migré ; répond lors de la vérification. |
+| Validation du permis | Portail national conservé depuis une actualité migrée ; ne pas réutiliser l’ancien lien OAuth éphémère. |
+| Espaces externes | Les deux adresses répondent ; l’accès adhérent redirige vers le domaine de l’autre accès. Faire confirmer les rôles par la Fédération. |
+| DECLADOM | Présentation officielle accessible ; destination directe de déclaration encore à confirmer. |
+| Dégâts de grand gibier | Canal, pièces et conditions à confirmer ; aucune promesse d’indemnisation. |
+| Perte de permis ou d’arme | Orientations et documents conservés ; modalités détaillées à confirmer avant publication. |
+| Formations | Tarifs et informations historiques signalés ; absence de dates confirmées ne signifie pas absence de sessions. |
+| Dates de chasse | Repères généraux 2026-2027 recoupés le 1 novembre 2026 avec la Fédération ; consulter les arrêtés et modifications. |
+| Coordonnées, horaires, annuaires et autres liens | Faire confirmer leur actualité avant publication. |
 
-1. Ouvrir [Pages CMS](https://app.pagescms.org/) et choisir le dépôt `FederationChasseVendee/site-web`.
-2. Choisir la branche de travail appropriée.
-3. Ouvrir la collection correspondant au besoin : **Pages standard**, **Pages carrefour**, **Articles**, **Fiches espèces**, **Formations**, **Index et listes**, ou une collection de ressources.
-4. Modifier les champs en français, enregistrer puis publier. Aucun Git ni HTML n’est demandé.
+## Référencement et mesure d’audience
 
-Les collections autorisent explicitement création, renommage et suppression. **Accueil** et **Paramètres du site** sont protégés contre ces trois opérations. Les images et documents chargés dans la médiathèque sont enregistrés dans `public/assets/`.
+Le site génère `sitemap.xml`, `robots.txt` et `feed.xml` sous la base configurée. Les articles conservent canonique, OpenGraph et données `NewsArticle` ; les pages de redirection ne sont pas indexées.
 
-Les redirections d’anciennes adresses sont visibles mais protégées contre la création, le renommage et la suppression : elles font partie de la structure SEO du site.
-
-Pour une image informative, renseigner une description utile. Pour une image purement décorative, activer **Image uniquement décorative** et laisser sa description vide. Le build refuse une image qui n’est ni décrite ni déclarée décorative.
-
-### Créer une page
-
-Le nom de fichier devient l’URL. Par exemple :
-
-- `src/content/standard-pages/contact.md` → `/contact/` ;
-- `src/content/articles/mon-article.md` → `/mon-article/`.
-
-Les sous-dossiers servent à créer le fil d’Ariane. La page parente doit exister avant d’exposer un lien vers une page profonde.
-
-Pour une page carrefour, saisir des cartes dans l’ordre souhaité. Lorsque la rubrique doit simplement reprendre tous les articles, espèces, formations ou index enfants, choisir **Ajouter automatiquement les contenus** plutôt que dupliquer les liens.
-
-Pour un index, choisir clairement sa **Collection à afficher**, sa présentation en liste ou en cartes et, si nécessaire, une catégorie. FAQ, glossaire et annuaire sont toujours affichés directement : aucun accordéon ou contenu indispensable masqué.
-
-## Navigation et accessibilité
-
-Le menu principal est limité aux six rubriques conservées dans `src/content/site.json`. Le logo fournit le retour à l’accueil. **Valider mon permis** et **Contact** restent séparés comme actions prioritaires.
-
-La météo de l’accueil affiche les conditions et les températures du jour à La Roche-sur-Yon,
-comme indication locale pour la Vendée. Le navigateur interroge l’API publique Open-Meteo à
-l’ouverture de la page ; si elle est inaccessible, le widget affiche une erreur et permet de
-réessayer. Aucune clé API n’est nécessaire.
-
-Le socle vise WCAG 2.2 AA : landmarks, titre unique, lien d’évitement, fils d’Ariane, focus visible, navigation clavier, cibles d’au moins 44 px, menu mobile à état explicite, alternatives d’images, annonce des nouveaux onglets, mise en page responsive et respect de `prefers-reduced-motion`. Les tests statiques ne remplacent pas un audit manuel avec clavier, lecteur d’écran et zoom à 200 %.
-
-## Actualités, archives et référencement
-
-Les actualités en cours sont triées par date décroissante et paginées par 12. Les alertes actives disposent
-d’un bloc distinct sur l’accueil ; les actions prioritaires restent affichées avant toute actualité. Les
-contenus anciens ou temporaires expirés sont conservés dans les
-[archives](/site-web/actualites/archives/) avec un avertissement explicite.
-
-Le build génère `sitemap.xml`, `robots.txt` et un flux Atom `feed.xml` sous `/site-web/`. Chaque article
-possède une URL canonique, des métadonnées OpenGraph et `NewsArticle`. Les pages de redirection utilisent
-une canonique vers leur destination et `noindex, follow`.
-
-## Mesure d’audience Umami Cloud
-
-L’intégration utilise exclusivement le script officiel `https://cloud.umami.is/script.js`, avec `defer`,
-le `data-website-id` public fourni par Umami et `data-do-not-track="true"` pour respecter la préférence
-Do Not Track du navigateur. Le script est injecté une seule fois par le layout global : il couvre toutes
-les pages Astro, dont toutes les pages indexables, les redirections gérées par Astro et la page 404. Trois
-redirections historiques à slug emoji sont des fichiers HTML statiques `noindex` à rafraîchissement
-immédiat ; elles sont volontairement exclues du suivi.
-
-Pour l’activer :
-
-1. Créer un compte ou se connecter à [Umami Cloud](https://cloud.umami.is/), puis ajouter un site pour le domaine publié.
-2. Dans les réglages de ce site Umami, copier son **Website ID**. Cet identifiant est public : ne jamais saisir ici de clé API, jeton ou secret.
-3. Ouvrir Pages CMS, puis **Paramètres du site > Analytics — Umami Cloud**.
-4. Coller le Website ID, puis activer **Activer la mesure d’audience Umami**.
-5. Publier la modification. Pages CMS crée un commit ; attendre la fin du nouveau build GitHub Actions et du déploiement GitHub Pages.
-6. Ouvrir le site publié, vérifier dans l’onglet Réseau du navigateur une requête vers `cloud.umami.is`, puis confirmer la visite dans le tableau de bord Umami.
-
-L’activation sans Website ID valide fait échouer le build avec un message actionnable, afin d’éviter une
-fausse impression de collecte. Umami est généralement utilisé ici dans sa configuration standard sans
-cookies ; aucune bannière n’est ajoutée sur cette hypothèse. Cela ne constitue pas un avis juridique :
-vérifier les réglages réellement activés dans Umami et faire confirmer les obligations applicables au site.
+La configuration Umami existante est conservée dans `src/content/site.json > analytics`. Mettre `enabled: false` pour désactiver le suivi. Si activé, seul le script officiel `https://cloud.umami.is/script.js` est chargé avec `defer` et `data-do-not-track="true"`. Le Website ID est public ; ne pas ajouter de clé API ou de secret. Le build refuse une activation avec un identifiant invalide. Faire confirmer les obligations de confidentialité applicables avant publication.
 
 ## Publication
 
-Le projet Cloudflare Pages `fdc85` doit être connecté directement au dépôt GitHub
-`FederationChasseVendee/site-web-fdc85` avec `main` comme branche de production.
-Cette intégration Cloudflare évite de stocker un jeton de déploiement dans GitHub.
+Le site reste compatible avec le déploiement statique existant. Pour Cloudflare Pages : commande `npm run build`, sortie `dist`, Node.js 22.12 ou plus récent, `ASTRO_SITE=https://fdc85.maury.app` et `ASTRO_BASE_PATH=/`. Pour la compatibilité GitHub Pages par défaut : `https://federationchassevendee.github.io/site-web/`.
 
-Paramètres Pages : **Framework preset** `Astro`, commande de build `npm run build`,
-répertoire de sortie `dist`, version Node.js `22`, et variables de build
-`ASTRO_SITE=https://fdc85.maury.app` et `ASTRO_BASE_PATH=/`. Le domaine personnalisé
-`fdc85.maury.app` doit être ajouté au projet Pages et pointer par CNAME vers
-`fdc85.pages.dev` dans la zone DNS `maury.app`.
-
-Cloudflare Pages publie aussi chaque branche de travail sur un alias de preview. Pour
-l’obtenir depuis Pages CMS, sélectionner la branche concernée puis lancer l’action
-**Ouvrir la preview Cloudflare**. Le lien apparaît dans le résumé du run
-**PagesCMS Cloudflare preview** dans l’onglet Actions de GitHub. Si une pull request
-est ouverte pour cette branche, le workflow crée ou met également à jour un
-commentaire contenant ce lien. La preview devient accessible une fois le déploiement
-Cloudflare Pages de la branche terminé.
+Les previews de branche Cloudflare sont indépendantes de Pages CMS ; aucun workflow d’édition n’est requis. Le domaine et l’état réel du projet Cloudflare restent à vérifier dans le service de déploiement. Ne pas fusionner ni publier sans accord explicite.
