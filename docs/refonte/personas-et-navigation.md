@@ -19,6 +19,7 @@ Cette première étape décide de ce que les visiteurs doivent pouvoir trouver e
 | Confirmé pendant le cadrage | Garder le site actuel intact pendant cette étape. |
 | Confirmé par la révision utilisateur | Regrouper toutes les démarches, y compris passer le permis et se former, et les séparer des rubriques de prise d'information. Conserver les huit entrées demandées, avec les sous-entrées dégâts et pertes. |
 | Confirmé par l'utilisateur | Intituler l'entrée « Se connecter à mon espace » et distinguer « Espace adhérent » et « Espace maître d'équipage ». Proposer aussi « Passer mon permis » et « Valider mon permis en Vendée » dans Devenir chasseur ; les liens peuvent apparaître à plusieurs endroits. |
+| Confirmé par l'utilisateur | Placer les coordonnées dans le pied de page et sur une page « Nous contacter », sans afficher le numéro de téléphone dans l'en-tête ou le contenu principal de l'accueil. |
 | Accueil favorable de l'utilisateur | Les autres sections conviennent dans leur principe ; leurs frontières sont précisées dans cette version. |
 | Proposé | Les autres ajustements de libellés, l'ordre des six rubriques, l'organisation interne des démarches et les raccourcis d'accueil présentés ci-dessous. |
 | À préciser | Le personnel administratif visé est-il un agent de collectivité, un partenaire, un salarié de la Fédération ou plusieurs de ces publics ? |
@@ -105,9 +106,9 @@ Les détails du PDF ne prouvent pas qu'une prestation ou une formation est actue
 | 5 | **Nature et biodiversité** | « Que fait la Fédération pour les milieux, la faune et la découverte de la nature ? » | Une seconde rubrique de gestion administrative des territoires. |
 | 6 | **La Fédération** | « Qui fait quoi, quelles missions, quels documents et quels contacts ? » | La porte d'entrée obligatoire de tout le site. |
 
-**Navigation utilitaire, accessible depuis toutes les pages :** Actualités et Contact / téléphone. Les actualités restent visibles sans devenir une septième grande rubrique. Le logo est un lien nommé vers l'accueil ; « Accueil » figure aussi dans le menu mobile et le fil d'Ariane.
+**Navigation utilitaire, accessible depuis toutes les pages :** Actualités et lien « Nous contacter », sans numéro de téléphone dans l'en-tête. Les actualités restent visibles sans devenir une septième grande rubrique. Le logo est un lien nommé vers l'accueil ; « Accueil » figure aussi dans le menu mobile et le fil d'Ariane.
 
-**Pied de page :** plan du site, tous les documents, questions fréquentes, glossaire, contact et pages légales. Les liens les plus utiles restent également présents dans leur rubrique : le pied de page n'est pas leur seul accès.
+**Pied de page commun :** coordonnées vérifiées de la Fédération, lien « Nous contacter », plan du site, tous les documents, questions fréquentes, glossaire et pages légales. Il est présent sur toutes les pages, accueil compris. Les liens les plus utiles restent également présents dans leur rubrique : le pied de page n'est pas leur seul accès.
 
 Ne pas ajouter de champ de recherche décoratif ou sans moteur fonctionnel. Une recherche statique pourra être étudiée après classement du contenu ; elle ne doit pas compenser une arborescence ambiguë.
 
@@ -206,7 +207,7 @@ Accueil
     ├── Revue et presse
     └── Recrutement [contenu actuel à vérifier]
 
-Accès transversaux : Actualités · Contact · Tous les documents
+Accès transversaux : Actualités · Nous contacter · Tous les documents
                     Questions fréquentes · Glossaire · Plan du site
 ```
 
@@ -217,7 +218,7 @@ Accès transversaux : Actualités · Contact · Tous les documents
 La séquence reprend la préférence exprimée pour FDC 41, sans reproduire son graphisme. L'extraction textuelle consultée de cette référence montre surtout un flux social ; elle ne permet pas d'en tirer une analyse graphique complète.
 
 ```text
-IDENTITÉ FDC 85                      Actualités · Contact / téléphone
+IDENTITÉ FDC 85                      Actualités · Nous contacter
 MENU PRINCIPAL : les six rubriques
 
 TITRE COURT : identification de la Fédération et du territoire
@@ -231,9 +232,10 @@ ALERTE PRATIQUE, seulement si une information active le justifie
 ACTUALITÉS : trois sujets datés + « Toutes les actualités »
 
 DÉCOUVRIR LA FÉDÉRATION ET SES ACTIONS
-AIDE HUMAINE : téléphone, horaires vérifiés et accès au contact
-PIED DE PAGE : repères secondaires et informations légales
+PIED DE PAGE : coordonnées · Nous contacter · repères et informations légales
 ```
+
+Le numéro de téléphone et les autres coordonnées ne sont pas affichés dans l'en-tête ni dans le contenu principal de l'accueil. Ils figurent dans le pied de page commun, y compris sur l'accueil, et sur la page « Nous contacter ».
 
 Ces six raccourcis sont un **point de départ**, pas une affirmation de fréquentation. Les cinq actions renvoient à Mes démarches ; « Voir les dates de chasse » reste un raccourci d'information dans Chasser en Vendée. « Toutes mes démarches » expose les huit entrées complètes sans surcharger l'accueil de tous les sous-choix.
 
@@ -278,7 +280,7 @@ Cette table couvre les pages standard, index et formations repérées dans le d�
 | La Fédération → Partenaires | Index partenaires et `nature-et-territoires/partenariats`. | Annuaire unique ; les projets expliquent la coopération et y renvoient. |
 | La Fédération → Publications / revue | `documents-statutaires`, statuts, comptes, rapports ; `revue`. | Publication avec date et intitulé explicite ; distinguer dernier document et archives. |
 | Actualités | Articles et index des actualités / archives. | Articles datés ; les informations périmées restent identifiées comme telles. |
-| Contact | `contact` ; renvoi depuis lieux, équipe et toutes les pages d'action. | Page utilitaire, non enfermée dans La Fédération. |
+| Nous contacter | `contact` ; renvoi depuis lieux, équipe et pages d'action. | Page utilitaire avec les coordonnées vérifiées, non enfermée dans La Fédération ; les coordonnées figurent aussi dans le pied de page commun. |
 | Tous les documents | `ressources`, `formulaires-et-imprimes`, `tutoriels`, `reglementation`, `sdgc`, `recettes`. | Index secondaire par sujets : démarches, pratique, formations, Fédération. Les recettes peuvent être liées depuis la découverte de la venaison ; elles ne justifient pas une entrée principale. |
 | Aides transversales | FAQ, glossaire, annuaire général. | Réponses et explications contextualisées ; l'annuaire renvoie aux répertoires de référence sans dupliquer leurs données. |
 | Pied de page légal | Mentions légales, RGPD, politique cookies. | Adapter à la future architecture et aux traitements réels ; ne pas recopier des affirmations devenues inexactes. |
@@ -345,13 +347,14 @@ Présenter uniquement les libellés et l'arborescence, sans expliquer où clique
 | « J'ai perdu une arme et je cherche la procédure. » | Mes démarches → Déclarer une perte → Perte d'une arme, pas Déclarer une arme. |
 | « Je prépare un dossier pour une mairie et je cherche les missions et le rapport de la Fédération. » | La Fédération → Missions / Publications officielles. |
 | « Je souhaite organiser une animation nature avec ma classe. » | Nature et biodiversité → Animations. |
+| « Je cherche le numéro de la Fédération. » | « Nous contacter » ou coordonnées dans le pied de page. |
 
 Critère de décision : les tâches prioritaires ne doivent pas nécessiter une explication de notre classement. En cas de confusion récurrente, modifier les libellés ou les regroupements avant de dessiner le menu. Ne pas afficher un taux de réussite tant que les tests n'ont pas eu lieu.
 
 ## 11. Brief pour la prochaine étape
 
 - **Travail du visiteur :** accéder aux démarches, comprendre un parcours d'entrée ou consulter une information de référence. Accueil orienté action ; pages d'explication orientées lecture.
-- **Structure proposée :** accès rapides → actualités → découverte et aide ; six rubriques dont Mes démarches avec les huit actions demandées. Devenir chasseur comporte des liens directs pour passer et valider le permis vers les mêmes démarches.
+- **Structure proposée :** accès rapides → actualités → découverte ; coordonnées dans le pied de page commun et sur « Nous contacter ». Six rubriques dont Mes démarches avec les huit actions demandées. Devenir chasseur comporte des liens directs pour passer et valider le permis vers les mêmes démarches.
 - **Périmètre futur :** site public statique et code propre ; aucune édition sur le site, aucun compte local, aucun téléservice recréé. Contenus et URL historiques à auditer et migrer.
 - **Direction visuelle :** non choisie. Ne pas confondre cette proposition de navigation avec une maquette validée, ni imposer les tokens du site actuel.
 - **À faire valider :** libellés et ordre du menu, raccourcis de l'accueil, publics complémentaires et périmètre du persona administratif. Ensuite seulement : direction visuelle, maquette et implémentation de la copie propre.

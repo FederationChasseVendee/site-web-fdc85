@@ -42,6 +42,7 @@ Le futur site doit rester statique. L'utilisateur a confirmé que les inscriptio
 - « Mes démarches » doit donner accès à : passer le permis, le valider, se former, déclarer ses prélèvements, une arme, un dégât ou une perte, et « Se connecter à mon espace ».
 - Sous « Se connecter à mon espace », distinguer « Espace adhérent » pour les chasseurs et responsables de territoire et « Espace maître d'équipage ». Le site actuel indique deux services externes distincts, à revérifier avant publication.
 - Pour les dégâts, distinguer grand gibier et DECLADOM (non indemnisable, selon la demande utilisateur) ; pour les pertes, distinguer permis et arme. Les modalités et l'éligibilité restent à vérifier auprès des sources officielles avant publication.
+- Placer les coordonnées, dont le numéro de téléphone, dans le pied de page commun et sur une page « Nous contacter », pas dans l'en-tête ni dans le contenu principal de l'accueil. Le pied de page reste présent sur l'accueil.
 - Ne pas inventer de dates, tarifs, conditions d'inscription, obligations réglementaires ou disponibilités de formation.
 - Le framework et le dispositif de publication de la future copie propre ne sont pas encore arrêtés.
 

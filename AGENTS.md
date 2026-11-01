@@ -24,7 +24,7 @@ La demande de copie propre concerne la prochaine implémentation. Celle-ci devra
 - Conserver les huit entrées demandées et les distinctions dégâts grand gibier / DECLADOM et perte de permis / perte d'arme. Ne pas promettre une indemnisation ni inventer de procédure de déclaration ; vérifier les modalités officielles avant publication.
 - Donner à chaque contenu une destination principale et autoriser des raccourcis depuis d'autres parcours ; ne pas dupliquer les pages.
 - Rattacher documents, formulaires et tutoriels au sujet concerné. Un index transversal peut compléter les parcours, jamais les remplacer.
-- Garder l'aide et le contact accessibles sans recherche complexe.
+- Garder l'aide accessible grâce au lien « Nous contacter ». Placer les coordonnées dans le pied de page commun et sur cette page, sans afficher le numéro dans l'en-tête ou le contenu principal de l'accueil.
 - Écrire les sigles en toutes lettres à la première occurrence. Employer le nom d'un outil externe en complément de l'action, pas comme seul libellé.
 - Ne pas imposer un choix de persona avant l'accès au site.
 
