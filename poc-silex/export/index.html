@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Prototype Silex autonome pour les démarches et informations essentielles de la Fédération Départementale des Chasseurs de la Vendée.">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Prototype accueil — FDC 85</title>
+    <link rel="stylesheet" href="./css/site.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#contenu">Aller au contenu</a>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="./index.html" aria-label="FDC 85 — Accueil du prototype">
+          <img src="./assets/logo-fdc85.png" width="400" height="111" alt="Fédération Départementale des Chasseurs de la Vendée">
+        </a>
+        <nav aria-label="Navigation principale">
+          <a aria-current="page" href="./index.html">Accueil</a>
+          <a href="./contact.html">Contact</a>
+          <a href="https://fdc85.maury.app/">Site complet <span class="sr-only">(site externe)</span></a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="contenu">
+      <section class="hero" aria-labelledby="hero-title">
+        <img src="./assets/hero-faune.jpg" width="1600" height="760" alt="Sanglier dans un sous-bois">
+        <div class="hero-shade" aria-hidden="true"></div>
+        <div class="container hero-content">
+          <p class="eyebrow">Prototype autonome réalisé avec Silex</p>
+          <h1 id="hero-title">Vos démarches de chasse, simplement</h1>
+          <p>Une variation visuelle de l’accueil pour tester l’édition directe des textes, images, liens et blocs.</p>
+          <div class="button-row">
+            <a class="button button-primary" href="https://fdc85.maury.app/chasser-en-vendee/validation-du-permis/">Valider mon permis <span class="sr-only">(site externe)</span></a>
+            <a class="button button-light" href="./contact.html">Contacter la Fédération</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section task-section" aria-labelledby="tasks-title">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow">Accès rapides</p>
+            <h2 id="tasks-title">Que souhaitez-vous faire ?</h2>
+            <p>Ces cartes démontrent une composition libre dans Silex. Les données métier restent volontairement sur le site Astro.</p>
+          </div>
+          <div class="card-grid">
+            <article class="card">
+              <h3><a href="https://fdc85.maury.app/chasser-en-vendee/dates-de-chasse/">Voir les dates de chasse <span class="sr-only">(site externe)</span></a></h3>
+              <p>Consulter les périodes d’ouverture et de fermeture sur le site de référence.</p>
+            </article>
+            <article class="card">
+              <h3><a href="https://fdc85.maury.app/ressources/formulaires-et-imprimes/">Trouver un formulaire <span class="sr-only">(site externe)</span></a></h3>
+              <p>Retrouver les formulaires et imprimés tenus à jour dans les collections Astro.</p>
+            </article>
+            <article class="card">
+              <h3><a href="./contact.html">Contacter la Fédération</a></h3>
+              <p>Voir le téléphone, le courriel, l’adresse et les horaires dans la seconde page du POC.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section proof-section" aria-labelledby="proof-title">
+        <div class="container proof-layout">
+          <div>
+            <p class="eyebrow eyebrow-light">Ce que le POC prouve</p>
+            <h2 id="proof-title">Un microsite statique, visuel et responsive</h2>
+            <p>Silex peut produire ce type de page autonome. Il ne modifie pas les composants Astro, les actualités, les fiches espèces ni les formations du site principal.</p>
+          </div>
+          <a class="button button-light" href="./contact.html">Voir la page Contact</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-layout">
+        <div>
+          <img src="./assets/logo-fdc85.png" width="400" height="111" alt="">
+          <p>Prototype expérimental, sans formulaire ni collecte de données.</p>
+        </div>
+        <div>
+          <h2>Liens utiles</h2>
+          <ul>
+            <li><a href="./contact.html">Contact</a></li>
+            <li><a href="https://fdc85.maury.app/mentions-legales/">Mentions légales <span class="sr-only">(site externe)</span></a></li>
+            <li><a href="https://fdc85.maury.app/rgpd/">Données personnelles <span class="sr-only">(site externe)</span></a></li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,285 @@
+{
+  "frames": [
+    {
+      "component": {
+        "type": "wrapper",
+        "attributes": {
+          "id": "body-contact-fdc85-poc"
+        },
+        "components": [
+          {
+            "tagName": "header",
+            "attributes": {
+              "id": "header-contact-fdc85-poc"
+            },
+            "style": {
+              "background-color": "#fdfcf8",
+              "border-bottom": "1px solid #ccd7d0",
+              "padding": "24px"
+            },
+            "components": [
+              {
+                "type": "image",
+                "tagName": "img",
+                "attributes": {
+                  "id": "logo-contact-fdc85-poc",
+                  "src": "/assets/logo-fdc85.png",
+                  "alt": "Fédération Départementale des Chasseurs de la Vendée",
+                  "width": "400",
+                  "height": "111"
+                },
+                "style": {
+                  "display": "block",
+                  "height": "auto",
+                  "max-width": "100%",
+                  "width": "192px"
+                }
+              },
+              {
+                "tagName": "nav",
+                "attributes": {
+                  "id": "nav-contact-fdc85-poc",
+                  "aria-label": "Navigation principale"
+                },
+                "style": {
+                  "display": "flex",
+                  "gap": "20px",
+                  "margin-top": "16px"
+                },
+                "components": [
+                  {
+                    "type": "link",
+                    "tagName": "a",
+                    "attributes": {
+                      "id": "lien-accueil-depuis-contact-fdc85-poc",
+                      "href": "./index.html"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "Accueil"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "link",
+                    "tagName": "a",
+                    "attributes": {
+                      "id": "lien-contact-fdc85-poc",
+                      "href": "./contact.html",
+                      "aria-current": "page"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "Contact"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "tagName": "main",
+            "attributes": {
+              "id": "contenu-contact-fdc85-poc"
+            },
+            "style": {
+              "padding": "64px 24px"
+            },
+            "components": [
+              {
+                "tagName": "h1",
+                "type": "text",
+                "attributes": {
+                  "id": "titre-contact-fdc85-poc"
+                },
+                "style": {
+                  "color": "#102e27",
+                  "font-family": "Georgia, serif",
+                  "font-size": "52px"
+                },
+                "components": [
+                  {
+                    "type": "textnode",
+                    "content": "Contact"
+                  }
+                ]
+              },
+              {
+                "tagName": "p",
+                "type": "text",
+                "attributes": {
+                  "id": "intro-contact-fdc85-poc"
+                },
+                "style": {
+                  "font-size": "20px",
+                  "max-width": "720px"
+                },
+                "components": [
+                  {
+                    "type": "textnode",
+                    "content": "Une question sur une démarche, une formation ou la réglementation ? Choisissez le moyen de contact qui vous convient."
+                  }
+                ]
+              },
+              {
+                "tagName": "section",
+                "attributes": {
+                  "id": "coordonnees-contact-fdc85-poc",
+                  "aria-labelledby": "titre-coordonnees-fdc85-poc"
+                },
+                "style": {
+                  "margin-top": "40px",
+                  "max-width": "720px"
+                },
+                "components": [
+                  {
+                    "tagName": "h2",
+                    "type": "text",
+                    "attributes": {
+                      "id": "titre-coordonnees-fdc85-poc"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "Coordonnées"
+                      }
+                    ]
+                  },
+                  {
+                    "tagName": "p",
+                    "type": "text",
+                    "attributes": {
+                      "id": "adresse-contact-fdc85-poc"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "Fédération Départementale des Chasseurs de la Vendée — Les Minées, Route de Château-Fromage, 85010 La Roche-sur-Yon CEDEX"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "link",
+                    "tagName": "a",
+                    "attributes": {
+                      "id": "telephone-contact-fdc85-poc",
+                      "href": "tel:+33251478090"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "02 51 47 80 90"
+                      }
+                    ]
+                  },
+                  {
+                    "tagName": "br",
+                    "attributes": {
+                      "id": "separateur-contact-fdc85-poc"
+                    }
+                  },
+                  {
+                    "type": "link",
+                    "tagName": "a",
+                    "attributes": {
+                      "id": "courriel-contact-fdc85-poc",
+                      "href": "mailto:fdc85@chasse85.fr"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "fdc85@chasse85.fr"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "tagName": "section",
+                "attributes": {
+                  "id": "horaires-contact-fdc85-poc",
+                  "aria-labelledby": "titre-horaires-fdc85-poc"
+                },
+                "style": {
+                  "margin-top": "40px",
+                  "max-width": "720px"
+                },
+                "components": [
+                  {
+                    "tagName": "h2",
+                    "type": "text",
+                    "attributes": {
+                      "id": "titre-horaires-fdc85-poc"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "Horaires d’accueil"
+                      }
+                    ]
+                  },
+                  {
+                    "tagName": "p",
+                    "type": "text",
+                    "attributes": {
+                      "id": "texte-horaires-fdc85-poc"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "Lundi, mardi, jeudi et vendredi : 8h30–12h30 et 13h30–16h30. Mercredi : 8h30–12h30."
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "tagName": "footer",
+            "attributes": {
+              "id": "footer-contact-fdc85-poc"
+            },
+            "style": {
+              "background-color": "#102e27",
+              "color": "#ffffff",
+              "padding": "40px 24px"
+            },
+            "components": [
+              {
+                "tagName": "p",
+                "type": "text",
+                "attributes": {
+                  "id": "footer-texte-contact-fdc85-poc"
+                },
+                "components": [
+                  {
+                    "type": "textnode",
+                    "content": "Prototype expérimental — aucun formulaire ni collecte de données."
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "head": {
+          "type": "head"
+        },
+        "docEl": {
+          "tagName": "html"
+        }
+      },
+      "id": "frame-contact-fdc85-poc"
+    }
+  ],
+  "id": "page-contact-fdc85-poc",
+  "name": "contact",
+  "settings": {
+    "description": "Coordonnées et horaires dans le prototype Silex de la FDC 85.",
+    "lang": "fr",
+    "title": "Contact — POC Silex"
+  }
+}

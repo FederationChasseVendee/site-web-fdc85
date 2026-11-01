@@ -1,8 +1,9 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { extname, join, relative } from "node:path";
 
+const hasConfiguredBase = process.env.ASTRO_BASE_PATH !== undefined;
 const configuredBase = process.env.ASTRO_BASE_PATH?.replace(/^\/+|\/+$/g, "");
-const base = configuredBase ? `/${configuredBase}/` : "/site-web/";
+const base = hasConfiguredBase ? (configuredBase ? `/${configuredBase}/` : "/") : "/site-web/";
 const siteUrl = process.env.ASTRO_SITE ?? "https://federationchassevendee.github.io";
 const siteRoot = new URL(base, `${siteUrl.replace(/\/+$/, "")}/`).href;
 const absoluteRoot = siteRoot.endsWith("/") ? siteRoot : `${siteRoot}/`;
@@ -14,6 +15,8 @@ const navigationLinkPattern = new RegExp(`href="(${basePathPattern}[^"#?]*)"`, "
 const distDirectory = "dist";
 const site = JSON.parse(readFileSync("src/content/site.json", "utf8"));
 const newsMigration = JSON.parse(readFileSync("docs/migration-actualites.json", "utf8"));
+const cloudflareRedirects = readFileSync("public/_redirects", "utf8");
+const rewritesLegacyBaseAtRoot = /^\/site-web\/\*\s+\/:splat\s+301$/m.test(cloudflareRedirects);
 
 function walk(directory) {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -23,7 +26,10 @@ function walk(directory) {
 }
 
 function targetFor(url) {
-  const pathname = new URL(url, siteRoot).pathname;
+  const rawPathname = new URL(url, siteRoot).pathname;
+  const pathname = basePath === "/" && rewritesLegacyBaseAtRoot && rawPathname.startsWith("/site-web/")
+    ? rawPathname.replace(/^\/site-web\//, "/")
+    : rawPathname;
   const withoutBase = pathname.startsWith(basePath)
     ? pathname.slice(basePath.length)
     : pathname.replace(/^\/+/, "");

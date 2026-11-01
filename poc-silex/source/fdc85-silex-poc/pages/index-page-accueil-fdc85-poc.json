@@ -1,0 +1,281 @@
+{
+  "frames": [
+    {
+      "component": {
+        "type": "wrapper",
+        "attributes": {
+          "id": "body-accueil-fdc85-poc"
+        },
+        "components": [
+          {
+            "tagName": "header",
+            "attributes": {
+              "id": "header-accueil-fdc85-poc"
+            },
+            "style": {
+              "background-color": "#fdfcf8",
+              "border-bottom": "1px solid #ccd7d0",
+              "padding": "24px"
+            },
+            "components": [
+              {
+                "type": "image",
+                "tagName": "img",
+                "attributes": {
+                  "id": "logo-accueil-fdc85-poc",
+                  "src": "/assets/logo-fdc85.png",
+                  "alt": "Fédération Départementale des Chasseurs de la Vendée",
+                  "width": "400",
+                  "height": "111"
+                },
+                "style": {
+                  "display": "block",
+                  "height": "auto",
+                  "max-width": "100%",
+                  "width": "192px"
+                }
+              },
+              {
+                "tagName": "nav",
+                "attributes": {
+                  "id": "nav-accueil-fdc85-poc",
+                  "aria-label": "Navigation principale"
+                },
+                "style": {
+                  "display": "flex",
+                  "gap": "20px",
+                  "margin-top": "16px"
+                },
+                "components": [
+                  {
+                    "type": "link",
+                    "tagName": "a",
+                    "attributes": {
+                      "id": "lien-accueil-fdc85-poc",
+                      "href": "./index.html",
+                      "aria-current": "page"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "Accueil"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "link",
+                    "tagName": "a",
+                    "attributes": {
+                      "id": "lien-contact-depuis-accueil-fdc85-poc",
+                      "href": "./contact.html"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "Contact"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "tagName": "main",
+            "attributes": {
+              "id": "contenu-accueil-fdc85-poc"
+            },
+            "components": [
+              {
+                "tagName": "section",
+                "attributes": {
+                  "id": "hero-accueil-fdc85-poc",
+                  "aria-labelledby": "titre-accueil-fdc85-poc"
+                },
+                "style": {
+                  "background-color": "#173f35",
+                  "color": "#ffffff",
+                  "padding": "80px 24px"
+                },
+                "components": [
+                  {
+                    "type": "image",
+                    "tagName": "img",
+                    "attributes": {
+                      "id": "image-hero-accueil-fdc85-poc",
+                      "src": "/assets/hero-faune.jpg",
+                      "alt": "Sanglier dans un sous-bois",
+                      "width": "1600",
+                      "height": "760"
+                    },
+                    "style": {
+                      "display": "block",
+                      "height": "auto",
+                      "max-width": "100%",
+                      "width": "720px"
+                    }
+                  },
+                  {
+                    "tagName": "p",
+                    "type": "text",
+                    "attributes": {
+                      "id": "surtitre-accueil-fdc85-poc"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "PROTOTYPE AUTONOME RÉALISÉ AVEC SILEX"
+                      }
+                    ]
+                  },
+                  {
+                    "tagName": "h1",
+                    "type": "text",
+                    "attributes": {
+                      "id": "titre-accueil-fdc85-poc"
+                    },
+                    "style": {
+                      "font-family": "Georgia, serif",
+                      "font-size": "56px",
+                      "line-height": "1.05",
+                      "max-width": "720px"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "Vos démarches de chasse, simplement"
+                      }
+                    ]
+                  },
+                  {
+                    "tagName": "p",
+                    "type": "text",
+                    "attributes": {
+                      "id": "intro-accueil-fdc85-poc"
+                    },
+                    "style": {
+                      "font-size": "20px",
+                      "max-width": "720px"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "Une variation visuelle de l’accueil pour tester l’édition directe des textes, images, liens et blocs."
+                      }
+                    ]
+                  },
+                  {
+                    "type": "link",
+                    "tagName": "a",
+                    "attributes": {
+                      "id": "cta-contact-accueil-fdc85-poc",
+                      "href": "./contact.html"
+                    },
+                    "style": {
+                      "background-color": "#e4b95f",
+                      "color": "#102e27",
+                      "display": "inline-block",
+                      "font-weight": "700",
+                      "margin-top": "20px",
+                      "padding": "12px 18px"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "Contacter la Fédération"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "tagName": "section",
+                "attributes": {
+                  "id": "demarches-accueil-fdc85-poc",
+                  "aria-labelledby": "titre-demarches-fdc85-poc"
+                },
+                "style": {
+                  "background-color": "#f5f2e9",
+                  "padding": "64px 24px"
+                },
+                "components": [
+                  {
+                    "tagName": "h2",
+                    "type": "text",
+                    "attributes": {
+                      "id": "titre-demarches-fdc85-poc"
+                    },
+                    "style": {
+                      "font-family": "Georgia, serif",
+                      "font-size": "36px"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "Que souhaitez-vous faire ?"
+                      }
+                    ]
+                  },
+                  {
+                    "tagName": "p",
+                    "type": "text",
+                    "attributes": {
+                      "id": "texte-demarches-fdc85-poc"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "Cette section libre convient à un microsite. Les données métier restent dans le site Astro."
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "tagName": "footer",
+            "attributes": {
+              "id": "footer-accueil-fdc85-poc"
+            },
+            "style": {
+              "background-color": "#102e27",
+              "color": "#ffffff",
+              "padding": "40px 24px"
+            },
+            "components": [
+              {
+                "tagName": "p",
+                "type": "text",
+                "attributes": {
+                  "id": "footer-texte-accueil-fdc85-poc"
+                },
+                "components": [
+                  {
+                    "type": "textnode",
+                    "content": "Prototype expérimental — aucun formulaire ni collecte de données."
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "head": {
+          "type": "head"
+        },
+        "docEl": {
+          "tagName": "html"
+        }
+      },
+      "id": "frame-accueil-fdc85-poc"
+    }
+  ],
+  "id": "page-accueil-fdc85-poc",
+  "name": "index",
+  "settings": {
+    "description": "Variation expérimentale de l’accueil de la FDC 85 réalisée avec Silex.",
+    "lang": "fr",
+    "title": "Accueil — POC Silex"
+  },
+  "type": "main"
+}
