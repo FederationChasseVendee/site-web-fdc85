@@ -8,11 +8,35 @@
     "build": "astro check && astro build && npm run check:generated",
     "check:generated": "node scripts/check-generated-site.mjs",
     "test:analytics": "node scripts/test-umami.mjs",
+    "test:editor": "node --import tsx --test scripts/editor.test.ts",
+    "test:rendering": "node --import tsx scripts/check-rendering-compatibility.ts",
+    "test:editor:browser": "playwright test --config scripts/playwright.config.ts",
     "preview": "astro preview"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
+    "@astrojs/preact": "^6.0.5",
     "astro": "^7.3.3",
+    "preact": "^10.29.0",
+    "preact-render-to-string": "^6.6.3",
+    "rehype-raw": "^7.0.0",
+    "rehype-sanitize": "^6.0.0",
+    "rehype-slug": "^6.0.0",
+    "rehype-stringify": "^10.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
+    "remark-smartypants": "^3.0.3",
+    "unified": "^11.0.5",
+    "yaml": "^2.9.1",
+    "zod": "^4.3.6",
     "typescript": "^5.9.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "@types/hast": "^3.0.4",
+    "linkedom": "^0.18.12",
+    "tsx": "^4.21.0",
+    "@playwright/test": "^1.58.2"
   }
 }

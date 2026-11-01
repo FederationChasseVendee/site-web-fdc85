@@ -6,6 +6,7 @@ export const GET: APIRoute = ({ site }) => {
   const sitemap = new URL("sitemap.xml", root);
   return new Response(`User-agent: *
 Allow: ${root.pathname}
+Disallow: ${root.pathname}editeur/
 
 Sitemap: ${sitemap.href}
 `, { headers: { "Content-Type": "text/plain; charset=utf-8" } });
