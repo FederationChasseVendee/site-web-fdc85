@@ -57,12 +57,43 @@ const umami = getUmamiConfig(site.analytics);
     {umami && (
       <script
         is:inline
-        defer
-        src={umami.scriptUrl}
-        data-website-id={umami.websiteId}
-        data-do-not-track="true"
-      ></script>
+        define:vars={{ umami, productionHost: Astro.site?.hostname }}
+      >
+        const adminPreview = new URLSearchParams(location.search).has("admin-preview");
+        const embedded = window.self !== window.top;
+        const previewHost = location.hostname.endsWith(".pages.dev") && location.hostname !== productionHost;
+        if (!embedded && !adminPreview && !previewHost) {
+          const script = document.createElement("script");
+          script.defer = true;
+          script.src = umami.scriptUrl;
+          script.dataset.websiteId = umami.websiteId;
+          script.dataset.doNotTrack = "true";
+          document.head.append(script);
+        }
+      </script>
     )}
+    <script is:inline>
+      if (new URLSearchParams(location.search).has("admin-preview")) {
+        // Keep own-tab preview navigation out of analytics, including redirect pages.
+        const mark = (value) => {
+          const url = new URL(value, location.href);
+          if (url.origin === location.origin) url.searchParams.set("admin-preview", "1");
+          return url.href;
+        };
+        const refresh = document.querySelector('meta[http-equiv="refresh"]');
+        if (refresh) {
+          const target = refresh.content.match(/url=(.*)$/i)?.[1];
+          if (target) refresh.content = `0; url=${mark(target)}`;
+        }
+        document.addEventListener("DOMContentLoaded", () => {
+          document.querySelectorAll('a[href]').forEach((link) => {
+            if (link.getAttribute("href").startsWith("#")) return;
+            const url = new URL(link.href);
+            if (url.origin === location.origin) link.href = mark(link.href);
+          });
+        });
+      }
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#contenu">Aller au contenu</a>

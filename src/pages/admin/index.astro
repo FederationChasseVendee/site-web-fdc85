@@ -1,0 +1,75 @@
+---
+import { getAdminManifest } from "../../lib/admin-manifest";
+import { cmsUrl, PRODUCTION_ORIGIN } from "../../lib/admin";
+import "../../styles/admin.css";
+
+const manifest = await getAdminManifest();
+const cms = cmsUrl(manifest.branch, manifest.contents[0]);
+const canonical = new URL(`${manifest.base}admin/`, Astro.site);
+const json = JSON.stringify(manifest).replaceAll("<", "\\u003c");
+---
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#173f35" />
+    <link rel="canonical" href={canonical} />
+    <title>Atelier du site · FDC 85</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenu">Aller au contenu</a>
+    <header class="admin-header">
+      <a class="brand" href={manifest.base} aria-label="FDC 85 · Retour au site"><span class="brand-mark">85</span><span>FDC Vendée<small>Atelier du site · variante iframe</small></span></a>
+      <div class="branch"><span class="status-dot"></span><span>Branche de travail<strong>{manifest.branch}</strong></span></div>
+      <a href={PRODUCTION_ORIGIN} target="_blank" rel="noopener noreferrer">Site publié <span class="new-tab">(nouvel onglet)</span> ↗</a>
+    </header>
+    <main id="contenu">
+      <section class="intro">
+        <div><p class="eyebrow">Votre espace de préparation</p><h1>Modifier. Vérifier. Puis faire valider.</h1><p>Le vrai Pages CMS à gauche. Le site réellement compilé à droite.</p></div>
+        <span id="publication-state" class="badge">Branche de travail · publication non vérifiée</span>
+      </section>
+      <aside class="notice"><strong>Pas de publication depuis cet atelier.</strong> Enregistrer dans Pages CMS crée un commit sur la branche sélectionnée dans le CMS. La prévisualisation change seulement après un build réussi. Relisez avant de demander la fusion de la pull request ; une fusion dans main publie le site.</aside>
+      <section class="controls" aria-label="Choisir le contenu et la page">
+        <label>Rechercher un contenu<input id="content-search" type="search" placeholder="Contact, formation, document…" /></label>
+        <label class="content-field">À modifier<select id="content-select" aria-describedby="content-impact"><option value="home">Accueil</option></select></label>
+        <label class="page-field">Page à vérifier<select id="route-select"><option value="">Accueil</option></select></label>
+        <div class="tools"><button id="latest-build" type="button">Chercher le dernier build</button><a id="checks-link" href={`https://github.com/${manifest.repository}/commits/${encodeURIComponent(manifest.branch)}`} target="_blank" rel="noopener noreferrer">Historique <span class="new-tab">(nouvel onglet)</span> ↗</a></div>
+      </section>
+      <div class="context"><p id="content-impact">La page d’accueil.</p><p id="source-path">src/content/home.json</p></div>
+      <div class="build-bar"><span id="build-label">Build {manifest.commit.slice(0, 7)} · {manifest.source === "cloudflare" ? "métadonnées Cloudflare" : "Git local"} · {manifest.buildTime}</span><a id="deployment-link" href={manifest.deployment || `https://github.com/${manifest.repository}/commit/${manifest.commit}`} target="_blank" rel="noopener noreferrer">Ce déploiement <span class="new-tab">(nouvel onglet)</span> ↗</a></div>
+      <p id="build-status" role="status">La prévisualisation n’affiche pas les changements non enregistrés. Ce build reste affiché jusqu’à sélection explicite d’un nouveau déploiement.</p>
+      <nav class="workspace-toolbar" aria-label="Disposition de l’atelier">
+        <div class="segmented"><button data-focus="both" aria-pressed="true">Côte à côte</button><button data-focus="editor" aria-pressed="false">Éditeur seul</button><button data-focus="preview" aria-pressed="false">Aperçu seul</button></div>
+        <div class="tools"><button id="compare" aria-pressed="false">Comparer au publié</button><button id="fullscreen">Plein écran</button></div>
+      </nav>
+      <div id="workspace" class="workspace" data-focus="both">
+        <section id="editor-panel" class="panel">
+          <div class="panel-title"><div><p class="eyebrow">01 · Contenu</p><h2>Pages CMS</h2></div><a id="cms-own-tab" href={cms} target="_blank" rel="noopener noreferrer">Ouvrir le CMS <span class="new-tab">(nouvel onglet)</span> ↗</a></div>
+          <aside class="cms-guidance"><strong>Connexion : utilisez un onglet séparé.</strong> GitHub bloque sa connexion dans les iframes. Connectez-vous via « Ouvrir le CMS », revenez ici puis rechargez le cadre. Les cookies tiers peuvent empêcher la session d’être partagée : dans ce cas, continuez dans cet onglet. Cet atelier ne peut lire ni votre session ni les erreurs internes du CMS.</aside>
+          <div class="frame-tools"><p id="cms-status" role="status">JavaScript est nécessaire pour ouvrir le cadre. L’accès dans un onglet séparé reste disponible.</p><button id="cms-reload">Recharger le cadre</button></div>
+          <iframe id="cms-frame" title="Éditeur Pages CMS hébergé" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads" allow="clipboard-write" referrerpolicy="no-referrer"></iframe>
+        </section>
+        <section id="preview-panel" class="panel">
+          <div class="panel-title"><div><p class="eyebrow">02 · Résultat compilé</p><h2>Aperçu du site</h2></div><a id="preview-own-tab" href={`${manifest.base}?admin-preview=1`} target="_blank" rel="noopener noreferrer">Ouvrir l’aperçu <span class="new-tab">(nouvel onglet)</span> ↗</a></div>
+          <div class="preview-toolbar"><div class="segmented"><button data-viewport="desktop" aria-pressed="true">Ordinateur · 1280 px</button><button data-viewport="mobile" aria-pressed="false">Mobile · 390 px</button></div><button id="preview-reload">Actualiser l’aperçu</button></div>
+          <p id="preview-status" class="frame-status" role="status">Chargement du site compilé.</p>
+          <div class="preview-stage" data-viewport="desktop"><iframe id="preview-frame" title="Site compilé · branche de travail" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"></iframe></div>
+        </section>
+        <section id="production-panel" class="panel" hidden>
+          <div class="panel-title"><div><p class="eyebrow">Référence publique</p><h2>Version publiée</h2></div><a id="production-own-tab" href={`${PRODUCTION_ORIGIN}/?admin-preview=1`} target="_blank" rel="noopener noreferrer">Comparer <span class="new-tab">(nouvel onglet)</span> ↗</a></div>
+          <p id="production-status" class="frame-status" role="status">Production : comparaison visuelle, pas de synchronisation automatique avec le CMS.</p>
+          <div class="preview-stage" data-viewport="desktop"><iframe id="production-frame" title="Version publiée · comparaison" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"></iframe></div>
+        </section>
+      </div>
+      <details class="help"><summary>Comment travailler sereinement ?</summary><ol><li>Vérifiez la branche affichée et celle sélectionnée à l’intérieur de Pages CMS : elles doivent être identiques.</li><li>Connectez-vous dans le CMS en onglet séparé. Si le cadre reste bloqué, gardez cet onglet pour modifier.</li><li>Enregistrez, attendez le contrôle Cloudflare, puis cherchez le dernier build. La liste des contenus se renouvelle en ouvrant l’atelier du nouveau build.</li><li>Comparez au publié et demandez une validation de la pull request. Il n’y a pas de bouton de publication ici.</li></ol><p>Cette interface et les previews sont publiques. « noindex » empêche l’indexation, pas l’accès. Aucune clé GitHub n’est saisie ou stockée ici. Le CMS possède sa propre authentification. Les aperçus embarqués n’émettent pas de visites Umami depuis cette version ; une ancienne production peut encore en émettre tant que cette protection n’y est pas déployée.</p></details>
+      <noscript><p class="notice">JavaScript est désactivé : ouvrez Pages CMS dans son propre onglet et consultez les déploiements depuis GitHub.</p></noscript>
+    </main>
+    <script id="admin-manifest" type="application/json" is:inline set:html={json}></script>
+    <script>
+      import { initializeAdmin } from "../../scripts/admin";
+      initializeAdmin();
+    </script>
+  </body>
+</html>
