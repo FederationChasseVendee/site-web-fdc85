@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
-THESIS: Compare dix directions d'accueil sans faire passer une maquette pour le site publie.
-OWN-WORLD: Atelier sobre et lisible autour de dix identites colorees, avec une navigation de comparaison persistante.
+THESIS: Compare deux series de directions d'accueil sans faire passer une maquette pour le site publie.
+OWN-WORLD: Atelier sobre et lisible autour de compositions distinctes, avec une navigation de comparaison persistante.
 STORY: On parcourt, garde ou ecarte chaque piste, puis on consigne les retours des deux lectrices.
 FIRST VIEWPORT: Liste des pistes a gauche, apercu du site au centre, avis et commentaires sous la piste active.
 FORM: Prototype HTML autonome, hors du site public, sans requete distante ni contenu factuel ajoute.
@@ -313,6 +313,16 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
         color: var(--pine);
       }
 
+      .series-switch {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 8px;
+      }
+
+      .series-switch .toolbar-label { margin-right: 5px; }
+
       .view[hidden] { display: none; }
 
       .proposal-heading {
@@ -372,6 +382,8 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
         background: var(--line);
       }
 
+      .concept-facts[data-facts="four"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
       .fact {
         min-width: 0;
         padding: 10px 12px;
@@ -388,7 +400,7 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
         text-transform: uppercase;
       }
 
-      .fact-value { font-size: 13px; font-weight: 650; }
+      .fact-value { font-size: 14px; font-weight: 650; }
 
       .preview-tools {
         display: flex;
@@ -431,9 +443,11 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
       .preview-wrap.is-mobile {
         display: flex;
         min-height: 710px;
-        justify-content: center;
+        justify-content: flex-start;
         padding: 18px 12px;
       }
+
+      .preview-wrap.is-mobile #sitePreview { margin-inline: auto; }
 
       .site-preview {
         width: 100%;
@@ -979,9 +993,17 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
 
       .storage-status {
         min-height: 22px;
-        margin: 9px 0 0;
+        margin: 0 0 12px;
         color: var(--muted);
-        font-size: 12px;
+        font-size: 13px;
+      }
+
+      .storage-status[data-state="error"] {
+        padding: 10px 12px;
+        border: 1px solid #dbb2a9;
+        background: #fbefed;
+        color: #772a20;
+        font-weight: 650;
       }
 
       .overview-heading {
@@ -1026,7 +1048,9 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
       .overview-card-head h3 { margin: 0; font-size: 15px; }
 
       .mini-preview {
-        height: 153px;
+        display: flex;
+        height: 230px;
+        justify-content: center;
         overflow: hidden;
         background: #dce4dd;
       }
@@ -1034,9 +1058,10 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
       .mini-preview .site-preview {
         width: 1000px;
         min-width: 1000px;
-        min-height: 500px;
+        min-height: 740px;
+        flex: 0 0 1000px;
         transform: scale(.31);
-        transform-origin: top left;
+        transform-origin: top center;
         pointer-events: none;
       }
 
@@ -1103,6 +1128,7 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
         .proposal-choice { flex: 0 0 270px; }
         .rail-summary { margin-top: 5px; padding-top: 8px; }
         .main { padding: 24px 18px 36px; }
+        .concept-facts[data-facts="four"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       }
 
       @media (max-width: 620px) {
@@ -1116,7 +1142,7 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
         .toolbar { align-items: stretch; }
         .toolbar-group { width: 100%; }
         .toolbar-group:last-child { justify-content: space-between; }
-        .concept-facts { grid-template-columns: 1fr; }
+        .concept-facts, .concept-facts[data-facts="four"] { grid-template-columns: 1fr; }
         .review-panel, .notes-grid { grid-template-columns: 1fr; }
         .overview-grid { grid-template-columns: 1fr; }
         .preview-wrap { min-height: 380px; }
@@ -1124,11 +1150,17 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
         .preview-wrap.is-mobile .site-preview { min-width: 390px; }
       }
 
+      @media (max-width: 350px) {
+        .mini-preview { height: 193px; }
+        .mini-preview .site-preview { transform: scale(.26); }
+      }
+
       @media (prefers-reduced-motion: reduce) {
         html { scroll-behavior: auto; }
         *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
       }
     </style>
+    <link rel="stylesheet" href="pistes-v2.css" />
   </head>
   <body>
     <a class="skip-link" href="#main">Aller aux propositions</a>
@@ -1145,7 +1177,7 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
 
     <div class="layout">
       <aside class="rail" aria-label="Choisir une piste">
-        <h2 class="rail-heading">Les 10 pistes</h2>
+        <h2 class="rail-heading" id="railHeading">Les nouvelles pistes</h2>
         <p class="rail-copy">Même contenu, organisations visuelles différentes.</p>
         <nav class="proposal-list" id="proposalList" aria-label="Propositions visuelles"></nav>
         <p class="rail-summary" id="railSummary"></p>
@@ -1155,10 +1187,17 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
         <div class="intro">
           <div>
             <h1>Quelle forme pour le futur site&nbsp;?</h1>
-            <p class="intro-copy">Parcourez dix pistes de navigation et de couleurs. Gardez celles qui vous parlent, écartez les autres, puis notez vos retours et ceux de votre cliente.</p>
+            <p class="intro-copy">Comparez dix nouvelles compositions, puis retrouvez la première série et ses retours. Gardez les pistes qui vous parlent, écartez les autres et notez vos avis et ceux de votre cliente.</p>
           </div>
-          <button class="export-button" id="exportButton" type="button">Télécharger les retours .md</button>
+          <button class="export-button" id="exportButton" type="button">Télécharger tous les retours .md</button>
         </div>
+
+        <div class="series-switch" role="group" aria-label="Série de propositions">
+          <span class="toolbar-label">Série :</span>
+          <button class="mode-button" id="seriesV2" type="button" aria-pressed="true">Nouvelles pistes</button>
+          <button class="mode-button" id="seriesV1" type="button" aria-pressed="false">Première série et ses retours</button>
+        </div>
+        <p class="storage-status" id="storageStatus" role="status" aria-live="polite"></p>
 
         <div class="toolbar" aria-label="Commandes de l’atelier">
           <div class="toolbar-group">
@@ -1222,7 +1261,6 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
               </label>
             </section>
           </div>
-          <p class="storage-status" id="storageStatus" aria-live="polite"></p>
           <div class="pager">
             <button class="pager-button" id="previousButtonBottom" type="button">← Piste précédente</button>
             <button class="pager-button" id="nextButtonBottom" type="button">Piste suivante →</button>
@@ -1231,18 +1269,19 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
 
         <section class="view" id="overviewView" aria-label="Vue d’ensemble des dix pistes" hidden>
           <div class="overview-heading">
-            <h2>Vue d’ensemble</h2>
+            <h2 id="overviewTitle" tabindex="-1">Vue d’ensemble</h2>
             <p>Choisissez une piste pour l’ouvrir et commenter.</p>
           </div>
           <div class="overview-grid" id="overviewGrid"></div>
         </section>
 
-        <p class="notice"><strong>À retenir :</strong> ce sont des hypothèses visuelles, pas des choix validés. Chaque aperçu reprend les rubriques et les démarches du cadrage ; les actualités sont des titres existants utilisés comme exemples. Aucune coordonnée n’est affichée sur l’accueil simulé.</p>
+        <p class="notice"><strong>À retenir :</strong> ce sont des hypothèses visuelles, pas des choix validés. Chaque aperçu reprend les rubriques et les démarches du cadrage ; les actualités sont des titres existants utilisés comme exemples. Les nouvelles pistes photographiques utilisent des images locales du dépôt, dont les droits restent à vérifier. Aucune coordonnée n’est affichée sur l’accueil simulé.</p>
       </main>
     </div>
 
+    <script src="pistes-v2.js"></script>
     <script>
-      const concepts = [
+      const legacyConcepts = [
         {
           id: "ledger",
           title: "Le carnet des démarches",
@@ -1360,66 +1399,112 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
         ["J’aime la Nature Propre revient en 2026 !", "Actualité"]
       ];
 
-      const storageKey = "fdc85-atelier-visuel-v1";
-      const defaultState = () => ({
+      const newBundle = window.fdcVisualV2;
+      const newSeriesAvailable = Boolean(
+        newBundle && Array.isArray(newBundle.concepts) &&
+        newBundle.concepts.length === 10 && typeof newBundle.render === "function"
+      );
+      const series = {
+        v2: {
+          id: "v2",
+          title: "Nouvelles pistes",
+          storageKey: "fdc85-atelier-visuel-v2",
+          concepts: newSeriesAvailable ? newBundle.concepts : [],
+          available: newSeriesAvailable
+        },
+        v1: {
+          id: "v1",
+          title: "Première série",
+          storageKey: "fdc85-atelier-visuel-v1",
+          concepts: legacyConcepts,
+          available: true
+        }
+      };
+      const seriesOrder = [series.v2, series.v1];
+      const defaultState = (seriesConcepts) => ({
         current: 0,
         mode: "single",
         device: "desktop",
-        reviews: Object.fromEntries(concepts.map((concept) => [concept.id, {
+        reviews: Object.fromEntries(seriesConcepts.map((concept) => [concept.id, {
           status: "unreviewed",
           userNote: "",
           clientNote: ""
         }]))
       });
 
-      let state = defaultState();
-      let storageAvailable = true;
       const proposalList = document.getElementById("proposalList");
       const singleView = document.getElementById("singleView");
       const overviewView = document.getElementById("overviewView");
       const previewWrap = document.getElementById("previewWrap");
 
-      function readState() {
+      function isRecord(value) {
+        return value !== null && typeof value === "object" && !Array.isArray(value);
+      }
+
+      function isCompatibleState(value, seriesConcepts) {
+        if (!isRecord(value) || !isRecord(value.reviews)) return false;
+        if (!Number.isInteger(value.current) || value.current < 0 || value.current >= seriesConcepts.length) return false;
+        if (!["single", "overview"].includes(value.mode) || !["desktop", "mobile"].includes(value.device)) return false;
+        return seriesConcepts.every((concept) => {
+          const review = value.reviews[concept.id];
+          return isRecord(review) &&
+            ["unreviewed", "keep", "revisit", "discard"].includes(review.status) &&
+            typeof review.userNote === "string" && typeof review.clientNote === "string";
+        });
+      }
+
+      function readState(item) {
+        item.state = defaultState(item.concepts);
+        item.readError = "";
+        item.writeError = "";
+        if (!item.available) {
+          item.readError = "Les nouvelles pistes n’ont pas pu être chargées. Ouvrez l’atelier depuis le dossier complet du dépôt ; leurs éventuels retours enregistrés ne seront pas modifiés.";
+          return;
+        }
+        let saved;
         try {
-          const saved = localStorage.getItem(storageKey);
-          if (!saved) return;
-          const parsed = JSON.parse(saved);
-          if (!parsed || typeof parsed !== "object") return;
-          if (Number.isInteger(parsed.current) && parsed.current >= 0 && parsed.current < concepts.length) {
-            state.current = parsed.current;
-          }
-          if (parsed.mode === "overview" || parsed.mode === "single") state.mode = parsed.mode;
-          if (parsed.device === "mobile" || parsed.device === "desktop") state.device = parsed.device;
-          if (parsed.reviews && typeof parsed.reviews === "object") {
-            for (const concept of concepts) {
-              const entry = parsed.reviews[concept.id];
-              if (!entry || typeof entry !== "object") continue;
-              if (["unreviewed", "keep", "revisit", "discard"].includes(entry.status)) {
-                state.reviews[concept.id].status = entry.status;
-              }
-              for (const key of ["userNote", "clientNote"]) {
-                if (typeof entry[key] === "string") state.reviews[concept.id][key] = entry[key].slice(0, 4000);
-              }
-            }
-          }
+          saved = localStorage.getItem(item.storageKey);
         } catch {
-          storageAvailable = false;
+          item.readError = `Le stockage local est inaccessible pour « ${item.title} ». Les éventuelles données existantes ne seront pas écrasées ; téléchargez les nouveaux retours avant de fermer.`;
+          return;
+        }
+        if (saved === null) return;
+        try {
+          const parsed = JSON.parse(saved);
+          if (!isCompatibleState(parsed, item.concepts)) throw new Error("Format de retours incompatible");
+          item.state = parsed;
+        } catch {
+          item.readError = `Les retours de « ${item.title} » ne sont pas lisibles. Les données d’origine restent intactes et ne seront pas écrasées ; les nouveaux retours sont temporaires et doivent être téléchargés avant de fermer.`;
         }
       }
 
-      function saveState(message = "Modifications enregistrées sur cet appareil.") {
+      seriesOrder.forEach(readState);
+      let currentSeries = series.v2.available ? series.v2 : series.v1;
+      let concepts = currentSeries.concepts;
+      let state = currentSeries.state;
+
+      function showStorageStatus(message = "Les retours des deux séries sont conservés séparément sur cet appareil.") {
         const status = document.getElementById("storageStatus");
-        const privacyNote = document.querySelector(".privacy-note");
-        try {
-          localStorage.setItem(storageKey, JSON.stringify(state));
-          storageAvailable = true;
-          if (status) status.textContent = message;
-          if (privacyNote) privacyNote.lastChild.textContent = "Retours conservés sur cet appareil";
-        } catch {
-          storageAvailable = false;
-          if (status) status.textContent = "Le navigateur ne permet pas de conserver ces retours. Téléchargez le fichier Markdown avant de fermer cette page.";
-          if (privacyNote) privacyNote.lastChild.textContent = "Téléchargez les retours avant de fermer";
+        const problems = seriesOrder.flatMap((item) => [item.readError, item.writeError].filter(Boolean));
+        status.textContent = problems.length ? problems.join(" ") : message;
+        status.dataset.state = problems.length ? "error" : "ok";
+        document.querySelector(".privacy-note").lastChild.textContent = problems.length
+          ? "Vérifiez l’avertissement de sauvegarde"
+          : "Retours conservés sur cet appareil";
+      }
+
+      function saveState(message = "Modifications enregistrées sur cet appareil.") {
+        if (currentSeries.readError) {
+          showStorageStatus();
+          return;
         }
+        try {
+          localStorage.setItem(currentSeries.storageKey, JSON.stringify(state));
+          currentSeries.writeError = "";
+        } catch {
+          currentSeries.writeError = `Le navigateur n’a pas pu enregistrer les retours de « ${currentSeries.title} ». Téléchargez le fichier Markdown avant de fermer cette page.`;
+        }
+        showStorageStatus(message);
       }
 
       function statusLabel(status) {
@@ -1431,7 +1516,7 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
         }[status] || "À examiner";
       }
 
-      function siteMarkup(concept) {
+      function legacySiteMarkup(concept) {
         const nav = navigation.map((label) => `<span class="site-nav-item">${label}</span>`).join("");
         const actionItems = actions.map(([label, detail]) =>
           `<div class="action-item"><span>${label}<small>${detail}</small></span><span class="action-arrow" aria-hidden="true">›</span></div>`
@@ -1463,6 +1548,10 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
           </div>`;
       }
 
+      function siteMarkup(concept) {
+        return currentSeries.id === "v2" ? newBundle.render(concept) : legacySiteMarkup(concept);
+      }
+
       function renderList() {
         proposalList.innerHTML = concepts.map((concept, index) => {
           const review = state.reviews[concept.id];
@@ -1478,11 +1567,15 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
       }
 
       function renderFacts(concept) {
-        document.getElementById("conceptFacts").innerHTML = [
+        const facts = [
           ["Palette", concept.palette],
           ["Navigation", concept.navigation],
           ["Composition", concept.composition]
-        ].map(([label, value]) => `<div class="fact"><span class="fact-label">${label}</span><span class="fact-value">${value}</span></div>`).join("");
+        ];
+        if (concept.tradeoff) facts.push(["Point de vigilance", concept.tradeoff]);
+        const container = document.getElementById("conceptFacts");
+        container.dataset.facts = facts.length === 4 ? "four" : "three";
+        container.innerHTML = facts.map(([label, value]) => `<div class="fact"><span class="fact-label">${label}</span><span class="fact-value">${value}</span></div>`).join("");
       }
 
       function renderStatusControls(review) {
@@ -1498,7 +1591,7 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
           const note = review.userNote.trim() || review.clientNote.trim();
           return `<button class="overview-card" type="button" data-index="${index}" aria-label="Ouvrir la piste ${index + 1} : ${concept.title}">
             <div class="overview-card-head"><h3>${String(index + 1).padStart(2, "0")} · ${concept.title}</h3><span class="proposal-status" data-status="${review.status}">${statusLabel(review.status)}</span></div>
-            <div class="mini-preview">${siteMarkup(concept)}</div>
+            <div class="mini-preview" aria-hidden="true">${siteMarkup(concept)}</div>
             <div class="overview-meta"><span>${concept.palette}</span><span>${review.userNote || review.clientNote ? "Commentée" : "Sans commentaire"}</span></div>
             <div class="overview-comment ${note ? "" : "empty-comment"}">${note ? escapeHtml(note.replace(/\s+/g, " ")) : "Aucun commentaire pour le moment."}</div>
           </button>`;
@@ -1519,18 +1612,21 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
       }
 
       function renderSummary() {
-        const values = Object.values(state.reviews);
+        const values = concepts.map((concept) => state.reviews[concept.id]);
         const reviewed = values.filter((review) => review.status !== "unreviewed").length;
         const kept = values.filter((review) => review.status === "keep").length;
         const discarded = values.filter((review) => review.status === "discard").length;
-        document.getElementById("progressSummary").textContent = `${reviewed} piste${reviewed > 1 ? "s" : ""} examinée${reviewed > 1 ? "s" : ""} sur 10`;
+        document.getElementById("progressSummary").textContent = `${currentSeries.title} : ${reviewed} piste${reviewed > 1 ? "s" : ""} examinée${reviewed > 1 ? "s" : ""} sur ${concepts.length}`;
         document.getElementById("railSummary").innerHTML = `<strong>${kept}</strong> à garder · <strong>${discarded}</strong> écartée${discarded > 1 ? "s" : ""}`;
       }
 
       function render() {
         const concept = concepts[state.current];
         const review = state.reviews[concept.id];
-        document.getElementById("proposalIndex").textContent = `Piste ${String(state.current + 1).padStart(2, "0")} / 10`;
+        document.getElementById("railHeading").textContent = currentSeries.title;
+        document.getElementById("seriesV2").setAttribute("aria-pressed", String(currentSeries.id === "v2"));
+        document.getElementById("seriesV1").setAttribute("aria-pressed", String(currentSeries.id === "v1"));
+        document.getElementById("proposalIndex").textContent = `${currentSeries.title} · Piste ${String(state.current + 1).padStart(2, "0")} / ${concepts.length}`;
         document.getElementById("proposalTitle").textContent = concept.title;
         document.getElementById("proposalDescription").textContent = concept.short;
         const status = document.getElementById("proposalStatus");
@@ -1559,6 +1655,16 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
         document.getElementById("nextButtonBottom").disabled = state.current === concepts.length - 1;
       }
 
+      function selectSeries(item) {
+        if (!item.available) return;
+        currentSeries = item;
+        concepts = item.concepts;
+        state = item.state;
+        render();
+        showStorageStatus();
+        document.getElementById(state.mode === "single" ? "proposalTitle" : "overviewTitle").focus();
+      }
+
       function selectConcept(index) {
         state.current = Math.max(0, Math.min(concepts.length - 1, index));
         state.mode = "single";
@@ -1578,33 +1684,41 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
 
       function buildMarkdown() {
         const today = new Date().toLocaleDateString("fr-FR");
-        const reviewed = Object.values(state.reviews).filter((review) => review.status !== "unreviewed").length;
-        const sections = concepts.map((concept, index) => {
-          const review = state.reviews[concept.id];
-          return [
-            `## ${String(index + 1).padStart(2, "0")} — ${concept.title}`,
-            `- **Décision :** ${statusLabel(review.status)}`,
-            `- **Palette :** ${concept.palette}`,
-            `- **Navigation :** ${concept.navigation}`,
-            `- **Composition :** ${concept.composition}`,
-            "",
-            "### Vos retours",
-            markdownQuote(review.userNote),
-            "",
-            "### Retours de la cliente",
-            markdownQuote(review.clientNote)
-          ].join("\n");
+        const sections = seriesOrder.flatMap((item) => {
+          const reviewed = item.concepts.filter((concept) => item.state.reviews[concept.id].status !== "unreviewed").length;
+          const heading = [
+            `## ${item.title}`,
+            item.available ? `**Pistes examinées :** ${reviewed} sur ${item.concepts.length}` : "",
+            item.readError ? `**Attention :** ${item.readError}` : "",
+            item.writeError ? `**Attention :** ${item.writeError}` : ""
+          ].filter(Boolean).join("\n\n");
+          const reviews = item.concepts.map((concept, index) => {
+            const review = item.state.reviews[concept.id];
+            return [
+              `### ${String(index + 1).padStart(2, "0")} — ${concept.title}`,
+              `- **Décision :** ${statusLabel(review.status)}`,
+              `- **Palette :** ${concept.palette}`,
+              `- **Navigation :** ${concept.navigation}`,
+              `- **Composition :** ${concept.composition}`,
+              ...(concept.tradeoff ? [`- **Point de vigilance :** ${concept.tradeoff}`] : []),
+              "",
+              "#### Vos retours",
+              markdownQuote(review.userNote),
+              "",
+              "#### Retours de la cliente",
+              markdownQuote(review.clientNote)
+            ].join("\n");
+          });
+          return [heading, ...reviews];
         });
-        const markdown = [
+        return [
           "# Retours — pistes visuelles FDC 85",
           "",
           `- **Date d’export :** ${today}`,
-          `- **Pistes examinées :** ${reviewed} sur ${concepts.length}`,
-          "- **Note :** les dix propositions sont des pistes à discuter ; aucune n’est validée par défaut.",
+          "- **Note :** les deux séries sont des pistes à discuter ; aucune n’est validée par défaut.",
           "",
           ...sections
         ].join("\n\n");
-        return markdown;
       }
 
       function exportMarkdown() {
@@ -1618,18 +1732,15 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
         link.click();
         link.remove();
         window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-        document.getElementById("storageStatus").textContent = storageAvailable
-          ? "Le fichier Markdown a été téléchargé. Vos retours restent enregistrés sur cet appareil."
-          : "Le fichier Markdown a été téléchargé. Le stockage local du navigateur n’est pas disponible.";
+        showStorageStatus("Le fichier Markdown des deux séries a été téléchargé. Vos retours restent enregistrés sur cet appareil.");
       }
 
-      readState();
+      document.getElementById("seriesV2").disabled = !series.v2.available;
       render();
-      if (!storageAvailable) {
-        document.getElementById("storageStatus").textContent = "Le stockage local est indisponible. Téléchargez vos retours avant de fermer cette page.";
-        document.querySelector(".privacy-note").lastChild.textContent = "Téléchargez les retours avant de fermer";
-      }
+      showStorageStatus();
 
+      document.getElementById("seriesV2").addEventListener("click", () => selectSeries(series.v2));
+      document.getElementById("seriesV1").addEventListener("click", () => selectSeries(series.v1));
       document.getElementById("singleMode").addEventListener("click", () => {
         state.mode = "single";
         saveState();

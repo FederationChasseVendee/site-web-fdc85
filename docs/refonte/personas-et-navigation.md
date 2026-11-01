@@ -6,7 +6,9 @@ Cette première étape décide de ce que les visiteurs doivent pouvoir trouver e
 
 **Recommandation : conserver les six entrées principales et regrouper toutes les actions dans « Mes démarches ».** Les autres rubriques servent à comprendre, découvrir et consulter ; elles renvoient aux démarches quand le visiteur est prêt à agir. L'accueil garde les accès rapides avant les actualités. Les personas servent à concevoir et tester les parcours ; le visiteur n'a pas à sélectionner un profil pour entrer.
 
-Pour comparer les directions visuelles avant de construire les pages, un [atelier interactif des dix pistes](propositions-visuelles.html) accompagne ce cadrage. Il s'agit de maquettes de discussion, pas d'une identité validée ; les avis saisis restent dans le navigateur jusqu'au téléchargement du compte rendu Markdown.
+Pour comparer les directions visuelles avant de construire les pages, un [atelier interactif](propositions-visuelles.html) accompagne ce cadrage. Il présente dix nouvelles compositions et conserve la première série de dix pistes avec ses éventuels avis. Les retours des deux séries sont enregistrés séparément dans le navigateur et réunis dans l'export Markdown ; ils ne sont pas envoyés à un serveur. Il s'agit de maquettes de discussion, pas d'une identité validée.
+
+Ouvrir l'atelier depuis la copie complète du dépôt : il charge ses fichiers CSS et JavaScript voisins et, pour trois nouvelles pistes, des photographies locales déjà présentes dans `public/assets/`. Le choix des images et leurs droits restent à vérifier avant toute publication.
 
 **Ce qui change depuis la version 1 :** Passer mon permis et Se former rejoignent Mes démarches comme entrées d'action. Les dégâts distinguent grand gibier et DECLADOM ; les pertes distinguent permis et arme. « Se connecter à mon espace » distingue l'espace adhérent de l'espace maître d'équipage. « Devenir chasseur » propose aussi des liens directs pour passer et valider le permis.
 

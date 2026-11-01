@@ -8,6 +8,7 @@
     "build": "astro check && astro build && npm run check:generated",
     "check:generated": "node scripts/check-generated-site.mjs",
     "test:analytics": "node scripts/test-umami.mjs",
+    "test:visual": "node --test scripts/test-visual-workshop.mjs",
     "preview": "astro preview"
   },
   "dependencies": {

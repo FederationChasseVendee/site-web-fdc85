@@ -38,7 +38,7 @@ La moyenne d'âge élevée appelle une lecture confortable, des liens explicites
 
 Aucune direction artistique n'est encore validée. La référence FDC 41 concerne surtout l'ordre « accès rapides, puis actualités ». Ne pas copier son graphisme ni considérer les couleurs actuelles comme imposées.
 
-Cette étape produit un brief lisible, pas du code UI ni une maquette finale. Établir la direction visuelle avec la cliente avant de créer `DESIGN.md`.
+Cette étape peut produire un atelier de comparaison non publié, mais pas de pages finales du site. Établir la direction visuelle avec la cliente avant de créer `DESIGN.md`.
 
 ## Travail dans le dépôt
 
