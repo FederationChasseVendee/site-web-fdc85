@@ -1187,7 +1187,7 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
         <div class="intro">
           <div>
             <h1>Quelle forme pour le futur site&nbsp;?</h1>
-            <p class="intro-copy">Comparez dix nouvelles compositions, puis retrouvez la première série et ses retours. Gardez les pistes qui vous parlent, écartez les autres et notez vos avis et ceux de votre cliente.</p>
+            <p class="intro-copy">Comparez les nouvelles compositions, puis retrouvez la première série et ses retours. Gardez les pistes qui vous parlent, écartez les autres et notez vos avis et ceux de votre cliente.</p>
           </div>
           <button class="export-button" id="exportButton" type="button">Télécharger tous les retours .md</button>
         </div>
@@ -1267,7 +1267,7 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
           </div>
         </section>
 
-        <section class="view" id="overviewView" aria-label="Vue d’ensemble des dix pistes" hidden>
+        <section class="view" id="overviewView" aria-label="Vue d’ensemble des pistes" hidden>
           <div class="overview-heading">
             <h2 id="overviewTitle" tabindex="-1">Vue d’ensemble</h2>
             <p>Choisissez une piste pour l’ouvrir et commenter.</p>
@@ -1402,7 +1402,7 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
       const newBundle = window.fdcVisualV2;
       const newSeriesAvailable = Boolean(
         newBundle && Array.isArray(newBundle.concepts) &&
-        newBundle.concepts.length === 10 && typeof newBundle.render === "function"
+        newBundle.concepts.length >= 10 && typeof newBundle.render === "function"
       );
       const series = {
         v2: {
@@ -1447,6 +1447,7 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
         if (!["single", "overview"].includes(value.mode) || !["desktop", "mobile"].includes(value.device)) return false;
         return seriesConcepts.every((concept) => {
           const review = value.reviews[concept.id];
+          if (review === undefined && concept.addedLater) return true;
           return isRecord(review) &&
             ["unreviewed", "keep", "revisit", "discard"].includes(review.status) &&
             typeof review.userNote === "string" && typeof review.clientNote === "string";
@@ -1472,6 +1473,11 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
         try {
           const parsed = JSON.parse(saved);
           if (!isCompatibleState(parsed, item.concepts)) throw new Error("Format de retours incompatible");
+          for (const concept of item.concepts) {
+            if (parsed.reviews[concept.id] === undefined) {
+              parsed.reviews[concept.id] = item.state.reviews[concept.id];
+            }
+          }
           item.state = parsed;
         } catch {
           item.readError = `Les retours de « ${item.title} » ne sont pas lisibles. Les données d’origine restent intactes et ne seront pas écrasées ; les nouveaux retours sont temporaires et doivent être téléchargés avant de fermer.`;
@@ -1640,6 +1646,8 @@ FORM: Prototype HTML autonome, hors du site public, sans requete distante ni con
         overviewView.hidden = state.mode !== "overview";
         document.getElementById("singleMode").setAttribute("aria-pressed", String(state.mode === "single"));
         document.getElementById("overviewMode").setAttribute("aria-pressed", String(state.mode === "overview"));
+        document.getElementById("overviewMode").textContent = `Voir les ${concepts.length}`;
+        overviewView.setAttribute("aria-label", `Vue d’ensemble des ${concepts.length} pistes`);
         document.getElementById("pagerControls").hidden = state.mode !== "single";
         previewWrap.classList.toggle("is-mobile", state.device === "mobile");
         document.getElementById("desktopMode").setAttribute("aria-pressed", String(state.device === "desktop"));
