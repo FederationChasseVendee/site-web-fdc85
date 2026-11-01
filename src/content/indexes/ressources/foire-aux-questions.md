@@ -7,5 +7,11 @@ navigation:
   order: 100
 source: faqs
 display: list
-links: []
+links:
+  - label: Consulter les tarifs et valider le permis pour la Vendée
+    url: https://validationpermischasser.chasseurdefrance.com/?federation=FDC_85
+  - label: Dates et inscription à l’examen du permis — Fédération des Chasseurs de la Vendée
+    url: https://chasseur-vendeen.fr/je-veux-devenir-chasseur/passer-son-permis/
+  - label: Perte du permis — demander un duplicata
+    url: /mes-demarches/declarer-une-perte/permis/
 ---

@@ -8,6 +8,8 @@ navigation:
 links:
   - label: Ouvrir l’inscription officielle au permis de chasser — Office français de la biodiversité
     url: https://permischasser.ofb.fr/
+  - label: Consulter les dates, tarifs et pièces publiés par la Fédération
+    url: https://chasseur-vendeen.fr/je-veux-devenir-chasseur/passer-son-permis/
   - label: S’entraîner à l’examen
     url: /permis-et-formations/entrainement-examen/
   - label: Voir les formations
@@ -27,8 +29,8 @@ La Fédération assure une préparation théorique et pratique obligatoire. L’
 
 Après la réussite, le titre délivré doit être validé et accompagné d’une assurance avant de pouvoir chasser.
 
-Les modalités et pièces demandées sont à vérifier dans le portail officiel au moment de l’inscription. Les dates et tarifs de la préparation en Vendée doivent être confirmés auprès de la Fédération.
+La Fédération publie les prochaines sessions, les tarifs et les pièces à fournir sur sa page officielle. Consultez ces informations avant de finaliser votre inscription, car les dates et modalités peuvent évoluer.
 
-## Repasser l’examen ou régulariser un titre
+## Après un échec ou en cas de situation particulière
 
-L’ancienne page « Repasser son permis » ne précisait aucune procédure. La démarche dépend de la situation : nouvel examen après un échec, perte d’un titre ou décision administrative ou judiciaire. Contactez la Fédération pour connaître les justificatifs et la procédure applicables sans risquer d’engager une démarche inadaptée.
+Après un échec à l’examen, la Fédération indique qu’un nouveau dossier d’inscription doit être déposé. Pour une perte de titre ou toute autre situation particulière, consultez la démarche correspondante ou contactez la Fédération avant d’engager une procédure.

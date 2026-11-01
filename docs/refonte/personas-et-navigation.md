@@ -10,7 +10,7 @@ Pour comparer les directions visuelles, un [atelier interactif](propositions-vis
 
 Ouvrir l'atelier depuis la copie complète du dépôt : il charge ses fichiers CSS et JavaScript voisins et, pour trois nouvelles pistes, des photographies locales déjà présentes dans `public/assets/`. Le choix des images et leurs droits restent à vérifier avant toute publication.
 
-**Ce qui change depuis la version 1 :** Passer mon permis et Se former rejoignent Mes démarches comme entrées d'action. Les dégâts distinguent grand gibier et DECLADOM ; les pertes distinguent permis et arme. « Se connecter à mon espace » distingue l'espace adhérent de l'espace maître d'équipage. « Devenir chasseur » propose aussi des liens directs pour passer et valider le permis.
+**Ce qui change depuis la version 1 :** Passer mon permis et Se former rejoignent Mes démarches comme entrées d'action. Les dégâts distinguent grand gibier et DECLADOM ; les pertes distinguent permis et arme. « Se connecter à mon espace » conduit à l'accès unique « Espace Adhérent ». « Devenir chasseur » propose aussi des liens directs pour passer et valider le permis.
 
 ## 1. Ce qui est confirmé et ce qui reste proposé
 
@@ -22,12 +22,12 @@ Ouvrir l'atelier depuis la copie complète du dépôt : il charge ses fichiers C
 | Confirmé | La cliente apprécie les accès rapides suivis des actualités sur l'accueil FDC 41. |
 | Confirmé pendant le cadrage | Garder le site actuel intact pendant cette étape. |
 | Confirmé par la révision utilisateur | Regrouper toutes les démarches, y compris passer le permis et se former, et les séparer des rubriques de prise d'information. Conserver les huit entrées demandées, avec les sous-entrées dégâts et pertes. |
-| Confirmé par l'utilisateur | Intituler l'entrée « Se connecter à mon espace » et distinguer « Espace adhérent » et « Espace maître d'équipage ». Proposer aussi « Passer mon permis » et « Valider mon permis en Vendée » dans Devenir chasseur ; les liens peuvent apparaître à plusieurs endroits. |
+| Confirmé par l'utilisateur | Conserver l'entrée « Se connecter à mon espace » avec un seul accès « Espace Adhérent ». Proposer aussi « Passer mon permis » et « Valider mon permis en Vendée » dans Devenir chasseur ; les liens peuvent apparaître à plusieurs endroits. |
 | Confirmé par l'utilisateur | Placer les coordonnées dans le pied de page et sur une page « Nous contacter », sans afficher le numéro de téléphone dans l'en-tête ou le contenu principal de l'accueil. |
 | Accueil favorable de l'utilisateur | Les autres sections conviennent dans leur principe ; leurs frontières sont précisées dans cette version. |
 | Proposé | Les autres ajustements de libellés, l'ordre des six rubriques, l'organisation interne des démarches et les raccourcis d'accueil présentés ci-dessous. |
 | À préciser | Le personnel administratif visé est-il un agent de collectivité, un partenaire, un salarié de la Fédération ou plusieurs de ces publics ? |
-| À vérifier | Catalogue actuel des formations, liens officiels, contacts, tarifs, dates, documents en vigueur et contenus cités seulement dans le PDF. |
+| Vérifié le 1 novembre 2026 | Destinations officielles, dont l’accès RETRIEVER de l’Espace Adhérent, coordonnées et horaires, distinction des procédures, instructions de duplicata, tarifs et sessions publiés par formation, et dates générales 2026-2027. Les informations évolutives renvoient vers leurs pages officielles. |
 
 Les personas ci-dessous sont des **hypothèses de conception**, pas les résultats d'entretiens. Les besoins sont tirés du brief et de l'inventaire du dépôt. Aucune statistique d'usage n'est disponible ici.
 
@@ -129,7 +129,7 @@ Les huit entrées demandées restent visibles sur la page carrefour, dans l'ordr
 | **Déclarer une arme** | Système d'information sur les armes (SIA). | Guider vers les démarches officielles correspondantes ; ne pas assimiler toute démarche sur une arme à la seule création d'un compte. |
 | **Déclarer un dégât** | **Dégâts de grand gibier** ; **Autres dégâts — DECLADOM (non indemnisables)**. | Orienter vers la bonne procédure. Le volet grand gibier vérifie les conditions applicables et ne promet pas une indemnisation automatique. |
 | **Déclarer une perte** | **Perte de mon permis** ; **Perte d'une arme**. | Deux démarches distinctes. Le permis peut nécessiter une demande de duplicata ; pour une arme, modalités et interlocuteurs officiels à vérifier, sans extrapoler la procédure du permis. |
-| **Se connecter à mon espace** | **Espace adhérent** ; **Espace maître d'équipage**. | Deux accès externes distincts : l'espace adhérent concerne les chasseurs et responsables de territoire ; l'autre concerne les maîtres d'équipage. Indiquer à qui s'adresse chaque accès. |
+| **Se connecter à mon espace** | **Espace Adhérent**. | Un seul accès vers le portail RETRIEVER officiel, décrit par la Fédération pour les chasseurs et responsables de territoire. |
 
 **Ajustements de libellés proposés, sans changer les actions :** garder « Mes démarches » et « Se former » ; développer « Grand Gibier » en « Dégâts de grand gibier » ; accompagner DECLADOM de « Autres dégâts » pour ne pas exiger de connaître l'outil ; nommer directement les deux types de pertes. L'orthographe et les accents sont harmonisés.
 
@@ -172,8 +172,7 @@ Accueil
 │   │   ├── Perte de mon permis
 │   │   └── Perte d'une arme
 │   └── Se connecter à mon espace
-│       ├── Espace adhérent (chasseurs et responsables de territoire)
-│       └── Espace maître d'équipage
+│       └── Espace Adhérent (chasseurs et responsables de territoire)
 ├── Devenir chasseur
 │   ├── Comprendre le parcours
 │   ├── Conditions et déroulement du permis
@@ -256,12 +255,12 @@ Cette table couvre les pages standard, index et formations repérées dans le d�
 | Destination principale proposée | Contenus du dépôt à récupérer ou à réunir | Décision de classement |
 | --- | --- | --- |
 | Mes démarches → Valider mon permis | `chasser-en-vendee/validation-du-permis` ; guide et lien de validation dans les documents. | Explication puis service externe. Lien « Valider mon permis en Vendée » également visible dans Devenir chasseur. |
-| Mes démarches → Se connecter à mon espace | `chasser-en-vendee/espace-adherent`. | Deux liens distincts : « Espace adhérent » pour chasseurs et responsables de territoire, et « Espace maître d'équipage ». Les deux plateformes sont externes ; destinations à revérifier. |
+| Mes démarches → Se connecter à mon espace | `chasser-en-vendee/espace-adherent`. | Un seul accès « Espace Adhérent » pointe vers la page officielle de connexion RETRIEVER ; la page locale donne les instructions de connexion et renvoie vers la Fédération en cas de difficulté. |
 | Mes démarches → Espace adhérent / Déclarer mes prélèvements | Formulaires de plans de chasse, bilans, prélèvements, mutualisation, battue et documents de gestion. | Rattacher chaque opération au service réellement utilisé, sans ajouter automatiquement une neuvième entrée « Gérer mon territoire ». Les documents publics restent accessibles sans connexion ; les explications de gestion restent dans Chasser en Vendée. |
 | Mes démarches → Déclarer mes prélèvements | `nature-et-territoires/chassadapt` et documents associés. | Le carnet numérique sert une action ; il ne relève pas d'abord de la découverte de la nature. |
-| Mes démarches → Déclarer un dégât | `chasser-en-vendee/degats-causes-par-la-faune`, `decladom`, formulaires associés. | Séparer grand gibier et DECLADOM (non indemnisables, selon le classement demandé). La présentation générale des dégâts reste dans Chasser en Vendée ; les conditions d'indemnisation doivent être vérifiées. |
-| Mes démarches → Déclarer une perte → permis | Documents de duplicata et attestation. | Préparer une page de démarche de perte et remplacement du permis après vérification officielle. |
-| Mes démarches → Déclarer une perte → arme | Pas de page permanente dédiée repérée dans le cadrage initial. | Contenu à obtenir et vérifier : interlocuteur, déclaration et suites. Ne pas copier la procédure du permis ni assimiler perte et déclaration initiale d'une arme. |
+| Mes démarches → Déclarer un dégât | `chasser-en-vendee/degats-causes-par-la-faune`, `decladom`, formulaires associés. | Séparer le dispositif d’indemnisation des dégâts agricoles de grand gibier et les déclarations DECLADOM, qui ne donnent pas lieu à indemnisation. Les pages officielles et le contact fédéral orientent vers la procédure correspondant à la situation. |
+| Mes démarches → Déclarer une perte → permis | Documents de duplicata et attestation. | La page officielle des formulaires distingue les permis délivrés avant et à partir du 1er septembre 2009 et renvoie au portail OFB. L’attestation locale est conservée pour les permis antérieurs à cette date ; l’ancien modèle postérieur est signalé comme tel. |
+| Mes démarches → Déclarer une perte → arme | Page Service-Public « Que faire en cas de vol ou de perte d’une arme ? ». | La déclaration immédiate auprès de la police ou de la gendarmerie, puis la mise à jour éventuelle du SIA, sont résumées et reliées à la source officielle. |
 | Mes démarches → Déclarer une arme | Articles et tutoriels SIA. | Préparer une page de démarche officielle après vérification ; conserver les articles dans les archives et les explications réglementaires dans Chasser en Vendée. |
 | Mes démarches → Passer mon permis / Devenir chasseur → comprendre le permis | `permis-et-formations/passer-son-permis` et `devenir-chasseur`. | Répartir le contenu entre démarche d'inscription et explications de parcours ; afficher le lien direct vers la même démarche dans les deux rubriques, sans dupliquer le dossier. |
 | Devenir chasseur → préparation et découverte | `entrainement-examen`, `chasse-accompagnee`. | Pages d'information ; accès à la démarche correspondante lorsqu'une inscription est nécessaire. « Premiers pas » à rédiger avec des faits validés et des liens vers validation, sécurité et lieux de pratique. |
@@ -341,8 +340,7 @@ Présenter uniquement les libellés et l'arborescence, sans expliquer où clique
 | « Je veux connaître le programme de la formation sécurité décennale. » | Formations → Sécurité décennale. |
 | « Je veux m'inscrire à la formation sécurité décennale. » | Mes démarches → Se former → inscription concernée ; lien depuis la fiche également accepté. |
 | « Je veux connaître les dates d'ouverture et de fermeture. » | Chasser en Vendée → Dates. |
-| « Je gère une association et je cherche mon espace pour les plans de chasse. » | Mes démarches → Se connecter à mon espace → Espace adhérent (chasseurs et responsables de territoire). |
-| « Je suis maître d'équipage et cherche mon espace. » | Mes démarches → Se connecter à mon espace → Espace maître d'équipage. |
+| « Je cherche l’espace en ligne de la Fédération pour mes démarches. » | Mes démarches → Se connecter à mon espace → Espace Adhérent. |
 | « Je dois déclarer des prélèvements. » | Mes démarches → Déclarer mes prélèvements → service adapté. |
 | « Je cherche la démarche de déclaration d'une arme. » | Mes démarches → Déclarer une arme. |
 | « Une parcelle a subi des dégâts et je cherche quoi faire. » | Mes démarches → Déclarer un dégât → orientation selon les conditions vérifiées. |
@@ -371,7 +369,13 @@ Critère de décision : les tâches prioritaires ne doivent pas nécessiter une 
 
 **Réalisé sur la branche de refonte :** six rubriques, huit démarches visibles, sous-choix dégâts/pertes/espaces distincts ; liens identiques vers passer et valider le permis depuis Devenir chasseur ; accès rapides avant actualités ; suppression de Pages CMS et des accès `/admin`, conservation des services externes. Les contenus gardent une destination principale par le routage `src/lib/routes.mjs` ; les anciennes adresses produisent une redirection statique. L’atelier reste indépendant et ses nouvelles variantes circulaires sont conservées sans être utilisées sur le site.
 
-**Points à vérifier avant publication :** adresse directe actuelle de DECLADOM et canal de déclaration du grand gibier ; modalités des pertes ; tarifs et sessions de formation ; coordonnées et horaires. Les deux accès RETRIEVER répondent, mais l’adresse adhérent redirige actuellement vers le domaine maître d’équipage : faire confirmer les rôles sans supprimer un des accès. Les dates générales 2026-2027 ont été recoupées le 1 novembre 2026 avec la page de la Fédération ; revérifier les arrêtés avant publication. Les pages concernées signalent les limites au lieu d’inventer une procédure.
+**Vérifications éditoriales et de destination — 1 novembre 2026 :** la page officielle [Se former](https://chasseur-vendeen.fr/je-suis-chasseur/se-former/) et les fiches de formation ont servi à recouper les tarifs, cautions et dates annoncées ; chaque fiche publique renvoie maintenant à la page officielle correspondante, ou au contact lorsque la Fédération ne publie pas de date ou de tarif. La [page Passer son permis](https://chasseur-vendeen.fr/je-veux-devenir-chasseur/passer-son-permis/) publie les dates, pièces et tarifs actualisés ; l’inscription s’effectue sur le [portail OFB](https://permischasser.ofb.fr/). La [page de validation](https://validationpermischasser.chasseurdefrance.com/?federation=FDC_85) est bien le service externe de la Fédération de la Vendée. Les [horaires et coordonnées](https://chasseur-vendeen.fr/contactez-nous/) sont repris de la page officielle de contact. Les dates générales de chasse 2026-2027 ont été comparées à la [page officielle des dates](https://chasseur-vendeen.fr/connaitre-la-reglementation/les-dates-de-chasse/) ; les arrêtés et leurs modifications restent la référence avant chaque sortie.
+
+La page officielle [DECLADOM](https://chasseur-vendeen.fr/connaitre-la-reglementation/decladom/) décrit le dispositif mais ne publie pas de lien direct vers son formulaire de déclaration ; la page indique que ces déclarations ne donnent pas lieu à indemnisation. La [page officielle sur les dégâts de la faune](https://chasseur-vendeen.fr/connaitre-la-reglementation/les-degats-causes-par-la-faune/) distingue ce sujet de l’indemnisation des dégâts de grand gibier. Le formulaire PDF actuellement listé dans la section prédateurs/déprédateurs n’est pas présenté comme formulaire grand gibier ; les contenus renvoient vers la Fédération plutôt que d’inventer un canal ou un délai. La [page officielle des formulaires](https://chasseur-vendeen.fr/telechargement/formulaires-imprimes/) précise la procédure OFB pour les duplicatas et la distinction selon la date de délivrance. La fiche Service-Public [perte ou vol d’une arme](https://www.service-public.gouv.fr/particuliers/vosdroits/F2255) confirme le signalement immédiat aux forces de l’ordre et la mise à jour du SIA après obtention du récépissé.
+
+**Accès adhérent vérifié le 1 novembre 2026 :** la page d’accueil officielle de la Fédération renvoie vers RETRIEVER, dont la [page de connexion](https://fdc85-2.retriever-ea.fr/html/Connexion.aspx) précise les publics concernés et les identifiants. L’ancienne adresse `https://fdc85.retriever-ea.fr/` redirige vers une page de maintenance et n’est pas proposée comme accès.
+
+La note sur les droits photographiques de l’atelier concerne les images utilisées dans des maquettes de discussion, pas le site public. Ces maquettes ne sont pas intégrées à l’implémentation ; aucune nouvelle image de l’atelier n’est publiée par ce chantier.
 
 La piste 8 reste une **direction de travail provisoire** : prune `#39365e`, lilas par dossier et fond ivoire `#f5f2f8`, caractères système lisibles, liens exposés, dossiers empilés sur mobile. La validation cliente demeure ouverte ; aucun `DESIGN.md` n’est créé.
 

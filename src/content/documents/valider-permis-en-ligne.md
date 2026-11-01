@@ -1,6 +1,6 @@
 ---
-title: "Valider son permis de chasser en ligne"
-description: "Tutoriel expliquant les étapes de validation du permis de chasser sur Internet."
+title: "Tutoriel de validation en ligne (édition 2024)"
+description: "Guide daté de janvier 2024. Pour l’interface, les tarifs et les options actuels, consultez le portail officiel de validation."
 category: "Tutoriels"
 file: "/assets/documents/tutoriels/valider-permis-en-ligne.pdf"
 fileType: "PDF"

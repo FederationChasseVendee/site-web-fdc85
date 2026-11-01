@@ -17,14 +17,14 @@ program:
   - Mise en application des connaissances — 4 heures.
 duration: 16 heures minimum, réparties sur deux jours
 location: Lieu précisé sur la convocation de la FDC 85
-price: Gratuit ; chèque de caution de 50 € demandé
+price: Gratuit ; caution de 50 € encaissée uniquement en cas d’absence non justifiée
 dates: []
 documents:
   - label: Mémento de la réglementation relative aux ESOD
     url: /assets/documents/reglementation/memento-reglementation-esod.pdf
     type: PDF
     size: 1,4 Mo
-registrationUrl: /contact/
+registrationUrl: https://chasseur-vendeen.fr/formation-piegeage/
 ---
 
-La formation est dispensée par la FDC 85 avec l’Association départementale des piégeurs et déterreurs de Vendée. Les prochaines sessions seront publiées par la Fédération.
+La formation est dispensée par la FDC 85 avec l’Association départementale des piégeurs et déterreurs de Vendée. Consultez la page de la Fédération pour les prochaines dates et les modalités d’inscription publiées.

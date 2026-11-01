@@ -8,8 +8,8 @@ documents:
   - label: "Carnet_prelevement_Gibier_Deau_26_27-1.png (752 téléchargements )"
     url: "/assets/documents/actualites/ouverture-gibier-deau-2026-2027/62026.png"
     type: "PNG"
-expiresAt: 2026-12-18
-archived: false
+expiresAt: 2026-10-02
+archived: true
 ---
 
 Pour rappel, veuillez trouver ci-dessous les éléments réglementaires sur la chasse du Gibier d’Eau et la Caille des Blés pour la saison 2026-2027 : **_1\. Pour les canards :_**

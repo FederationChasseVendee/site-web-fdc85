@@ -16,14 +16,14 @@ program:
   - Connaissances cynégétiques et régulation des espèces susceptibles d’occasionner des dégâts.
 duration: 18 heures minimum sur deux journées (module 1 de 10 heures et module 2 de 8 heures)
 location: Fédération Départementale des Chasseurs de la Vendée, La Roche-sur-Yon
-price: Gratuit ; chèque de caution de 50 € demandé
+price: Gratuit ; caution de 50 € encaissée uniquement en cas d’absence non justifiée
 dates: []
 documents:
   - label: Dossier d’agrément ou de renouvellement — arrondissement de Fontenay-le-Comte
     url: /assets/documents/formulaires/demande-agrement-garde-particulier-fontenay.pdf
     type: PDF
     size: 1,0 Mo
-registrationUrl: /contact/
+registrationUrl: https://chasseur-vendeen.fr/formation-garde-chasse-particulier/
 ---
 
-L’agrément est délivré par arrêté préfectoral pour cinq ans, renouvelables. Les prochaines dates sont annoncées pour 2027 par la FDC 85.
+L’agrément est délivré par arrêté préfectoral pour cinq ans, renouvelables. Consultez la page de la Fédération pour les prochaines dates et les modalités d’inscription publiées.
