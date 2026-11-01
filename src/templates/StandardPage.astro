@@ -3,6 +3,7 @@ import { render, type CollectionEntry } from "astro:content";
 import PageHeader from "../components/PageHeader.astro";
 import ResourceLinks from "../components/ResourceLinks.astro";
 import SmartLink from "../components/SmartLink.astro";
+import { resolveUrl } from "../lib/urls";
 
 interface Props {
   entry: CollectionEntry<"standardPages">;
@@ -12,13 +13,18 @@ interface Props {
 const { entry, slug } = Astro.props;
 const { Content } = await render(entry);
 const { title, intro, hero, documents, links, cta } = entry.data;
+const currentUrl = resolveUrl(`${slug}/`, import.meta.env.BASE_URL);
+const usefulLinks = links.filter((link) => link.url.includes("#") || resolveUrl(link.url, import.meta.env.BASE_URL) !== currentUrl);
 ---
 
 <PageHeader {slug} {title} {intro} image={hero} />
 <div class="container content-layout">
   <article class="prose"><Content /></article>
   <ResourceLinks title="Documents à télécharger" items={documents} />
-  <ResourceLinks title="Liens utiles" items={links} />
+  <ResourceLinks title="Liens utiles" items={usefulLinks} />
+  {usefulLinks.length !== links.length && (
+    <p class="status-message">L’ancien lien de service renvoyait à cette page. Sa destination actuelle reste à confirmer ; <SmartLink href="contact/">contactez la Fédération pour être orienté</SmartLink>.</p>
+  )}
 </div>
 {cta && (
   <aside class="cta-panel">

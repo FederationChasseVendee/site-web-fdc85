@@ -13,6 +13,9 @@ const entries = await getTemplateEntries();
 const labels = new Map(entries.map((item) => [item.slug, titleForEntry(item)]));
 labels.set("actualites", "Actualités");
 labels.set("actualites/archives", "Archives");
+labels.set("mes-demarches", "Mes démarches");
+labels.set("mes-demarches/declarer-un-degat", "Déclarer un dégât");
+labels.set("mes-demarches/declarer-une-perte", "Déclarer une perte");
 const crumbs = segments.map((_, index) => {
   const path = segments.slice(0, index + 1).join("/");
   return { path, label: index === segments.length - 1 ? title : labels.get(path) ?? segments[index] };
@@ -26,7 +29,9 @@ const crumbs = segments.map((_, index) => {
       <li>
         {index === crumbs.length - 1
           ? <span aria-current="page">{crumb.label}</span>
-          : <a href={resolveUrl(`${crumb.path}/`, import.meta.env.BASE_URL)}>{crumb.label}</a>}
+          : labels.has(crumb.path)
+            ? <a href={resolveUrl(`${crumb.path}/`, import.meta.env.BASE_URL)}>{crumb.label}</a>
+            : <span>{crumb.label}</span>}
       </li>
     ))}
   </ol>

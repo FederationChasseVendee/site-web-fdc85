@@ -1,8 +1,9 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { extname, join, relative } from "node:path";
+import { canonicalSlug, procedures } from "../src/lib/routes.mjs";
 
 const configuredBase = process.env.ASTRO_BASE_PATH?.replace(/^\/+|\/+$/g, "");
-const base = configuredBase ? `/${configuredBase}/` : "/site-web/";
+const base = process.env.ASTRO_BASE_PATH !== undefined ? (configuredBase ? `/${configuredBase}/` : "/") : "/site-web/";
 const siteUrl = process.env.ASTRO_SITE ?? "https://federationchassevendee.github.io";
 const siteRoot = new URL(base, `${siteUrl.replace(/\/+$/, "")}/`).href;
 const absoluteRoot = siteRoot.endsWith("/") ? siteRoot : `${siteRoot}/`;
@@ -108,7 +109,8 @@ for (const file of redirectFiles) {
 
   const route = relative(redirectDirectory, file).replace(/\\/g, "/").replace(/\.md$/, "");
   const html = readFileSync(join(distDirectory, ...route.split("/"), "index.html"), "utf8");
-  const resolvedDestination = `${base}${destination.replace(/^\/+/, "")}`;
+  const destinationPath = destination.replace(/^\/+|\/+$/g, "");
+  const resolvedDestination = destinationPath ? `${base}${canonicalSlug(destinationPath)}/` : base;
   const canonicalDestination = new URL(resolvedDestination, siteUrl).href;
 
   if (!html.includes(`content="0; url=${resolvedDestination}"`)) {
@@ -142,6 +144,24 @@ for (const article of newsMigration.articles) {
   }
 }
 
+let reorganizedCount = 0;
+for (const collection of ["standard-pages", "crossroads", "indexes", "trainings", "species"]) {
+  const directory = join("src", "content", collection);
+  for (const file of walk(directory).filter((file) => extname(file) === ".md")) {
+    const oldRoute = relative(directory, file).replace(/\\/g, "/").replace(/\.md$/, "");
+    const canonicalRoute = canonicalSlug(oldRoute);
+    if (oldRoute === canonicalRoute) continue;
+    const oldHtml = readFileSync(join(distDirectory, ...oldRoute.split("/"), "index.html"), "utf8");
+    const destination = `${base}${canonicalRoute}/`;
+    if (!oldHtml.includes(`content="0; url=${destination}"`)
+      || !oldHtml.includes(`<link rel="canonical" href="${absoluteRoot}${canonicalRoute}/"`)
+      || !oldHtml.includes('content="noindex, follow"')) {
+      throw new Error(`Ancienne URL réorganisée sans redirection canonique : ${oldRoute}`);
+    }
+    reorganizedCount += 1;
+  }
+}
+
 for (const xmlFile of ["sitemap.xml", "feed.xml"]) {
   const xml = readFileSync(join(distDirectory, xmlFile), "utf8");
   if (!xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>') || xml.includes("\uFFFD")) {
@@ -168,6 +188,36 @@ if (!robots.includes(`Allow: ${new URL(base, siteUrl).pathname}`)
 }
 
 const homeHtml = readFileSync(join(distDirectory, "index.html"), "utf8");
+const mainHome = homeHtml.match(/<main id="contenu">([\s\S]*?)<\/main>/)?.[1];
+if (!mainHome || /02\s*51\s*47\s*80\s*90|tel:/.test(mainHome)) {
+  throw new Error("Les coordonnées ne doivent pas apparaître dans le contenu principal de l’accueil.");
+}
+if (homeHtml.indexOf('class="home-folders') > homeHtml.indexOf('class="section news-section')) {
+  throw new Error("Les démarches doivent précéder les actualités.");
+}
+for (const procedure of procedures) {
+  for (const route of ["index.html", join("mes-demarches", "index.html")]) {
+    const html = readFileSync(join(distDirectory, route), "utf8");
+    if (!html.includes(`href="${base}${procedure.url}"`)) {
+      throw new Error(`Démarche absente de ${route} : ${procedure.title}`);
+    }
+  }
+}
+const beginnerHtml = readFileSync(join(distDirectory, "devenir-chasseur", "index.html"), "utf8");
+for (const procedure of procedures.slice(0, 2)) {
+  if (!beginnerHtml.includes(`href="${base}${procedure.url}"`)) {
+    throw new Error(`Le parcours Devenir chasseur doit rejoindre la démarche unique : ${procedure.title}`);
+  }
+}
+const spacesHtml = readFileSync(join(distDirectory, "mes-demarches", "mon-espace", "index.html"), "utf8");
+for (const url of ["https://fdc85.retriever-ea.fr/", "https://fdc85-2.retriever-ea.fr/html/Connexion.aspx"]) {
+  if (!spacesHtml.includes(`href="${url}"`)) throw new Error(`Accès externe perdu : ${url}`);
+}
+for (const route of ["mes-demarches/", "mes-demarches/se-former/", ...procedures.map(({ url }) => url)]) {
+  if (!sitemap.includes(`<loc>${absoluteRoot}${route}</loc>`)) {
+    throw new Error(`Nouvelle démarche absente du sitemap : ${route}`);
+  }
+}
 const navigationBlocks = [...homeHtml.matchAll(/<nav[^>]*aria-label="Navigation principale"[^>]*>(.*?)<\/nav>/gs)];
 if (navigationBlocks.length !== 2) {
   throw new Error("Les navigations principale mobile et bureau n’ont pas été trouvées.");
@@ -201,5 +251,5 @@ for (const htmlFile of routeFiles) {
 }
 
 console.log(
-  `${routeFiles.length} routes, 85 articles, ${redirectFiles.length + unicodeRedirects.length} redirections, ${documentFiles.length} PDF, leurs liens, leurs médias, le sitemap, le flux et les repères d’accessibilité ont été vérifiés sous ${base}.`,
+  `${routeFiles.length} routes, 85 articles, ${redirectFiles.length + reorganizedCount} redirections, ${documentFiles.length} PDF, leurs liens, leurs médias, le sitemap, le flux et les repères d’accessibilité ont été vérifiés sous ${base}.`,
 );

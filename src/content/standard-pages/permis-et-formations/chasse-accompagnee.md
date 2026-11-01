@@ -7,7 +7,7 @@ navigation:
   order: 100
 links:
   - label: Démarches actualisées
-    url: /permis-et-formations/chasse-accompagnee/
+    url: https://chasse85.fr/je-veux-devenir-chasseur/chasser-accompagne/
   - label: Voir les formations
     url: /permis-et-formations/formations/
 ---

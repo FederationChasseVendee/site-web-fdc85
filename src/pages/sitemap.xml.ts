@@ -15,7 +15,7 @@ export const GET: APIRoute = async ({ site }) => {
   const entries = (await getTemplateEntries()).filter((entry) => entry.template !== "redirect");
   const activeArticles = await getArticlesByStatus(false);
   const archivedArticles = await getArticlesByStatus(true);
-  const routes = new Set<string>([""]);
+  const routes = new Set<string>(["", "mes-demarches/", "mes-demarches/se-former/"]);
 
   entries.forEach((entry) => routes.add(`${entry.slug}/`));
   routes.add("actualites/");

@@ -1,0 +1,50 @@
+---
+import SmartLink from "./SmartLink.astro";
+import { procedures } from "../lib/routes.mjs";
+
+const groups = [
+  { id: "permit", title: "Permis & formation" },
+  { id: "report", title: "Déclarations" },
+  { id: "space", title: "Mon espace" },
+];
+---
+
+<div class="folders-layout">
+  {groups.map((group) => (
+    <section class:list={["folder", `folder-${group.id}`]} aria-labelledby={`folder-${group.id}`}>
+      <h2 id={`folder-${group.id}`}>{group.title}</h2>
+      <ul class="folder-links">
+        {procedures.filter((procedure) => procedure.group === group.id).map((procedure) => (
+          <li>
+            <SmartLink class="folder-action" href={procedure.url}>
+              <span>
+                <strong>{procedure.title}</strong>
+                {!["mes-demarches/declarer-un-degat/", "mes-demarches/declarer-une-perte/", "mes-demarches/mon-espace/"].includes(procedure.url) && <small>{procedure.text}</small>}
+              </span>
+              <span aria-hidden="true">→</span>
+            </SmartLink>
+            {procedure.url === "mes-demarches/declarer-un-degat/" && (
+              <div class="folder-subchoices">
+                <SmartLink href="mes-demarches/declarer-un-degat/grand-gibier/">Dégâts de grand gibier</SmartLink>
+                <SmartLink href="mes-demarches/declarer-un-degat/decladom/">Autres dégâts — DECLADOM</SmartLink>
+              </div>
+            )}
+            {procedure.url === "mes-demarches/declarer-une-perte/" && (
+              <div class="folder-subchoices">
+                <SmartLink href="mes-demarches/declarer-une-perte/permis/">Perte de mon permis</SmartLink>
+                <SmartLink href="mes-demarches/declarer-une-perte/arme/">Perte d’une arme</SmartLink>
+              </div>
+            )}
+            {procedure.group === "space" && (
+              <div class="folder-spaces">
+                <SmartLink href="mes-demarches/mon-espace/#adherent">Espace adhérent</SmartLink>
+                <p>Chasseurs et responsables de territoire</p>
+                <SmartLink href="mes-demarches/mon-espace/#equipage">Espace maître d’équipage</SmartLink>
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+</div>

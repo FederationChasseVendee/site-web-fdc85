@@ -1,5 +1,5 @@
 ---
-title: Contact
+title: Nous contacter
 description: Coordonnées, horaires et moyens de contact de la Fédération Départementale des Chasseurs de la Vendée.
 intro: Une question sur une démarche, une formation ou la réglementation ? Choisissez le moyen de contact qui vous convient.
 navigation:

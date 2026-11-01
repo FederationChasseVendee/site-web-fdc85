@@ -35,8 +35,8 @@ const isCurrent = (url: string) => currentPath.startsWith(resolveUrl(url, base))
         ))}
       </nav>
       <div class="header-actions" aria-label="Actions prioritaires">
-        {site.primaryActions.map((item, index) => (
-          <SmartLink class:list={["button", index === 0 ? "button-primary" : "button-dark"]} href={item.url}>{item.label}</SmartLink>
+        {site.primaryActions.filter((item) => item.url === "contact/").map((item) => (
+          <SmartLink href={item.url}>{item.label}</SmartLink>
         ))}
       </div>
     </div>

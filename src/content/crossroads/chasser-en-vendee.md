@@ -1,6 +1,6 @@
 ---
 title: Chasser en Vendée
-description: Démarches, réglementation et informations pratiques pour chasser en Vendée.
+description: Réglementation et informations pratiques pour chasser en Vendée.
 intro: Retrouvez les repères utiles avant, pendant et après la saison.
 navigation:
   show: true
@@ -26,7 +26,7 @@ cards:
     text: Comprendre la surveillance des territoires.
     url: /chasser-en-vendee/police-de-la-chasse/
   - title: Dégâts causés par la faune
-    text: Prévenir, déclarer et comprendre l’indemnisation.
+    text: Comprendre la prévention, le suivi et les dispositifs applicables.
     url: /chasser-en-vendee/degats-causes-par-la-faune/
   - title: Collision avec la faune
     text: Adopter les premiers réflexes après une collision.
@@ -43,7 +43,7 @@ cards:
   - title: Types et modes de chasse
     text: Découvrir la diversité des pratiques.
     url: /chasser-en-vendee/types-et-modes-de-chasse/
-  - title: DECLADOM
+  - title: Autres dégâts — DECLADOM
     text: Déclarer les dommages causés par certaines espèces.
     url: /chasser-en-vendee/decladom/
   - title: Espace adhérent
@@ -51,4 +51,4 @@ cards:
     url: /chasser-en-vendee/espace-adherent/
 ---
 
-Choisissez la démarche ou l’information recherchée.
+Consultez les informations sur la pratique. Les liens d’action renvoient aux mêmes destinations que Mes démarches.

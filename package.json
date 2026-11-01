@@ -9,10 +9,12 @@
     "check:generated": "node scripts/check-generated-site.mjs",
     "test:analytics": "node scripts/test-umami.mjs",
     "test:visual": "node --test scripts/test-visual-workshop.mjs",
+    "test:routes": "node --test scripts/test-public-routes.mjs",
     "preview": "astro preview"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
+    "@astrojs/markdown-remark": "^7.3.5",
     "astro": "^7.3.3",
     "typescript": "^5.9.2"
   }

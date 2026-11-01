@@ -5,37 +5,37 @@
   "logo": "/assets/logo-fdc85.png",
   "navigation": [
     {
-      "label": "Actualités",
-      "url": "actualites/"
+      "label": "Mes démarches",
+      "url": "mes-demarches/"
+    },
+    {
+      "label": "Devenir chasseur",
+      "url": "devenir-chasseur/"
+    },
+    {
+      "label": "Formations",
+      "url": "formations/"
     },
     {
       "label": "Chasser en Vendée",
       "url": "chasser-en-vendee/"
     },
     {
-      "label": "Permis et formations",
-      "url": "permis-et-formations/"
-    },
-    {
-      "label": "Nature et territoires",
-      "url": "nature-et-territoires/"
+      "label": "Nature et biodiversité",
+      "url": "nature-et-biodiversite/"
     },
     {
       "label": "La Fédération",
       "url": "la-federation/"
-    },
-    {
-      "label": "Ressources",
-      "url": "ressources/"
     }
   ],
   "primaryActions": [
     {
       "label": "Valider mon permis",
-      "url": "chasser-en-vendee/validation-du-permis/"
+      "url": "mes-demarches/valider-mon-permis/"
     },
     {
-      "label": "Contact",
+      "label": "Nous contacter",
       "url": "contact/"
     }
   ],
