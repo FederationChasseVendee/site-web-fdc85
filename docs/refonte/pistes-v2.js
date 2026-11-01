@@ -99,6 +99,28 @@
       composition: "Photographie panoramique, bloc de titre décalé, puis liens d’action en deux rangées.",
       tradeoff: "Très immersif ; il faut préserver la visibilité des démarches dès le premier écran.",
       layout: "v2-landscape"
+    },
+    {
+      id: "circle-ribbon",
+      title: "Le ruban des démarches",
+      short: "Un bandeau rassemble huit grands accès ronds avec pictogrammes et libellés lisibles en dessous.",
+      palette: "Vert profond · ivoire · ocre",
+      navigation: "Six rubriques en haut, puis un bandeau de raccourcis circulaires.",
+      composition: "Les ronds forment une ligne sur grand écran et se répartissent en deux colonnes sur mobile.",
+      tradeoff: "Les pictogrammes facilitent le repérage, mais les libellés restent indispensables.",
+      layout: "v2-circle-ribbon",
+      addedLater: true
+    },
+    {
+      id: "circle-plaza",
+      title: "Les démarches en médaillons",
+      short: "Les intitulés sont inscrits dans de grands ronds : chaque cercle représente directement une démarche.",
+      palette: "Bleu pétrole · sable · jaune doux",
+      navigation: "Menu horizontal ; les démarches forment un bandeau de grands liens ronds.",
+      composition: "Un titre à gauche et huit médaillons regroupés en deux rangées ; le tout s’empile sur mobile.",
+      tradeoff: "Les cercles sont plus affirmés, mais ils occupent davantage de place que des liens en liste.",
+      layout: "v2-circle-plaza",
+      addedLater: true
     }
   ];
 
@@ -128,6 +150,17 @@
     stag: "../../public/assets/articles/actions-terrain/principale-5dcec20d.webp"
   };
 
+  const taskIcons = [
+    '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8" cy="10" r="2"/><path d="M5.5 16c.5-2 4.5-2 5 0M13 9h5M13 13h5"/>',
+    '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m8 12 3 3 5-6"/>',
+    '<path d="M4 5c3-1 6-.5 8 1.5C14 4.5 17 4 20 5v13c-3-1-6-.5-8 1.5C10 17.5 7 17 4 18zM12 6.5v13"/>',
+    '<path d="M9 5h10M9 10h10M9 15h10M9 20h10M4 5h.01M4 10h.01M4 15h.01M4 20h.01"/>',
+    '<path d="M6 3h8l4 4v14H6zM14 3v5h5M9 12h6M9 16h6"/>',
+    '<path d="M12 20v-9M12 15c-4 0-6-2-6-6 4 0 6 2 6 6ZM12 12c0-4 2-6 6-6 0 4-2 6-6 6ZM5 21h14"/>',
+    '<circle cx="10" cy="10" r="6"/><path d="m15 15 5 5M8.5 8a1.8 1.8 0 1 1 3 1.3c-.9.7-1.5 1-1.5 2.2M10 14h.01"/>',
+    '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-4 3-6 7-6s7 2 7 6"/>'
+  ];
+
   function brand(extra = "") {
     return `<div class="v2-brand ${extra}"><strong>FDC<span>85</span></strong><span>Fédération des chasseurs<br>de la Vendée</span></div>`;
   }
@@ -141,6 +174,13 @@
       const [label, detail] = tasks[index];
       return `<div class="v2-task"><span><strong>${label}</strong>${details ? `<small>${detail}</small>` : ""}</span><span class="v2-arrow" aria-hidden="true">→</span></div>`;
     }).join("");
+  }
+
+  function circularLinks(withIcons) {
+    return tasks.map(([label], index) => withIcons
+      ? `<div class="v2-task"><span class="circle-disc" aria-hidden="true"><svg viewBox="0 0 24 24">${taskIcons[index]}</svg><span>↗</span></span><strong>${label}</strong></div>`
+      : `<div class="v2-task"><strong>${label}</strong><span aria-hidden="true">↗</span></div>`
+    ).join("");
   }
 
   function news(className = "") {
@@ -243,7 +283,20 @@
       <section class="landscape-hero"><img src="${photos.lagoon}" alt="Vue aérienne de la lagune de Bouin"><div><h3>La Vendée,<br>un territoire vivant.</h3><p>Démarches, pratique et découverte : la Fédération à vos côtés.</p></div></section>
       <section class="landscape-actions"><div class="landscape-heading"><h4>Mes démarches</h4><span>Toutes les démarches →</span></div><div class="landscape-grid">${links([0, 1, 2, 3, 4, 5, 6, 7])}</div></section>
       <div class="landscape-explore"><strong>Découvrir la chasse en Vendée</strong><span>Devenir chasseur →</span><span>Nature et biodiversité →</span></div>
-      ${news("landscape-news")}${footer()}`
+      ${news("landscape-news")}${footer()}`,
+
+    "v2-circle-ribbon": () => `
+      <header class="circle-ribbon-header">${brand()}${menu("circle-ribbon-nav")}</header>
+      <section class="circle-ribbon-intro"><h3>Vos démarches,<br>à portée de main.</h3><p>Les services de la Fédération, réunis au même endroit.</p></section>
+      <section class="circle-ribbon-band"><div class="circle-ribbon-heading"><h4>Mes démarches</h4><span>Choisissez votre accès</span></div><div class="circle-ribbon-grid">${circularLinks(true)}</div></section>
+      ${news("circle-ribbon-news")}${footer()}`,
+
+    "v2-circle-plaza": () => `
+      <header class="circle-plaza-header">${brand()}${menu("circle-plaza-nav")}</header>
+      <section class="circle-plaza-band"><div class="circle-plaza-intro"><h3>Vos démarches<br>en clair.</h3><p>Choisissez l’action qui correspond à votre besoin.</p><span>Mes démarches →</span></div>
+        <div class="circle-plaza-grid">${circularLinks(false)}</div>
+      </section>
+      ${news("circle-plaza-news")}${footer()}`
   };
 
   function render(concept) {

@@ -17,6 +17,7 @@ const visualScript = readFileSync(new URL("../docs/refonte/pistes-v2.js", import
 const v1Key = "fdc85-atelier-visuel-v1";
 const v2Key = "fdc85-atelier-visuel-v2";
 const legacyIds = ["ledger", "coast", "atlas", "bulletin", "guide", "kiosk", "season", "route", "index", "poster"];
+const originalV2Ids = ["guichet", "journal", "two-doors", "directory", "subject-map", "journey", "big-type", "open-files", "photo-guide", "landscape"];
 
 function legacyState() {
   const reviews = Object.fromEntries(legacyIds.map((id) => [id, {
@@ -145,12 +146,46 @@ test("les avis des deux séries restent séparés et sont réunis dans l’expor
   ]) {
     assert.ok(markdown.includes(text), `L’export ne contient pas « ${text} ».`);
   }
-  assert.equal((markdown.match(/^### \d{2} — /gm) || []).length, 20);
+  assert.equal((markdown.match(/^### \d{2} — /gm) || []).length, 22);
 
   const reloaded = createWorkshop(storage);
   assert.equal(reloaded.getElementById("userNote").value, "Nouvel avis utilisateur");
   runInContext("selectSeries(series.v1)", reloaded.context);
   assert.equal(reloaded.getElementById("userNote").value, "Ancien avis complété");
+});
+
+test("les nouvelles pistes circulaires préservent les avis de la série précédente", () => {
+  const reviews = Object.fromEntries(originalV2Ids.map((id) => [id, {
+    status: "unreviewed",
+    userNote: "",
+    clientNote: "",
+  }]));
+  reviews["open-files"] = {
+    status: "keep",
+    userNote: "Conserver les dossiers",
+    clientNote: "Avis de la cliente",
+    extra: "champ conservé",
+  };
+  const original = JSON.stringify({ current: 7, mode: "single", device: "desktop", reviews, marker: "métadonnée" });
+  const storage = new StorageStub({ [v2Key]: original });
+  const app = createWorkshop(storage);
+
+  assert.equal(app.getElementById("userNote").value, "Conserver les dossiers");
+  assert.equal(app.getElementById("clientNote").value, "Avis de la cliente");
+  assert.equal(app.getElementById("overviewMode").textContent, "Voir les 12");
+  assert.equal(storage.getItem(v2Key), original);
+
+  runInContext("selectConcept(10)", app.context);
+  const saved = JSON.parse(storage.getItem(v2Key));
+  assert.equal(saved.marker, "métadonnée");
+  assert.equal(saved.reviews["open-files"].extra, "champ conservé");
+  assert.equal(saved.reviews["open-files"].userNote, "Conserver les dossiers");
+  assert.equal(saved.reviews["circle-ribbon"].status, "unreviewed");
+  assert.equal(saved.reviews["circle-plaza"].status, "unreviewed");
+  app.getElementById("userNote").input("Une piste circulaire à tester");
+  const markdown = runInContext("buildMarkdown()", app.context);
+  assert.match(markdown, /Conserver les dossiers/);
+  assert.match(markdown, /Une piste circulaire à tester/);
 });
 
 test("des données illisibles restent intactes et sont signalées dans l’export", () => {
@@ -209,7 +244,7 @@ test("si les nouvelles pistes manquent, la première série reste accessible", (
   assert.equal(storage.getItem(v2Key), savedV2);
 });
 
-test("les dix nouvelles compositions conservent les rubriques et les démarches", () => {
+test("les douze nouvelles compositions conservent les rubriques et les démarches", () => {
   const app = createWorkshop(new StorageStub());
   const bundle = app.context.window.fdcVisualV2;
   const actions = [
@@ -220,9 +255,9 @@ test("les dix nouvelles compositions conservent les rubriques et les démarches"
     "Mes démarches", "Devenir chasseur", "Formations", "Chasser en Vendée",
     "Nature et biodiversité", "La Fédération",
   ];
-  assert.equal(bundle.concepts.length, 10);
-  assert.equal(new Set(bundle.concepts.map((concept) => concept.id)).size, 10);
-  assert.equal(new Set(bundle.concepts.map((concept) => concept.layout)).size, 10);
+  assert.equal(bundle.concepts.length, 12);
+  assert.equal(new Set(bundle.concepts.map((concept) => concept.id)).size, 12);
+  assert.equal(new Set(bundle.concepts.map((concept) => concept.layout)).size, 12);
 
   for (const concept of bundle.concepts) {
     const markup = bundle.render(concept);

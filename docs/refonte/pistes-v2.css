@@ -292,6 +292,38 @@
 .landscape-explore strong { margin-right: auto; font-size: 13px; }
 .landscape-news { background: #fff; }
 
+/* A ribbon of pictograms, with the action named outside each circle. */
+.v2-site[data-layout="v2-circle-ribbon"] { background: #f7f5eb; color: #173c36; }
+.circle-ribbon-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 15px 25px; background: #fff; }
+.v2-site .circle-ribbon-nav { justify-content: flex-end; gap: 7px 11px; }
+.circle-ribbon-intro { padding: 27px 26px; }
+.circle-ribbon-intro h3 { font-family: Georgia, serif; font-weight: 400; }
+.circle-ribbon-intro p { margin-top: 9px; }
+.circle-ribbon-band { padding: 22px 26px 26px; background: #174b42; color: #fff; }
+.circle-ribbon-heading { display: flex; align-items: end; justify-content: space-between; gap: 12px; }
+.circle-ribbon-heading > span { color: #e4efea; font-size: 12px; font-weight: 700; }
+.circle-ribbon-grid { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; margin-top: 18px; }
+.circle-ribbon-grid .v2-task { min-width: 0; min-height: 0; flex-direction: column; justify-content: flex-start; gap: 9px; padding: 0; border: 0; text-align: center; }
+.circle-ribbon-grid .v2-task strong { overflow-wrap: anywhere; font-size: 14px; line-height: 1.2; }
+.circle-disc { position: relative; display: grid; width: min(96px, 100%); flex: none; aspect-ratio: 1; place-items: center; border: 2px solid #e6d3a2; border-radius: 50%; background: #fbf8ed; color: #174b42; }
+.circle-disc svg { width: 43%; height: 43%; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.circle-disc > span { position: absolute; right: 12%; bottom: 10%; font-size: 15px; font-weight: 800; }
+.circle-ribbon-news { background: #f7f5eb; }
+
+/* The labels themselves sit inside a group of large circular links. */
+.v2-site[data-layout="v2-circle-plaza"] { background: #f9f5eb; color: #17373f; }
+.circle-plaza-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 15px 25px; background: #fff; }
+.v2-site .circle-plaza-nav { justify-content: flex-end; gap: 7px 11px; }
+.circle-plaza-band { display: grid; grid-template-columns: .55fr 1.45fr; align-items: center; gap: 20px; padding: 28px 26px; background: #f1ce88; }
+.circle-plaza-intro h3 { font-size: 34px; }
+.circle-plaza-intro p { margin-top: 12px; }
+.circle-plaza-intro > span { display: block; margin-top: 20px; font-size: 13px; font-weight: 800; }
+.circle-plaza-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.circle-plaza-grid .v2-task { position: relative; display: grid; min-width: 0; min-height: 0; aspect-ratio: 1; place-items: center; align-content: center; justify-content: center; padding: 12px 10px 24px; border: 0; border-radius: 50%; background: #173e46; color: #fff; text-align: center; }
+.circle-plaza-grid .v2-task strong { max-width: 14ch; overflow-wrap: anywhere; font-size: 15px; line-height: 1.2; }
+.circle-plaza-grid .v2-task > span { position: absolute; right: 17%; bottom: 11%; font-size: 17px; }
+.circle-plaza-news { background: #fff; }
+
 /* The device control changes the mockup width independently of the workshop. */
 .preview-wrap.is-mobile .v2-site h3 { font-size: 28px; }
 .preview-wrap.is-mobile .v2-site h4 { font-size: 18px; }
@@ -371,3 +403,15 @@
 .preview-wrap.is-mobile .landscape-actions { padding: 20px 16px; }
 .preview-wrap.is-mobile .landscape-grid { grid-template-columns: 1fr 1fr; gap: 0 12px; }
 .preview-wrap.is-mobile .landscape-explore { padding: 15px 16px; }
+
+.preview-wrap.is-mobile .circle-ribbon-header,
+.preview-wrap.is-mobile .circle-plaza-header { align-items: flex-start; flex-direction: column; gap: 10px; padding: 13px 15px; }
+.preview-wrap.is-mobile .circle-ribbon-intro { padding: 23px 16px; }
+.preview-wrap.is-mobile .circle-ribbon-band { padding: 22px 16px; }
+.preview-wrap.is-mobile .circle-ribbon-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 14px; }
+.preview-wrap.is-mobile .circle-ribbon-grid .v2-task strong { font-size: 15px; }
+.preview-wrap.is-mobile .circle-disc { width: 112px; max-width: 100%; }
+.preview-wrap.is-mobile .circle-plaza-band { grid-template-columns: 1fr; gap: 19px; padding: 23px 16px; }
+.preview-wrap.is-mobile .circle-plaza-intro > span { margin-top: 10px; }
+.preview-wrap.is-mobile .circle-plaza-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.preview-wrap.is-mobile .circle-plaza-grid .v2-task strong { font-size: 16px; }
