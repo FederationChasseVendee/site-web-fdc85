@@ -27,7 +27,8 @@ const canonical = new URL(redirectTo ?? Astro.url.pathname, Astro.site);
 const favicon = `${import.meta.env.BASE_URL}favicon.png`.replace(/\/{2,}/g, "/");
 const feed = `${import.meta.env.BASE_URL}feed.xml`.replace(/\/{2,}/g, "/");
 const socialImage = image ? new URL(`${import.meta.env.BASE_URL}${image.replace(/^\/+/, "")}`.replace(/\/{2,}/g, "/"), Astro.site) : undefined;
-const umami = getUmamiConfig(site.analytics);
+const browserDraft = import.meta.env.PUBLIC_BROWSER_DRAFT === "true";
+const umami = browserDraft ? undefined : getUmamiConfig(site.analytics);
 ---
 
 <!doctype html>
@@ -38,7 +39,9 @@ const umami = getUmamiConfig(site.analytics);
     <meta name="generator" content={Astro.generator} />
     <meta name="theme-color" content="#173f35" />
     <meta name="description" content={description} />
-    {redirectTo && <meta name="robots" content="noindex, follow" />}
+    {browserDraft
+      ? <meta name="robots" content="noindex, nofollow" />
+      : redirectTo && <meta name="robots" content="noindex, follow" />}
     {redirectTo && <meta http-equiv="refresh" content={`0; url=${redirectTo}`} />}
     <link rel="canonical" href={canonical} />
     <link rel="alternate" type="application/atom+xml" title={`Actualités — ${site.shortName}`} href={feed} />

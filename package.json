@@ -8,11 +8,20 @@
     "build": "astro check && astro build && npm run check:generated",
     "check:generated": "node scripts/check-generated-site.mjs",
     "test:analytics": "node scripts/test-umami.mjs",
+    "test:browser-admin": "node --test scripts/test-browser-admin.mjs",
+    "test:browser-admin:e2e": "node scripts/test-browser-admin-browser.mjs",
     "preview": "astro preview"
+  },
+  "devDependencies": {
+    "playwright": "1.61.1"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
+    "@astrojs/markdown-satteri": "^0.4.1",
+    "@webcontainer/api": "1.6.4",
     "astro": "^7.3.3",
+    "fflate": "^0.8.2",
+    "yaml": "^2.8.1",
     "typescript": "^5.9.2"
   }
 }

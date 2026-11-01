@@ -1,0 +1,118 @@
+---
+import "../admin/admin.css";
+const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
+const description = "Expérimentation : Node, npm et le serveur Astro dans votre navigateur, sans installation sur votre ordinateur.";
+---
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href={new URL(`${base}admin/`, Astro.site)} />
+    <link rel="icon" href={`${base}favicon.png`} />
+    <title>Atelier local — FDC 85</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenu">Aller au contenu</a>
+    <header class="atelier-header">
+      <a href={base} class="brand">FDC 85 <span>Atelier navigateur</span></a>
+      <a href="https://app.pagescms.org/FederationChasseVendee/site-web-fdc85"
+        target="_blank" rel="noreferrer">Publier avec Pages CMS (nouvel onglet)</a>
+    </header>
+    <main id="contenu">
+      <nav aria-label="Fil d’Ariane"><a href={base}>Accueil</a> / Atelier local</nav>
+      <section class="welcome">
+        <p class="eyebrow">OPTION 4 · EXPÉRIMENTATION WEBCONTAINERS</p>
+        <h1>Le site tourne dans votre onglet.</h1>
+        <p>{description} Ce n’est ni une compilation cloud ni une imitation du site.</p>
+        <p class="notice"><strong>Brouillons locaux uniquement.</strong> Rien n’est enregistré dans GitHub
+          ou publié. Ne saisissez aucune donnée confidentielle. Exportez vos fichiers avant de
+          réinitialiser ; Pages CMS reste l’outil authentifié de publication.</p>
+      </section>
+      <section class="runtime-panel" aria-label="Environnement Node">
+        <div class="runtime-info">
+          <span class="status-dot" id="status-dot"></span>
+          <div><strong id="stage-title">Prêt à essayer</strong>
+            <p id="stage-detail">Chrome ou Edge sur ordinateur, HTTPS et accès à StackBlitz/npm requis.</p></div>
+        </div>
+        <div class="controls">
+          <button id="start" type="button">Démarrer Node et Astro</button>
+          <button id="stop" class="secondary" type="button" disabled>Arrêter</button>
+          <button id="reset" class="secondary" type="button">Effacer les brouillons</button>
+        </div>
+        <p id="message" role="status" aria-live="polite"></p>
+        <details class="requirements">
+          <summary>Réseau, confidentialité et licence</summary>
+          <p>Le premier démarrage télécharge les sources publiques, le moteur JS/WASM et les
+            dépendances npm (y compris les compilateurs WASI d’Astro 7). Comptez plusieurs minutes
+            et des dizaines de Mo selon le cache et le réseau. Les 106 Mo de médias existants ne
+            sont pas téléchargés dans Node : ils sont servis à la demande depuis ce site.</p>
+          <p>Le calcul se fait dans l’onglet ; le runtime, son service worker et les téléchargements
+            dépendent néanmoins de l’infrastructure StackBlitz et du registre npm. Ce prototype
+            n’envoie pas de dépôt à un service d’exécution distant, n’utilise pas Bolt et ne demande
+            aucun jeton GitHub. Ce n’est pas un outil hors ligne ni une garantie de confidentialité
+            du fournisseur. Les bloqueurs de stockage tiers peuvent empêcher le démarrage.</p>
+          <p>La documentation dispense les preuves de concept de licence commerciale. L’usage en
+            production doit être confirmé auprès de StackBlitz selon ses conditions actuelles ;
+            aucun abonnement ni contrat n’a été souscrit. Firefox et Safari sont expérimentaux
+            et ne sont pas validés ici. Les sites externes peuvent être bloqués par COEP.</p>
+          <a href="https://webcontainers.io/enterprise" target="_blank" rel="noreferrer">Licence (nouvel onglet)</a>
+          · <a href="https://stackblitz.com/privacy-policy" target="_blank" rel="noreferrer">Confidentialité (nouvel onglet)</a>
+        </details>
+      </section>
+      <div class="workspace">
+        <section class="editor-panel" aria-label="Brouillon de contenu">
+          <h2>Modifier un contenu</h2>
+          <p>Collections issues de Pages CMS. Éditeur de fichier JSON ou Markdown avec en-tête YAML ;
+            les templates et le rendu restent ceux du vrai site.</p>
+          <label for="collection">Collection</label>
+          <select id="collection" disabled><option>Chargée au démarrage</option></select>
+          <label for="file">Fichier</label>
+          <select id="file" disabled><option>Chargé au démarrage</option></select>
+          <label for="source">Contenu du fichier</label>
+          <textarea id="source" spellcheck="false" disabled rows="18"></textarea>
+          <p id="dirty-state">Aucun brouillon.</p>
+          <div class="controls">
+            <button id="apply" type="button" disabled>Appliquer à l’aperçu</button>
+            <button id="export" class="secondary" type="button" disabled>Exporter les brouillons (.zip)</button>
+          </div>
+          <p class="muted">Appliquer écrit dans le système de fichiers virtuel : Astro met l’aperçu à
+            jour à chaud. Cela ne publie rien. Le ZIP conserve les vrais chemins <code>src/content/…</code>.</p>
+        </section>
+        <section class="preview-panel" aria-label="Aperçu Astro réel">
+          <div class="preview-toolbar">
+            <h2>Aperçu Astro</h2>
+            <div class="controls">
+              <button id="desktop" class="secondary" aria-pressed="true" type="button">Ordinateur</button>
+              <button id="mobile" class="secondary" aria-pressed="false" type="button">Mobile</button>
+            </div>
+          </div>
+          <label for="route">Adresse de l’aperçu (dans le site local)</label>
+          <div class="route-controls">
+            <input id="route" type="text" value="/" autocomplete="off" />
+            <button id="navigate" class="secondary" type="button" disabled>Ouvrir</button>
+            <button id="refresh" class="secondary" type="button" disabled>Actualiser</button>
+          </div>
+          <p id="preview-placeholder">L’aperçu apparaîtra après le démarrage du serveur dans l’onglet.</p>
+          <div class="preview-viewport">
+            <iframe id="preview" title="Site Astro du brouillon local" allow="cross-origin-isolated"
+              referrerpolicy="no-referrer" hidden></iframe>
+          </div>
+          <p class="muted">Les collections de données s’observent depuis leur index. Les liens externes
+            peuvent être bloqués dans ce cadre : utilisez le site publié pour les consulter.</p>
+        </section>
+      </div>
+      <details class="logs">
+        <summary>Journal technique (Node, npm, Astro)</summary>
+        <pre id="logs" aria-label="Journal du runtime"></pre>
+      </details>
+      <noscript><p class="notice">JavaScript est nécessaire pour exécuter Node dans cet onglet.</p></noscript>
+    </main>
+    <div id="admin-config" data-base={base}></div>
+    <script>
+      import "../admin/client";
+    </script>
+  </body>
+</html>
