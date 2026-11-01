@@ -7,6 +7,12 @@ const base = process.env.ASTRO_BASE_PATH !== undefined ? (configuredBase ? `/${c
 const siteUrl = process.env.ASTRO_SITE ?? "https://federationchassevendee.github.io";
 const adherentPortal = "https://fdc85-2.retriever-ea.fr/html/Connexion.aspx";
 const retiredAdherentPortalDomain = "fdc85.retriever-ea.fr";
+const publicationWarningPatterns = [
+  /à confirmer avant publication/i,
+  /à vérifier avant publication/i,
+  /destination actuelle reste à confirmer/i,
+  /\bTODO\b/i,
+];
 const siteRoot = new URL(base, `${siteUrl.replace(/\/+$/, "")}/`).href;
 const absoluteRoot = siteRoot.endsWith("/") ? siteRoot : `${siteRoot}/`;
 const basePath = new URL(base, `${siteUrl.replace(/\/+$/, "")}/`).pathname;
@@ -48,6 +54,9 @@ for (const htmlFile of htmlFiles) {
 
   if (html.includes(retiredAdherentPortalDomain)) {
     throw new Error(`Ancien accès Espace Adhérent encore présent dans ${displayPath}.`);
+  }
+  if (publicationWarningPatterns.some((pattern) => pattern.test(html))) {
+    throw new Error(`Avertissement de chantier encore visible dans le site public généré : ${displayPath}.`);
   }
   if (!html.includes('href="#contenu"') || !html.includes('<main id="contenu">')) {
     throw new Error(`Lien d’évitement ou zone principale absent dans ${displayPath}`);
@@ -222,6 +231,10 @@ for (const route of ["mes-demarches/", "mes-demarches/se-former/", ...procedures
 const spacesHtml = readFileSync(join(distDirectory, "mes-demarches", "mon-espace", "index.html"), "utf8");
 if (!spacesHtml.includes(`href="${adherentPortal}"`)) {
   throw new Error("Accès externe RETRIEVER Espace Adhérent perdu.");
+}
+const spaceProcedure = procedures.find(({ url }) => url === "mes-demarches/mon-espace/");
+if (!spaceProcedure?.text.includes("RETRIEVER") || spaceProcedure.text.includes("Deux espaces")) {
+  throw new Error("Le texte de la démarche Espace Adhérent doit refléter l’accès unique RETRIEVER.");
 }
 const navigationBlocks = [...homeHtml.matchAll(/<nav[^>]*aria-label="Navigation principale"[^>]*>(.*?)<\/nav>/gs)];
 if (navigationBlocks.length !== 1) {

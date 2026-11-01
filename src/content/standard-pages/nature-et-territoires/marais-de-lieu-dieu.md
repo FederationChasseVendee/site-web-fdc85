@@ -5,9 +5,6 @@ intro: Une visite virtuelle permet d’explorer cet espace naturel vendéen.
 navigation:
   show: false
   order: 100
-links:
-  - label: Ouvrir la visite virtuelle
-    url: /nature-et-territoires/marais-de-lieu-dieu/
 ---
 
 La visite met en valeur les paysages, la faune et la flore du marais. Elle permet de découvrir le site à distance sans perturber les espèces et les habitats.

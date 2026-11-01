@@ -5,9 +5,6 @@ intro: Protégez d’abord les personnes et alertez les services compétents.
 navigation:
   show: false
   order: 100
-links:
-  - label: Consulter les consignes détaillées
-    url: /chasser-en-vendee/collision-avec-la-faune/
 ---
 
 ## Les premiers réflexes
