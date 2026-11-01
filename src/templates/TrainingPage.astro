@@ -16,6 +16,7 @@ const formatDate = (value: Date) => new Intl.DateTimeFormat("fr-FR", { dateStyle
 
 <PageHeader {slug} title={data.title} intro={data.summary} />
 <div class="container content-layout training-layout">
+  <p class="status-message">Informations reprises du site existant : faites confirmer le tarif, le lieu, les prérequis et les disponibilités avant de vous inscrire.</p>
   <section class="key-facts" aria-label="Informations pratiques">
     <dl>
       <div><dt>Public</dt><dd>{data.audience}</dd></div>
@@ -31,7 +32,7 @@ const formatDate = (value: Date) => new Intl.DateTimeFormat("fr-FR", { dateStyle
     <h2>Programme</h2>
     <ol>{data.program.map((item) => <li>{item}</li>)}</ol>
   </section>
-  <section aria-labelledby="training-dates">
+  <section id="inscription" aria-labelledby="training-dates">
     <h2 id="training-dates">Prochaines dates</h2>
     {data.dates.length > 0 ? (
       <ul class="date-list">
@@ -43,8 +44,8 @@ const formatDate = (value: Date) => new Intl.DateTimeFormat("fr-FR", { dateStyle
           </li>
         ))}
       </ul>
-    ) : <p>Aucune date n’est programmée pour le moment.</p>}
-    <SmartLink class="button button-dark" href={data.registrationUrl}>S’inscrire à cette formation</SmartLink>
+    ) : <p>Aucune date confirmée n’est disponible sur ce site. Contactez la Fédération pour connaître les prochaines sessions.</p>}
+    <SmartLink class="button button-dark" href={data.registrationUrl}>{data.registrationUrl === "/contact/" ? "Demander les modalités d’inscription" : "Ouvrir l’inscription à cette formation"}</SmartLink>
   </section>
   <ResourceLinks title="Documents de la formation" items={data.documents} />
 </div>

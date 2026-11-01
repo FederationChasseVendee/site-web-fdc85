@@ -365,8 +365,22 @@ Critère de décision : les tâches prioritaires ne doivent pas nécessiter une 
 
 ## Sources
 
+### Mise en œuvre provisoire — 1 novembre 2026
+
+**Décision utilisateur confirmée :** implémenter le site public statique avec le visuel 8 « dossiers ouverts », sans attendre la validation graphique de la cliente. Cette demande dépasse la limite antérieure au seul cadrage ; elle ne vaut ni validation de l’identité par la cliente ni autorisation de fusionner ou de publier.
+
+**Réalisé sur la branche de refonte :** six rubriques, huit démarches visibles, sous-choix dégâts/pertes/espaces distincts ; liens identiques vers passer et valider le permis depuis Devenir chasseur ; accès rapides avant actualités ; suppression de Pages CMS et des accès `/admin`, conservation des services externes. Les contenus gardent une destination principale par le routage `src/lib/routes.mjs` ; les anciennes adresses produisent une redirection statique. L’atelier reste indépendant et ses nouvelles variantes circulaires sont conservées sans être utilisées sur le site.
+
+**Points à vérifier avant publication :** adresse directe actuelle de DECLADOM et canal de déclaration du grand gibier ; modalités des pertes ; tarifs et sessions de formation ; coordonnées et horaires. Les deux accès RETRIEVER répondent, mais l’adresse adhérent redirige actuellement vers le domaine maître d’équipage : faire confirmer les rôles sans supprimer un des accès. Les dates générales 2026-2027 ont été recoupées le 1 novembre 2026 avec la page de la Fédération ; revérifier les arrêtés avant publication. Les pages concernées signalent les limites au lieu d’inventer une procédure.
+
+La piste 8 reste une **direction de travail provisoire** : prune `#39365e`, lilas par dossier et fond ivoire `#f5f2f8`, caractères système lisibles, liens exposés, dossiers empilés sur mobile. La validation cliente demeure ouverte ; aucun `DESIGN.md` n’est créé.
+
+**Compacité équilibrée approuvée par l’utilisateur :** raccourcir les bandeaux et l’en-tête, resserrer les dossiers, rapprocher les sous-choix de leur action et conserver les textes d’action à 18 px ainsi que les cibles d’au moins 44 px. Les six rubriques, huit actions et distinctions restent visibles ; ce réglage ne valide pas l’identité graphique auprès de la cliente.
+
+Mesures de la version compacte : en-tête 81 px, bandeau environ 175 px sur les viewports de contrôle 1280 et 1440 px ; tous les choix des dossiers se terminent vers 683 px et le bloc suivant commence vers 715 px. Le contrôle de reflow couvre 320, 390, 768, 1280 et 1440 px sans débordement horizontal.
+
 - Brief, confirmation initiale et révisions utilisateur du bloc Mes démarches et des liens dans Devenir chasseur, le 1 novembre 2026.
 - PDF joint « Mon premier tableau » : image d'arborescence sur une page, consultée après extraction de son image intégrée. Le fichier source n'est pas copié dans le dépôt.
-- `src/content/site.json`, `src/content/home.json`, `src/content/standard-pages/`, `src/content/indexes/`, `src/content/trainings/` et inventaire des collections.
+- `src/content/site.json`, `src/pages/index.astro`, `src/content/standard-pages/`, `src/content/indexes/`, `src/content/trainings/` et inventaire des collections ; l’ancien `home.json` est conservé dans l’historique Git.
 - `docs/migration-wordpress.md` et `README.md` pour le périmètre historique.
 - <https://fdc41.com/> : référence cliente pour la séquence de l'accueil ; aucun actif graphique repris.

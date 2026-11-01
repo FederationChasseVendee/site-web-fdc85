@@ -182,7 +182,11 @@ const directories = defineCollection({
 });
 
 const redirects = defineCollection({
-  loader: glob({ pattern: "**/*.md", base: "./src/content/redirects" }),
+  loader: glob({
+    pattern: "**/*.md",
+    base: "./src/content/redirects",
+    generateId: ({ entry }) => entry.replace(/\.md$/, ""),
+  }),
   schema: z.object({
     title: z.string().min(1),
     description: z.string().min(1),

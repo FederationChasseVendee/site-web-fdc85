@@ -1,10 +1,10 @@
 ---
-title: Nature et territoires
+title: Nature et biodiversité
 description: Découvrir la faune, les milieux et les actions de la Fédération en faveur des territoires.
 intro: Mieux connaître la nature vendéenne et les projets conduits sur le terrain.
 navigation:
   show: true
-  label: Nature et territoires
+  label: Nature et biodiversité
   order: 40
 cards:
   - title: La faune
@@ -16,12 +16,12 @@ cards:
   - title: Les chasseurs aujourd’hui
     text: Comprendre les pratiques et les engagements.
     url: /nature-et-territoires/chasseurs-aujourdhui/
-  - title: ChassAdapt
-    text: Découvrir l’application de carnet de chasse numérique.
-    url: /nature-et-territoires/chassadapt/
   - title: Animations nature
     text: Découvrir les actions d’éducation à la nature.
     url: /nature-et-territoires/animations/
+  - title: Ékolien — ressources pédagogiques
+    text: Découvrir les ressources d’éducation à la nature.
+    url: /nature-et-biodiversite/ekolien/
   - title: Agir pour l’environnement
     text: Parcourir les projets menés avec les territoires.
     url: /nature-et-territoires/agir-pour-environnement/
@@ -37,7 +37,6 @@ cards:
   - title: Veille sanitaire et maladies
     text: Comprendre la surveillance de la santé de la faune sauvage.
     url: /nature-et-territoires/veille-sanitaire-et-maladies/
-childrenFrom: species
 ---
 
 Les fiches et projets présentés ici rendent compte des actions permanentes de connaissance et de préservation.

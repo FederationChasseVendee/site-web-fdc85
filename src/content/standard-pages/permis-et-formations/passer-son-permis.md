@@ -1,17 +1,19 @@
 ---
-title: Passer son permis de chasser
+title: Passer mon permis
 description: Inscription, formation et examen du permis de chasser.
 intro: L’Office français de la biodiversité organise l’examen avec le concours de la Fédération.
 navigation:
   show: false
   order: 100
 links:
-  - label: Démarche et inscription actuelles
-    url: /permis-et-formations/passer-son-permis/
+  - label: Ouvrir l’inscription officielle au permis de chasser — Office français de la biodiversité
+    url: https://permischasser.ofb.fr/
   - label: S’entraîner à l’examen
     url: /permis-et-formations/entrainement-examen/
   - label: Voir les formations
     url: /permis-et-formations/formations/
+  - label: Valider mon permis après l’examen
+    url: /mes-demarches/valider-mon-permis/
 cta:
   title: Une question sur votre dossier ?
   action:
@@ -24,6 +26,8 @@ L’examen peut être passé à partir de 15 ans. L’inscription s’effectue s
 La Fédération assure une préparation théorique et pratique obligatoire. L’examen unique comporte des exercices pratiques et des questions théoriques ; les comportements dangereux sont éliminatoires.
 
 Après la réussite, le titre délivré doit être validé et accompagné d’une assurance avant de pouvoir chasser.
+
+Les modalités et pièces demandées sont à vérifier dans le portail officiel au moment de l’inscription. Les dates et tarifs de la préparation en Vendée doivent être confirmés auprès de la Fédération.
 
 ## Repasser l’examen ou régulariser un titre
 

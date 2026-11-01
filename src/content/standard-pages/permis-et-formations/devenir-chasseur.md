@@ -1,13 +1,15 @@
 ---
-title: Devenir chasseur
+title: Comprendre le parcours
 description: Découvrir les étapes du permis de chasser et la chasse accompagnée.
 intro: La Fédération accompagne les candidats dans leur découverte de la chasse et leur préparation à l’examen.
 navigation:
   show: false
   order: 100
 links:
-  - label: Passer son permis
+  - label: Passer mon permis
     url: /permis-et-formations/passer-son-permis/
+  - label: Valider mon permis en Vendée
+    url: /mes-demarches/valider-mon-permis/
   - label: Chasse accompagnée
     url: /permis-et-formations/chasse-accompagnee/
   - label: S’entraîner à l’examen

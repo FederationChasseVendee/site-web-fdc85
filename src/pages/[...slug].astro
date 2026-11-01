@@ -7,25 +7,34 @@ import SpeciesPage from "../templates/SpeciesPage.astro";
 import StandardPage from "../templates/StandardPage.astro";
 import TrainingPage from "../templates/TrainingPage.astro";
 import RedirectPage from "../templates/RedirectPage.astro";
-import { descriptionForEntry, getTemplateEntries, titleForEntry, type TemplateEntry } from "../lib/content";
+import PageHeader from "../components/PageHeader.astro";
+import SmartLink from "../components/SmartLink.astro";
+import { descriptionForEntry, getTemplateEntries, originalSlug, titleForEntry, type TemplateEntry } from "../lib/content";
+import { resolveUrl } from "../lib/urls";
 
 interface Props {
   item: TemplateEntry;
   slug: string;
+  legacyDestination?: string;
 }
 
 export async function getStaticPaths() {
-  return (await getTemplateEntries()).map(({ slug, ...item }) => ({
-    params: { slug },
-    props: { item, slug },
-  }));
+  return (await getTemplateEntries()).flatMap(({ slug, ...item }) => {
+    const legacySlug = originalSlug(item.entry.id);
+    const page = { params: { slug }, props: { item, slug } };
+    return legacySlug === slug ? [page] : [
+      page,
+      { params: { slug: legacySlug }, props: { item, slug: legacySlug, legacyDestination: `${slug}/` } },
+    ];
+  });
 }
 
-const { item, slug } = Astro.props;
+const { item, slug, legacyDestination } = Astro.props;
 const title = titleForEntry(item);
 const description = descriptionForEntry(item);
-const redirectTo = item.template === "redirect"
-  ? `${import.meta.env.BASE_URL}${item.entry.data.destination.replace(/^\/+/, "")}`
+const redirectDestination = legacyDestination ?? (item.template === "redirect" ? item.entry.data.destination : undefined);
+const redirectTo = redirectDestination
+  ? resolveUrl(redirectDestination, import.meta.env.BASE_URL)
   : undefined;
 const articleImage = item.template === "article" ? item.entry.data.image?.src : undefined;
 const publishedTime = item.template === "article" ? item.entry.data.date : undefined;
@@ -39,11 +48,20 @@ const publishedTime = item.template === "article" ? item.entry.data.date : undef
   contentType={item.template === "article" ? "article" : "website"}
   {publishedTime}
 >
-  {item.template === "standard" && <StandardPage entry={item.entry} {slug} />}
-  {item.template === "crossroads" && <CrossroadsPage entry={item.entry} {slug} />}
-  {item.template === "article" && <ArticlePage entry={item.entry} {slug} />}
-  {item.template === "species" && <SpeciesPage entry={item.entry} {slug} />}
-  {item.template === "training" && <TrainingPage entry={item.entry} {slug} />}
-  {item.template === "index" && <IndexPage entry={item.entry} {slug} />}
-  {item.template === "redirect" && <RedirectPage entry={item.entry} {slug} />}
+  {legacyDestination ? (
+    <>
+      <PageHeader {slug} {title} intro="Cette page a une nouvelle adresse." />
+      <div class="container content-layout"><SmartLink href={legacyDestination}>Continuer vers {title}</SmartLink></div>
+    </>
+  ) : (
+    <>
+      {item.template === "standard" && <StandardPage entry={item.entry} {slug} />}
+      {item.template === "crossroads" && <CrossroadsPage entry={item.entry} {slug} />}
+      {item.template === "article" && <ArticlePage entry={item.entry} {slug} />}
+      {item.template === "species" && <SpeciesPage entry={item.entry} {slug} />}
+      {item.template === "training" && <TrainingPage entry={item.entry} {slug} />}
+      {item.template === "index" && <IndexPage entry={item.entry} {slug} />}
+      {item.template === "redirect" && <RedirectPage entry={item.entry} {slug} />}
+    </>
+  )}
 </BaseLayout>
