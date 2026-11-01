@@ -5,6 +5,8 @@ import { canonicalSlug, procedures } from "../src/lib/routes.mjs";
 const configuredBase = process.env.ASTRO_BASE_PATH?.replace(/^\/+|\/+$/g, "");
 const base = process.env.ASTRO_BASE_PATH !== undefined ? (configuredBase ? `/${configuredBase}/` : "/") : "/site-web/";
 const siteUrl = process.env.ASTRO_SITE ?? "https://federationchassevendee.github.io";
+const adherentPortal = "https://fdc85-2.retriever-ea.fr/html/Connexion.aspx";
+const retiredAdherentPortalDomain = "fdc85.retriever-ea.fr";
 const siteRoot = new URL(base, `${siteUrl.replace(/\/+$/, "")}/`).href;
 const absoluteRoot = siteRoot.endsWith("/") ? siteRoot : `${siteRoot}/`;
 const basePath = new URL(base, `${siteUrl.replace(/\/+$/, "")}/`).pathname;
@@ -44,6 +46,9 @@ for (const htmlFile of htmlFiles) {
   const displayPath = relative(distDirectory, htmlFile);
   const h1Count = (html.match(/<h1(?:\s|>)/g) ?? []).length;
 
+  if (html.includes(retiredAdherentPortalDomain)) {
+    throw new Error(`Ancien accès Espace Adhérent encore présent dans ${displayPath}.`);
+  }
   if (!html.includes('href="#contenu"') || !html.includes('<main id="contenu">')) {
     throw new Error(`Lien d’évitement ou zone principale absent dans ${displayPath}`);
   }
@@ -209,25 +214,57 @@ for (const procedure of procedures.slice(0, 2)) {
     throw new Error(`Le parcours Devenir chasseur doit rejoindre la démarche unique : ${procedure.title}`);
   }
 }
-const spacesHtml = readFileSync(join(distDirectory, "mes-demarches", "mon-espace", "index.html"), "utf8");
-for (const url of ["https://fdc85.retriever-ea.fr/", "https://fdc85-2.retriever-ea.fr/html/Connexion.aspx"]) {
-  if (!spacesHtml.includes(`href="${url}"`)) throw new Error(`Accès externe perdu : ${url}`);
-}
 for (const route of ["mes-demarches/", "mes-demarches/se-former/", ...procedures.map(({ url }) => url)]) {
   if (!sitemap.includes(`<loc>${absoluteRoot}${route}</loc>`)) {
     throw new Error(`Nouvelle démarche absente du sitemap : ${route}`);
   }
 }
+const spacesHtml = readFileSync(join(distDirectory, "mes-demarches", "mon-espace", "index.html"), "utf8");
+if (!spacesHtml.includes(`href="${adherentPortal}"`)) {
+  throw new Error("Accès externe RETRIEVER Espace Adhérent perdu.");
+}
 const navigationBlocks = [...homeHtml.matchAll(/<nav[^>]*aria-label="Navigation principale"[^>]*>(.*?)<\/nav>/gs)];
-if (navigationBlocks.length !== 2) {
-  throw new Error("Les navigations principale mobile et bureau n’ont pas été trouvées.");
+if (navigationBlocks.length !== 1) {
+  throw new Error("La navigation principale complète n’a pas été trouvée.");
+}
+
+if (
+  !homeHtml.includes('<details class="site-menu">') ||
+  !homeHtml.includes('aria-controls="site-menu-panel"') ||
+  !homeHtml.includes('aria-expanded="false"') ||
+  !homeHtml.includes("<span>Menu</span>")
+) {
+  throw new Error("Le bouton Menu doit être présent et annoncer son état initial fermé.");
 }
 
 const expectedNavigation = site.navigation.map(({ url }) => `${base}${url}`);
-for (const [, navigationHtml] of navigationBlocks) {
-  const links = [...navigationHtml.matchAll(navigationLinkPattern)].map((match) => match[1]);
-  if (links.length !== 6 || expectedNavigation.some((href) => !links.includes(href))) {
-    throw new Error("La navigation principale doit contenir exactement les six rubriques configurées.");
+const navigationHtml = navigationBlocks[0][1];
+const links = [...navigationHtml.matchAll(navigationLinkPattern)].map((match) => match[1]);
+if (expectedNavigation.some((href) => !links.includes(href))) {
+  throw new Error("La navigation principale doit conserver toutes les rubriques configurées.");
+}
+for (const procedure of procedures) {
+  if (procedure.url === "mes-demarches/mon-espace/") continue;
+  if (!links.includes(`${base}${procedure.url}`)) {
+    throw new Error(`Démarche absente du menu complet : ${procedure.title}`);
+  }
+}
+const adherentLinkCount = navigationHtml.split(`href="${adherentPortal}"`).length - 1;
+const adherentLabelCount = navigationHtml.split("Espace Adhérent").length - 1;
+if (adherentLinkCount !== 1 || adherentLabelCount !== 1) {
+  throw new Error("Le menu complet doit proposer un seul accès Espace Adhérent vers RETRIEVER.");
+}
+if (/Espace ma[iî]tre d['’]équipage/i.test(navigationHtml)) {
+  throw new Error("L’ancien sous-choix maître d’équipage doit être absent du menu.");
+}
+for (const url of [
+  "mes-demarches/declarer-un-degat/grand-gibier/",
+  "mes-demarches/declarer-un-degat/decladom/",
+  "mes-demarches/declarer-une-perte/permis/",
+  "mes-demarches/declarer-une-perte/arme/",
+]) {
+  if (!navigationHtml.includes(`href="${base}${url}"`)) {
+    throw new Error(`Sous-menu absent de la navigation complète : ${url}`);
   }
 }
 
