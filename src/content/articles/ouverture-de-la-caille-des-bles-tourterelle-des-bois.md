@@ -5,8 +5,8 @@ date: 2026-08-28
 category: "Alertes"
 summary: "🌾 Caille des blés L’ouverture de la chasse de la caille des blés aura lieu ce samedi 29 août 2026 à 8h00 👉 Pour cette saison, un prélèvement maximal de 15 cailles par chasseur et par jour est fixé. 📱 Chaque prélèvement doit…"
 documents: []
-expiresAt: 2026-12-26
-archived: false
+expiresAt: 2026-08-30
+archived: true
 ---
 
 **🌾 Caille des blés**

@@ -1,0 +1,106 @@
+<div class="weather-widget" data-weather-widget role="group" aria-label="Météo actuelle à La Roche-sur-Yon">
+  <span class="weather-symbol" data-weather-icon aria-hidden="true">…</span>
+  <div class="weather-readout">
+    <p class="weather-temperature" data-weather-temperature>—</p>
+    <p class="weather-condition" data-weather-condition>Chargement…</p>
+    <p class="weather-update" data-weather-update role="status" aria-live="polite">En attente des données météo.</p>
+  </div>
+  <a class="weather-credit" href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">
+    Open-Meteo<span aria-hidden="true"> ↗</span><span class="sr-only"> (source météo, nouvel onglet)</span>
+  </a>
+  <button class="weather-retry" type="button" data-weather-retry hidden>Réessayer</button>
+</div>
+
+<script>
+  function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === "object" && value !== null;
+  }
+
+  function describeWeather(code: number): [string, string] {
+    if (code === 0) return ["Ciel dégagé", "☀"];
+    if (code <= 3) return ["Ciel nuageux", "⛅"];
+    if (code <= 48) return ["Brouillard", "≋"];
+    if (code <= 67 || (code >= 80 && code <= 82)) return ["Pluie", "☂"];
+    if (code <= 77 || (code >= 85 && code <= 86)) return ["Neige", "❄"];
+    if (code >= 95) return ["Orages", "⚡"];
+    return ["Conditions variables", "☁"];
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-weather-widget]").forEach((widget) => {
+    const requiredElement = <T extends HTMLElement>(selector: string): T => {
+      const element = widget.querySelector<T>(selector);
+      if (!element) throw new Error(`Élément météo requis introuvable : ${selector}.`);
+      return element;
+    };
+    const temperature = requiredElement<HTMLElement>("[data-weather-temperature]");
+    const condition = requiredElement<HTMLElement>("[data-weather-condition]");
+    const icon = requiredElement<HTMLElement>("[data-weather-icon]");
+    const update = requiredElement<HTMLElement>("[data-weather-update]");
+    const retry = requiredElement<HTMLButtonElement>("[data-weather-retry]");
+
+    async function loadWeather() {
+      retry.hidden = true;
+      retry.disabled = true;
+      temperature.textContent = "—";
+      condition.textContent = "Chargement…";
+      icon.textContent = "…";
+      update.textContent = "En attente des données météo.";
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 8000);
+
+      try {
+        const url = new URL("https://api.open-meteo.com/v1/forecast");
+        url.search = new URLSearchParams({
+          latitude: "46.6705",
+          longitude: "-1.4264",
+          current: "temperature_2m,weather_code,wind_speed_10m",
+          daily: "temperature_2m_max,temperature_2m_min",
+          forecast_days: "1",
+          timezone: "Europe/Paris",
+        }).toString();
+        const response = await fetch(url, { signal: controller.signal });
+        if (!response.ok) throw new Error(`Open-Meteo: ${response.status}`);
+
+        const data: unknown = await response.json();
+        if (!isRecord(data) || !isRecord(data.current) || !isRecord(data.daily)) {
+          throw new Error("Réponse météo invalide.");
+        }
+
+        const current = data.current;
+        const daily = data.daily;
+        const maximum = daily.temperature_2m_max;
+        const minimum = daily.temperature_2m_min;
+        if (
+          typeof current.temperature_2m !== "number" || !Number.isFinite(current.temperature_2m) ||
+          typeof current.weather_code !== "number" || !Number.isInteger(current.weather_code) ||
+          current.weather_code < 0 || current.weather_code > 99 ||
+          typeof current.wind_speed_10m !== "number" || !Number.isFinite(current.wind_speed_10m) ||
+          typeof current.time !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(current.time) ||
+          !Array.isArray(maximum) || typeof maximum[0] !== "number" || !Number.isFinite(maximum[0]) ||
+          !Array.isArray(minimum) || typeof minimum[0] !== "number" || !Number.isFinite(minimum[0])
+        ) {
+          throw new Error("Données météo incomplètes.");
+        }
+
+        const [label, symbol] = describeWeather(current.weather_code);
+        const time = current.time.slice(11, 16);
+        temperature.textContent = `${Math.round(current.temperature_2m)} °C`;
+        condition.textContent = label;
+        icon.textContent = symbol;
+        update.textContent = `Mis à jour à ${time}.`;
+      } catch (error) {
+        console.error("Impossible de charger la météo :", error);
+        icon.textContent = "!";
+        condition.textContent = "Météo indisponible";
+        update.textContent = "Connexion impossible. Réessayez.";
+        retry.hidden = false;
+        retry.disabled = false;
+      } finally {
+        window.clearTimeout(timeout);
+      }
+    }
+
+    retry.addEventListener("click", () => void loadWeather());
+    void loadWeather();
+  });
+</script>

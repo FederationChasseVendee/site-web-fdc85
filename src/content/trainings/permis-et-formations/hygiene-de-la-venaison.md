@@ -15,12 +15,12 @@ program:
   - Utilisation des fiches d’accompagnement du gibier.
 duration: Une demi-journée, de 14 h à 17 h
 location: Fédération Départementale des Chasseurs de la Vendée, La Roche-sur-Yon
-price: Gratuit ; chèque de caution de 50 € demandé
+price: Gratuit ; caution de 50 € encaissée uniquement en cas d’absence non justifiée
 dates: []
 documents: []
-registrationUrl: /contact/
+registrationUrl: https://chasseur-vendeen.fr/58139-2/
 ---
 
 Les groupes sont limités à environ vingt personnes. La priorité est donnée aux territoires dont le gibier est destiné à des repas de chasse ou associatifs.
 
-Chaque participant reçoit une carte personnalisée de personne formée à l’examen initial du gibier, un aide-mémoire et des fiches d’accompagnement. Les prochaines sessions seront publiées par la FDC 85.
+Chaque participant reçoit une carte personnalisée de personne formée à l’examen initial du gibier, un aide-mémoire et des fiches d’accompagnement. Consultez la page de la Fédération pour les prochaines dates et les modalités d’inscription publiées.

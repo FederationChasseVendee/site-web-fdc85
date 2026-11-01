@@ -5,9 +5,6 @@ intro: La Fédération fait découvrir la faune et les milieux aux différents p
 navigation:
   show: false
   order: 100
-links:
-  - label: Voir la page actuelle des animations
-    url: /nature-et-territoires/animations/
 cta:
   title: Organiser une animation
   text: Les propositions dépendent du public, du lieu et de la période.

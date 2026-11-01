@@ -5,9 +5,6 @@ intro: L’éco-contribution soutient des projets concrets de connaissance, de p
 navigation:
   show: false
   order: 100
-links:
-  - label: Présentation actuelle du dispositif
-    url: /nature-et-territoires/eco-contribution/
 ---
 
 Le dispositif associe la contribution des chasseurs et un financement public confié à l’Office français de la biodiversité. Les projets peuvent renforcer la connaissance, préserver des habitats, protéger des espèces, développer des outils ou améliorer les pratiques.

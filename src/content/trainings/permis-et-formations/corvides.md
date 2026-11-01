@@ -17,14 +17,14 @@ program:
   - Perspectives et conclusion.
 duration: Une demi-journée de 3 heures
 location: Lieu précisé sur la convocation de la FDC 85
-price: Gratuit ; chèque de caution de 50 € demandé
+price: Gratuit ; caution de 50 € encaissée uniquement en cas d’absence non justifiée
 dates: []
 documents:
   - label: Arrêté national relatif aux ESOD 2026-2029
     url: /assets/documents/reglementation/arrete-esod-2026-2029.pdf
     type: PDF
     size: 261 Ko
-registrationUrl: /contact/
+registrationUrl: https://chasseur-vendeen.fr/formation-corvides/
 ---
 
-Cette formation est recommandée mais non obligatoire. Les prochaines dates sont annoncées pour 2027 par la FDC 85.
+Cette formation est recommandée mais non obligatoire. Consultez la page de la Fédération pour les prochaines dates et les modalités d’inscription publiées.

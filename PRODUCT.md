@@ -39,8 +39,8 @@ Le futur site doit rester statique. L'utilisateur a confirmé que les inscriptio
 - Retirer les fonctionnalités d'édition et l'administration du site lors de cette implémentation.
 - Ne pas confondre suppression de l'édition du site et suppression des accès aux espaces adhérents externes.
 - Le cadrage reste la source des parcours ; la demande explicite autorise désormais le remplacement de l’implémentation, sans perte des contenus et accès utiles.
-- « Mes démarches » doit donner accès à : passer le permis, le valider, se former, déclarer ses prélèvements, une arme, un dégât ou une perte, et « Se connecter à mon espace ».
-- Sous « Se connecter à mon espace », distinguer « Espace adhérent » pour les chasseurs et responsables de territoire et « Espace maître d'équipage ». Le site actuel indique deux services externes distincts, à revérifier avant publication.
+- « Mes démarches » doit donner accès à : passer le permis, le valider, se former, déclarer ses prélèvements, une arme, un dégât ou une perte, et un accès unique « Espace Adhérent ».
+- « Espace Adhérent » est l’accès unique au portail RETRIEVER pour les chasseurs, responsables de territoire et maîtres d’équipage : <https://fdc85-2.retriever-ea.fr/html/Connexion.aspx>. Ne pas proposer d’accès distinct maître d’équipage.
 - Pour les dégâts, distinguer grand gibier et DECLADOM (non indemnisable, selon la demande utilisateur) ; pour les pertes, distinguer permis et arme. Les modalités et l'éligibilité restent à vérifier auprès des sources officielles avant publication.
 - Placer les coordonnées, dont le numéro de téléphone, dans le pied de page commun et sur une page « Nous contacter », pas dans l'en-tête ni dans le contenu principal de l'accueil. Le pied de page reste présent sur l'accueil.
 - Ne pas inventer de dates, tarifs, conditions d'inscription, obligations réglementaires ou disponibilités de formation.
@@ -76,3 +76,5 @@ La piste 8 `v2-folders` (prune, lilas, ivoire ; trois dossiers ouverts) est la d
 Prévoir une navigation explicite, un vocabulaire courant, une lecture confortable et une aide humaine accessible. L'âge ne doit ni enfermer les visiteurs dans un persona « senior », ni justifier une interface infantilisante.
 
 Le socle actuel vise WCAG 2.2 AA. La refonte doit préserver cette ambition ; les contrôles automatiques ne constituent pas une certification.
+
+La demande du 1 novembre 2026 confirme pour l’implémentation provisoire un bouton « Menu » avec symbole burger qui ouvre la navigation complète, y compris ses sous-rubriques, sur ordinateur comme sur mobile. L’ouverture et la fermeture doivent être explicites, utilisables au clavier (dont Échap), au toucher et au zoom ; cette décision de comportement ne vaut pas validation de la direction visuelle par la cliente.

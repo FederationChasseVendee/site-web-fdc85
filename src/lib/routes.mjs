@@ -44,5 +44,5 @@ export const procedures = [
   { title: "Déclarer une arme", url: "mes-demarches/declarer-une-arme/", text: "Système d’information sur les armes (SIA).", group: "report" },
   { title: "Déclarer un dégât", url: "mes-demarches/declarer-un-degat/", text: "Grand gibier ou autres dégâts — DECLADOM.", group: "report" },
   { title: "Déclarer une perte", url: "mes-demarches/declarer-une-perte/", text: "Perte de mon permis ou perte d’une arme.", group: "report" },
-  { title: "Se connecter à mon espace", url: "mes-demarches/mon-espace/", text: "Deux espaces distincts selon votre rôle.", group: "space" },
+  { title: "Se connecter à mon espace", url: "mes-demarches/mon-espace/", text: "Accès unique au portail RETRIEVER.", group: "space" },
 ];

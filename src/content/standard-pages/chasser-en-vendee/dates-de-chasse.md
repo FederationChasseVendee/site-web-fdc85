@@ -7,7 +7,7 @@ navigation:
   order: 100
 links:
   - label: Consulter la page officielle des dates
-    url: https://chasse85.fr/connaitre-la-reglementation/les-dates-de-chasse/
+    url: https://chasseur-vendeen.fr/connaitre-la-reglementation/les-dates-de-chasse/
   - label: Textes réglementaires
     url: /ressources/reglementation/
 cta:
@@ -22,4 +22,4 @@ Pour la saison **2026-2027**, l’ouverture générale en Vendée est fixée au 
 
 Ces dates générales ne dispensent pas de vérifier les dispositions particulières à une espèce, un territoire ou un mode de chasse, ni les éventuelles modifications de l’arrêté préfectoral avant chaque sortie.
 
-Ces repères ont été recoupés avec la page de la Fédération le **1 novembre 2026**. Ils ne remplacent pas les arrêtés et peuvent évoluer ; ouvrez la source officielle avant votre sortie.
+Ces repères ne remplacent pas les arrêtés et leurs éventuelles modifications. Consultez la page officielle de la Fédération avant chaque sortie.
