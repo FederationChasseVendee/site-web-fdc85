@@ -17,4 +17,4 @@ links:
 
 Les dégâts agricoles causés par le grand gibier relèvent d’un dispositif distinct de DECLADOM et peuvent ouvrir droit à indemnisation sous certaines conditions. La Fédération présente cette distinction et assure le suivi des demandes.
 
-Signalez rapidement le dommage à la Fédération afin qu’elle vous indique la procédure et les justificatifs adaptés à votre situation, avant toute intervention sur la parcelle. L’éligibilité et l’indemnisation ne sont pas automatiques.
+Contactez la Fédération afin qu’elle vous indique la procédure et les justificatifs adaptés à votre situation. L’éligibilité et l’indemnisation ne sont pas automatiques.

@@ -14,7 +14,7 @@ program:
   - Rappel des documents à présenter en action de chasse.
 duration: Une journée
 location: Lieu précisé sur la convocation de la FDC 85
-price: 10 € ; caution de 50 € encaissée uniquement en cas d’absence non justifiée
+price: 10 € ; chèque de caution de 50 € demandé
 dates: []
 documents:
   - label: Demande d’inscription Cerfa n° 10804*03
