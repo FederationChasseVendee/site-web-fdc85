@@ -16,7 +16,7 @@ program:
   - Connaissances cynégétiques et régulation des espèces susceptibles d’occasionner des dégâts.
 duration: 18 heures minimum sur deux journées (module 1 de 10 heures et module 2 de 8 heures)
 location: Fédération Départementale des Chasseurs de la Vendée, La Roche-sur-Yon
-price: Gratuit ; caution de 50 € encaissée uniquement en cas d’absence non justifiée
+price: Gratuit ; chèque de caution de 50 € demandé pour valider l’inscription
 dates: []
 documents:
   - label: Dossier d’agrément ou de renouvellement — arrondissement de Fontenay-le-Comte
