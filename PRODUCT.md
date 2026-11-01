@@ -24,6 +24,8 @@ Le site de la Fédération Départementale des Chasseurs de la Vendée informe s
 
 La refonte doit partir des besoins des visiteurs, et non de l'organisation interne des services. La première étape est le cadrage des personas, des parcours et de la navigation.
 
+L'utilisateur demande de regrouper toutes les démarches dans « Mes démarches », pour les distinguer du reste du site consacré à la prise d'information. Les rubriques d'information peuvent conduire aux démarches correspondantes, sans en dupliquer les pages.
+
 ## Operating Context
 
 Le dépôt contient déjà un site Astro statique, du contenu migré de WordPress, des ressources documentaires, des annuaires et des liens vers des services externes.
@@ -37,6 +39,8 @@ Le futur site doit rester statique. L'utilisateur a confirmé que les inscriptio
 - Retirer les fonctionnalités d'édition et l'administration du site lors de cette implémentation.
 - Ne pas confondre suppression de l'édition du site et suppression des accès aux espaces adhérents externes.
 - Pendant le cadrage, conserver le site actuel intact.
+- « Mes démarches » doit donner accès à : passer le permis, le valider, se former, déclarer ses prélèvements, une arme, un dégât ou une perte, et se connecter à son espace adhérent.
+- Pour les dégâts, distinguer grand gibier et DECLADOM (non indemnisable, selon la demande utilisateur) ; pour les pertes, distinguer permis et arme. Les modalités et l'éligibilité restent à vérifier auprès des sources officielles avant publication.
 - Ne pas inventer de dates, tarifs, conditions d'inscription, obligations réglementaires ou disponibilités de formation.
 - Le framework et le dispositif de publication de la future copie propre ne sont pas encore arrêtés.
 
@@ -63,7 +67,7 @@ Palette, typographie, traitement des images et direction artistique restent ouve
 2. Distinguer obtenir le permis, valider le permis et se former.
 3. Expliquer un service externe avant de demander au visiteur de l'ouvrir.
 4. Classer les documents par besoin plutôt que par format de fichier.
-5. Séparer les contenus pratiques permanents des actualités datées.
+5. Regrouper les démarches et distinguer leur accès des rubriques d'information et des actualités datées.
 
 ## Accessibility & Inclusion
 
