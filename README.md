@@ -1,5 +1,14 @@
 # Site web — Fédération des Chasseurs de la Vendée
 
+## Refonte en préparation
+
+Le [cadrage personas et navigation](docs/refonte/personas-et-navigation.md) propose
+l'arborescence de la future copie propre. [PRODUCT.md](PRODUCT.md) conserve les contraintes
+confirmées et [AGENTS.md](AGENTS.md) guide les prochaines interventions. Ce cadrage ne modifie
+pas encore le site actuel : le retrait de l'édition et la nouvelle navigation interviendront
+après validation. Les services externes d'inscription, de validation et les espaces adhérents
+resteront accessibles.
+
 Site statique [Astro](https://astro.build/) administrable dans [Pages CMS](https://pagescms.org/). Il fonctionne sans serveur ni base de données. La mesure d’audience Umami Cloud est prête mais désactivée par défaut : sans configuration, aucun script de suivi ni aucune requête vers Umami n’est généré.
 
 ## Développement et validation
