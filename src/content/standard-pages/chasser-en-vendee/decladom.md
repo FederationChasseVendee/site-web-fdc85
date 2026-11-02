@@ -7,15 +7,15 @@ navigation:
   order: 100
 links:
   - label: Consulter la présentation officielle de DECLADOM par la Fédération
-    url: https://chasse85.fr/connaitre-la-reglementation/decladom/
-  - label: Demander l’accès de déclaration à la Fédération
+    url: https://chasseur-vendeen.fr/connaitre-la-reglementation/decladom/
+  - label: Contacter la Fédération au sujet d’une déclaration DECLADOM
     url: /contact/
   - label: Dégâts causés par la faune
     url: /chasser-en-vendee/degats-causes-par-la-faune/
 ---
 
-Déclarer un dommage subi ou constaté permet d’en préciser l’espèce à l’origine, la localisation et la nature. Ces informations donnent aux acteurs locaux une vision plus complète des situations rencontrées.
+La Fédération présente DECLADOM comme un service en ligne de déclaration de dommages liés aux espèces concernées par ce dispositif. Les informations recueillies contribuent au suivi des dommages.
 
-DECLADOM est un service externe : aucun formulaire de déclaration n’est reproduit sur ce site. Une déclaration de dommage ne vaut pas automatiquement demande d’indemnisation ; contactez la Fédération pour connaître la procédure correspondant à votre situation.
+La présentation officielle précise que ces déclarations ne donnent pas lieu à indemnisation. Elles relèvent d’un dispositif distinct de la procédure relative aux dégâts agricoles de grand gibier.
 
-Ce parcours concerne les dommages non indemnisables, distincts du dispositif de dégâts agricoles de grand gibier. **À confirmer avant publication :** l’adresse directe actuelle de déclaration n’a pas pu être identifiée dans la présentation officielle. Le lien de présentation est conservé sans le faire passer pour un formulaire. Ne reprenez pas une liste ancienne d’espèces sans vérifier le classement en vigueur.
+Consultez la présentation de la Fédération pour connaître les modalités publiées, ou contactez-la si vous avez besoin d’aide pour accéder au service. Les espèces concernées dépendent du classement réglementaire en vigueur.

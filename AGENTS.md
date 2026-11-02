@@ -20,7 +20,7 @@ Retirer l’édition et l’administration du site, mais préserver les contenus
 - Distinguer « Passer mon permis », « Valider mon permis » et les formations des chasseurs déjà titulaires.
 - Regrouper toutes les démarches dans « Mes démarches », y compris passer le permis et se former. Les autres rubriques informent et renvoient aux mêmes pages de démarche, sans deuxième parcours d'inscription.
 - Dans « Devenir chasseur », donner directement accès à « Passer mon permis » et « Valider mon permis en Vendée » : ce sont des liens vers les démarches existantes, pas des copies.
-- Sous « Se connecter à mon espace », distinguer « Espace adhérent » (chasseurs et responsables de territoire) et « Espace maître d'équipage ». Préserver les deux accès externes et vérifier leurs destinations avant publication.
+- Proposer un seul accès « Espace Adhérent » pour les chasseurs, responsables de territoire et maîtres d’équipage, vers le portail RETRIEVER actuel ; ne pas proposer d’accès distinct maître d’équipage.
 - Conserver les huit entrées demandées et les distinctions dégâts grand gibier / DECLADOM et perte de permis / perte d'arme. Ne pas promettre une indemnisation ni inventer de procédure de déclaration ; vérifier les modalités officielles avant publication.
 - Donner à chaque contenu une destination principale et autoriser des raccourcis depuis d'autres parcours ; ne pas dupliquer les pages.
 - Rattacher documents, formulaires et tutoriels au sujet concerné. Un index transversal peut compléter les parcours, jamais les remplacer.
@@ -32,7 +32,7 @@ Retirer l’édition et l’administration du site, mais préserver les contenus
 
 Ne pas inventer de règles, de tarifs, de dates, de témoignages ni de services. Revérifier les informations saisonnières et les liens externes avant publication. Signaler ce qui est ancien, indisponible ou encore à confirmer.
 
-La moyenne d'âge élevée appelle une lecture confortable, des liens explicites, des cibles faciles à activer, un focus visible, un usage au clavier et un zoom sans perte d'information. Ne pas réserver les menus au survol et ne pas cacher tout le menu derrière un bouton sur grand écran.
+La moyenne d'âge élevée appelle une lecture confortable, des liens explicites, des cibles faciles à activer, un focus visible, un usage au clavier et un zoom sans perte d'information. Ne pas réserver les menus au survol. La demande explicite du 1 novembre 2026 autorise désormais le menu complet derrière le bouton « Menu » sur tous les écrans ; ses rubriques et sous-rubriques doivent rester accessibles au clavier, au toucher et au zoom.
 
 ## Direction visuelle
 

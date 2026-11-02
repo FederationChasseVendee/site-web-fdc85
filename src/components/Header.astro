@@ -1,11 +1,10 @@
 ---
 import site from "../content/site.json";
-import SmartLink from "./SmartLink.astro";
+import SiteMenu from "./SiteMenu.astro";
+import WeatherWidget from "./WeatherWidget.astro";
 import { resolveUrl } from "../lib/urls";
 
 const base = import.meta.env.BASE_URL;
-const currentPath = Astro.url.pathname;
-const isCurrent = (url: string) => currentPath.startsWith(resolveUrl(url, base));
 ---
 
 <header class="site-header">
@@ -13,41 +12,9 @@ const isCurrent = (url: string) => currentPath.startsWith(resolveUrl(url, base))
     <a class="brand" href={base} aria-label={`${site.shortName} — Accueil`}>
       <img src={resolveUrl(site.logo, base)} width="400" height="111" alt={site.name} />
     </a>
-
-    <details class="mobile-menu">
-      <summary><span class="menu-label">Ouvrir le menu</span><span class="menu-icon" aria-hidden="true"></span></summary>
-      <div class="mobile-menu-panel">
-        <nav aria-label="Navigation principale">
-          {site.navigation.map((item) => (
-            <SmartLink href={item.url} aria-current={isCurrent(item.url) ? "page" : undefined}>{item.label}</SmartLink>
-          ))}
-        </nav>
-        <div class="mobile-actions">
-          {site.primaryActions.map((item) => <SmartLink class="button button-dark" href={item.url}>{item.label}</SmartLink>)}
-        </div>
-      </div>
-    </details>
-
-    <div class="desktop-header">
-      <nav class="desktop-nav" aria-label="Navigation principale">
-        {site.navigation.map((item) => (
-          <SmartLink href={item.url} aria-current={isCurrent(item.url) ? "page" : undefined}>{item.label}</SmartLink>
-        ))}
-      </nav>
-      <div class="header-actions" aria-label="Actions prioritaires">
-        {site.primaryActions.filter((item) => item.url === "contact/").map((item) => (
-          <SmartLink href={item.url}>{item.label}</SmartLink>
-        ))}
-      </div>
+    <div class="header-controls">
+      <WeatherWidget />
+      <SiteMenu />
     </div>
   </div>
 </header>
-
-<script>
-  document.querySelectorAll<HTMLDetailsElement>(".mobile-menu").forEach((menu) => {
-    const label = menu.querySelector<HTMLElement>(".menu-label");
-    menu.addEventListener("toggle", () => {
-      if (label) label.textContent = menu.open ? "Fermer le menu" : "Ouvrir le menu";
-    });
-  });
-</script>

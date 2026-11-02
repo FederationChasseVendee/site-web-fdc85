@@ -1,21 +1,24 @@
 ---
 title: Perte de mon permis
-description: Retrouver les documents existants et faire confirmer la procédure de remplacement du permis de chasser.
-intro: Le remplacement du permis dépend notamment de son origine et de sa date de délivrance.
+description: Accéder à la procédure officielle de demande de duplicata du permis de chasser.
+intro: La procédure de duplicata dépend de la date de délivrance du permis permanent.
 documents:
-  - label: Modèle existant — demande de duplicata d’un permis délivré après le 1er septembre 2009
-    url: /assets/documents/formulaires/demande-duplicata-permis-apres-2009.pdf
-    type: PDF
-  - label: Attestation préfectorale de délivrance du permis original
+  - label: Attestation préfectorale — permis délivré avant le 1er septembre 2009
     url: /assets/documents/formulaires/attestation-prefectorale-delivrance-permis-original.pdf
     type: PDF
 links:
-  - label: Faire confirmer les pièces et l’interlocuteur par la Fédération
+  - label: Ouvrir le portail officiel de l’OFB pour demander un duplicata
+    url: https://permischasser.ofb.fr/
+  - label: Consulter les instructions et formulaires publiés par la Fédération
+    url: https://chasseur-vendeen.fr/telechargement/formulaires-imprimes/
+  - label: Contacter la Fédération pour une situation particulière
     url: /contact/
 ---
 
-## Avant d’utiliser les documents
+## Demander un duplicata
 
-Ces documents sont conservés depuis le site existant pour éviter de perdre une ressource utile. **Leur validité et la procédure actuelle restent à confirmer avant utilisation.** Le modèle de duplicata n’est pas adapté automatiquement à tous les permis.
+La Fédération indique de commencer la demande de duplicata sur le portail de l’Office français de la biodiversité (OFB). Les étapes diffèrent selon que le permis permanent a été délivré avant ou à partir du 1er septembre 2009. Pour un permis délivré avant cette date, une attestation préfectorale de délivrance initiale est également demandée ; le document correspondant est proposé ci-dessus.
 
-Contactez la Fédération pour être orienté selon votre titre. La perte de votre validation et celle de votre permis permanent ne doivent pas être confondues.
+Consultez les instructions officielles de la Fédération avant d’envoyer un document ou de régler des frais. Pour un permis délivré à partir du 1er septembre 2009, utilisez le formulaire généré par le portail OFB plutôt qu’un ancien modèle conservé dans les ressources du site.
+
+La perte de la validation annuelle et celle du permis permanent sont deux démarches différentes.

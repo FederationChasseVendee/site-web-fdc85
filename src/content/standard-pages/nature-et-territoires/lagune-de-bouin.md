@@ -5,9 +5,6 @@ intro: La Fédération gère depuis 2013 cet espace d’environ 44 hectares au b
 navigation:
   show: false
   order: 100
-links:
-  - label: Présentation détaillée actuelle
-    url: /nature-et-territoires/lagune-de-bouin/
 ---
 
 La lagune est une étendue d’eau salée entourée d’habitats halophiles et prairiaux. Elle constitue un reposoir important pour les oiseaux d’eau en hivernage et un site de reproduction, notamment grâce aux îlots restaurés.

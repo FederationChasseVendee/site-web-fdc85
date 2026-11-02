@@ -11,8 +11,8 @@ image:
   width: 515
   height: 304
 documents: []
-expiresAt: 2026-12-27
-archived: false
+expiresAt: 2026-08-31
+archived: true
 ---
 
 ### **Changement de programme !**

@@ -1,0 +1,157 @@
+---
+import { getCollection } from "astro:content";
+import site from "../content/site.json";
+import { normalizeSlug } from "../lib/content";
+import { procedures } from "../lib/routes.mjs";
+import { resolveUrl } from "../lib/urls";
+import SmartLink from "./SmartLink.astro";
+
+interface MenuLink {
+  label: string;
+  url: string;
+  children?: MenuLink[];
+}
+
+interface MenuGroup {
+  label: string;
+  url: string;
+  links: MenuLink[];
+}
+
+const base = import.meta.env.BASE_URL;
+const currentPath = Astro.url.pathname;
+const isCurrent = (url: string) => currentPath.startsWith(resolveUrl(url, base));
+const crossroads = await getCollection("crossroads");
+const indexes = await getCollection("indexes");
+const trainings = await getCollection("trainings");
+
+const procedureChildren: Record<string, MenuLink[]> = {
+  "mes-demarches/declarer-un-degat/": [
+    { label: "Dégâts de grand gibier", url: "mes-demarches/declarer-un-degat/grand-gibier/" },
+    { label: "Autres dégâts — DECLADOM", url: "mes-demarches/declarer-un-degat/decladom/" },
+  ],
+  "mes-demarches/declarer-une-perte/": [
+    { label: "Perte de mon permis", url: "mes-demarches/declarer-une-perte/permis/" },
+    { label: "Perte d’une arme", url: "mes-demarches/declarer-une-perte/arme/" },
+  ],
+};
+
+const procedureLinks: MenuLink[] = procedures.map(({ title, url }) => (
+  url === "mes-demarches/mon-espace/"
+    ? { label: "Espace Adhérent", url: "https://fdc85-2.retriever-ea.fr/html/Connexion.aspx" }
+    : { label: title, url, children: procedureChildren[url] }
+));
+
+const menuGroups: MenuGroup[] = site.navigation.map((item) => {
+  if (item.url === "mes-demarches/") {
+    return { label: item.label, url: item.url, links: procedureLinks };
+  }
+
+  if (item.url === "formations/") {
+    const trainingLinks = trainings
+      .slice()
+      .sort((a, b) => a.data.title.localeCompare(b.data.title, "fr"))
+      .map((training) => ({
+        label: training.data.title,
+        url: `${normalizeSlug(training.id)}/`,
+      }));
+    return { label: item.label, url: item.url, links: trainingLinks };
+  }
+
+  const sectionSlug = item.url.replace(/^\/+|\/+$/g, "");
+  const section = crossroads.find((entry) => normalizeSlug(entry.id) === sectionSlug);
+  const links = section?.data.cards.map(({ title, url }) => ({ label: title, url })) ?? [];
+  return { label: item.label, url: item.url, links };
+});
+
+const resources = indexes.find((entry) => normalizeSlug(entry.id) === "ressources");
+if (resources) {
+  menuGroups.push({
+    label: resources.data.title,
+    url: "ressources/",
+    links: resources.data.links.map(({ label, url }) => ({ label, url })),
+  });
+}
+
+const utilityLinks: MenuLink[] = [
+  { label: "Actualités", url: "actualites/" },
+  ...site.primaryActions
+    .filter((item) => item.url === "contact/")
+    .map(({ label, url }) => ({ label, url })),
+];
+---
+
+<details class="site-menu">
+  <summary class="site-menu-toggle" aria-controls="site-menu-panel" aria-expanded="false">
+    <span class="menu-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+    <span>Menu</span>
+  </summary>
+  <div class="site-menu-panel" id="site-menu-panel">
+    <nav class="desktop-nav" aria-label="Navigation principale">
+      <div class="desktop-nav-grid">
+        {menuGroups.map((group) => (
+          <section class="desktop-nav-group">
+            <h2>
+              <SmartLink class="desktop-nav-section" href={group.url} aria-current={isCurrent(group.url) ? "page" : undefined}>
+                {group.label}
+              </SmartLink>
+            </h2>
+            {group.links.length > 0 && (
+              <ul class="desktop-nav-links">
+                {group.links.map((link) => (
+                  <li>
+                    <SmartLink href={link.url} aria-current={isCurrent(link.url) ? "page" : undefined}>{link.label}</SmartLink>
+                    {link.children && (
+                      <ul class="desktop-nav-submenu">
+                        {link.children.map((child) => (
+                          <li><SmartLink href={child.url} aria-current={isCurrent(child.url) ? "page" : undefined}>{child.label}</SmartLink></li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        ))}
+      </div>
+      <ul class="desktop-nav-utility">
+        {utilityLinks.map((link) => (
+          <li><SmartLink class="desktop-nav-section" href={link.url} aria-current={isCurrent(link.url) ? "page" : undefined}>{link.label}</SmartLink></li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</details>
+
+<script>
+  document.querySelectorAll<HTMLDetailsElement>(".site-menu").forEach((menu) => {
+    const summary = menu.querySelector<HTMLElement>("summary");
+    if (!summary) return;
+
+    const syncExpandedState = () => summary.setAttribute("aria-expanded", String(menu.open));
+    menu.addEventListener("toggle", syncExpandedState);
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && menu.open) {
+        menu.open = false;
+        syncExpandedState();
+        summary.focus();
+      }
+    });
+
+    document.addEventListener("pointerdown", (event) => {
+      if (menu.open && event.target instanceof Node && !menu.contains(event.target)) {
+        menu.open = false;
+        syncExpandedState();
+      }
+    });
+
+    menu.querySelectorAll<HTMLAnchorElement>(".site-menu-panel a").forEach((link) => {
+      link.addEventListener("click", () => {
+        menu.open = false;
+        syncExpandedState();
+      });
+    });
+  });
+</script>

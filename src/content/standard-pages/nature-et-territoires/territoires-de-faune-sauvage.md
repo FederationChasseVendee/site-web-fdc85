@@ -5,9 +5,6 @@ intro: Le label reconnaît une gestion qui associe conservation de la nature et 
 navigation:
   show: false
   order: 100
-links:
-  - label: Présentation et démarche actuelles
-    url: /nature-et-territoires/territoires-de-faune-sauvage/
 ---
 
 Le label est destiné aux gestionnaires engagés dans l’utilisation durable des ressources naturelles et l’amélioration de la biodiversité. La démarche comporte d’abord la signature d’une charte, puis le dépôt d’un dossier de candidature décrivant le territoire et ses pratiques de gestion.

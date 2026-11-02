@@ -7,11 +7,7 @@ navigation:
   order: 100
 links:
   - label: Accéder à la validation en ligne
-    url: https://validationpermischasser.chasseurdefrance.com/
-documents:
-  - label: Tutoriel existant — valider son permis en ligne
-    url: /assets/documents/tutoriels/valider-permis-en-ligne.pdf
-    type: PDF
+    url: https://validationpermischasser.chasseurdefrance.com/?federation=FDC_85
 cta:
   title: Besoin d’aide ?
   text: La Fédération peut vous accompagner dans votre démarche.
@@ -26,6 +22,6 @@ La validation comprend notamment la cotisation fédérale et les redevances corr
 
 Le service de validation est un service distinct du présent site : aucune donnée de validation n’est recueillie ici.
 
-Le portail national de validation est conservé à partir du lien présent dans les actualités migrées. Les tarifs, périodes et choix disponibles sont ceux affichés dans le service officiel ; aucune disponibilité saisonnière n’est promise ici. Le tutoriel conservé doit être comparé à l’interface actuelle avant utilisation.
+Le portail officiel propose la validation pour la Fédération de la Vendée. Les tarifs, périodes et choix disponibles sont affichés dans le service au moment de la démarche.
 
 En cas de perte, de doute sur un ancien permis ou de situation particulière, contactez la Fédération avant d’entreprendre une démarche.

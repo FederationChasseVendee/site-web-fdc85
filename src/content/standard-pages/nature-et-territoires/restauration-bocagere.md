@@ -8,8 +8,6 @@ navigation:
 links:
   - label: Plantations bocagères
     url: /nature-et-territoires/plantations-bocageres/
-  - label: Présentation détaillée actuelle
-    url: /nature-et-territoires/restauration-bocagere/
 ---
 
 Les contrats territoriaux consacrés à l’eau et les partenariats avec les collectivités permettent d’identifier les secteurs prioritaires, d’accompagner les propriétaires et exploitants puis de programmer plantations et restaurations.

@@ -3,14 +3,14 @@ title: Perte d’une arme
 description: Trouver les informations officielles relatives à la perte d’une arme, sans la confondre avec la perte du permis.
 intro: La perte d’une arme ne se traite pas comme une demande de duplicata du permis de chasser.
 links:
-  - label: Consulter Service Public — armes de catégorie C
-    url: https://www.service-public.gouv.fr/particuliers/vosdroits/F2246
+  - label: Consulter Service Public — perte ou vol d’une arme
+    url: https://www.service-public.gouv.fr/particuliers/vosdroits/F2255
   - label: Nous contacter pour être orienté
     url: /contact/
 ---
 
-## Consulter les autorités compétentes
+## Signaler la perte ou le vol
 
-Le site de Service Public présente les règles relatives aux armes de catégorie C, avec une rubrique consacrée à la perte ou au vol. Référez-vous aux informations officielles pour votre catégorie d’arme et votre situation.
+Service-Public indique que la perte ou le vol d’une arme, d’un élément d’arme ou de munitions des catégories A, B ou C doit être déclaré immédiatement auprès d’un commissariat de police ou d’une brigade de gendarmerie. Précisez les circonstances ainsi que les caractéristiques de l’arme ; l’autorité vous remet un récépissé.
 
-**À vérifier avant publication :** une procédure locale détaillée et validée n’a pas été fournie pour cette refonte. Ce site ne reçoit pas de déclaration et ne remplace aucune démarche auprès des autorités.
+Si vous détenez un compte dans le Système d’information sur les armes (SIA), signalez-y ensuite la perte ou le vol en joignant une copie du récépissé. Consultez la fiche officielle pour les détails correspondant à votre situation. Ce site ne reçoit pas de déclaration.

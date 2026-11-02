@@ -16,11 +16,11 @@ program:
   - Modes de chasse, réglementation et préservation.
   - Démonstration, techniques de rappel et de vol.
 duration: Une matinée de 3 heures
-location: Lieu précisé sur la convocation de la FDC 85
-price: Se renseigner auprès de la FDC 85
+location: À demander à la Fédération
+price: Tarif communiqué par la Fédération
 dates: []
 documents: []
 registrationUrl: /contact/
 ---
 
-Le nombre de participants est limité à vingt. Les dates et modalités d’inscription à jour sont publiées par la FDC 85.
+Contactez la Fédération pour savoir si une session est actuellement proposée et obtenir les dates, le lieu, le tarif et les modalités d’inscription.
